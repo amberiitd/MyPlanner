@@ -1,21 +1,14 @@
-import logo from './logo.svg';
+/* eslint-disable react/react-in-jsx-scope */
+import logo from './logo1.png';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
+      <header className="">
+        <img src={logo} alt="logo" />
+        <a href='#'>
+          Welcome to MyPlanner
         </a>
       </header>
     </div>
