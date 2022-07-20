@@ -4,7 +4,7 @@ const LazyButton = lazy(() => import('./Button'));
 
 const Button = (props: JSX.IntrinsicAttributes & { children?: React.ReactNode; }) => (
   <Suspense fallback={null}>
-    <LazyButton {...props} />
+    <LazyButton {...props} label='Button' handleClick={()=> {}}/>
   </Suspense>
 );
 

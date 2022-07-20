@@ -1,12 +1,18 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
 import React, { FC } from 'react';
-import styles from './Button.module.css';
+import './Button.css';
 
-interface ButtonProps {}
+interface ButtonProps {
+  label: string;
+  handleClick: () => void;
+}
 
-const Button: FC<ButtonProps> = () => (
-  <div className={styles.Button} data-testid="Button">
-    Button Component
+const Button: FC<ButtonProps> = (props) => (
+  <div className="" data-testid="Button">
+    <button className="btn btn-thm form-control" style={{backgroundColor: 'coral'}}
+      onClick={()=> props.handleClick()}
+    >
+      {props.label}
+    </button>
   </div>
 );
 

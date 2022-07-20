@@ -5,7 +5,7 @@ import TextInput from './TextInput';
 
 describe('<TextInput />', () => {
   test('it should mount', () => {
-    render(<TextInput />);
+    render(<TextInput value='text' handleChange={()=>{}}/>);
     
     const textInput = screen.getByTestId('TextInput');
 

@@ -5,7 +5,7 @@ import LoginButton from './LoginButton';
 
 describe('<Login-button />', () => {
   test('it should mount', () => {
-    render(<LoginButton />);
+    render(<LoginButton label='Button' bsIcon='google' configure={()=> {}}/>);
     
     const loginButton = screen.getByTestId('Login-button');
 
