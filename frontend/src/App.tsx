@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import PageNotFound from './components/PageNotFound/PageNotFound';
 import AuthGuardRoute from './components/route/AuthGuardRoute';
 import DefaultRoute from './components/route/DefaultRoute';
+import HomePage from './pages/home/HomePage';
 
 function App() {
     return (
@@ -24,14 +25,7 @@ function App() {
                     element={
                         <AuthGuardRoute
                             element={
-                                <div className="App">
-                                    <header className="">
-                                    <img src="" alt="logo" />
-                                    <a href='#'>
-                                        Welcome to MyPlanner
-                                    </a>
-                                    </header>
-                                </div>
+                                <HomePage />
                             }
                         />
                     }

@@ -1,0 +1,12 @@
+.brand-img{
+    height: 2em;
+    width: 2em;
+    font-family: 'Courier New', Courier, monospace;
+}
+.brand:hover{
+    background-color: whitesmoke;
+    cursor: pointer;
+}
+.brand-name{
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
