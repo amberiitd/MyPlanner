@@ -16,12 +16,12 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/myp/login"
+                <Route path="/login"
                     element ={
                         <DefaultRoute element={<LoginPage />} />
                     }
                 />
-                <Route path='/myp/home' 
+                <Route path='/myp/*' 
                     element={
                         <AuthGuardRoute
                             element={
@@ -30,8 +30,8 @@ function App() {
                         />
                     }
                 />
-                <Route path="/myp/page-not-found" element={<PageNotFound />} />
-                <Route path="*" element={<Navigate to="/myp/login"/>} />
+                <Route path="/page-not-found" element={<PageNotFound />} />
+                <Route path="*" element={<Navigate to="/login"/>} />
             </Routes>
         </BrowserRouter>       
     );

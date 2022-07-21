@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import NavSearch from '../../NavSearch/NavSearch';
+import NavSearch from '../NavSearch/NavSearch';
 import NavBarLinkList from '../NavBarLinkList/NavBarLinkList';
 import NavBarToolList from '../NavBarToolList/NavBarToolList';
 import NavBrand from '../NavBrand/NavBrand';

@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import NavBarTool from '../nav/NavBarTool/NavBarTool';
+import NavBarTool from '../NavBarTool/NavBarTool';
 import './NavSearch.css';
 
 interface NavSearchProps{
