@@ -1,3 +1,9 @@
 .nav-simp{
     height: 3.7em;
 }
+
+.navSearchParent{
+    padding-top: 12px;
+    width: 20em; 
+    min-width: 5em;
+}

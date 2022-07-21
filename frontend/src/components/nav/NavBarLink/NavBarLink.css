@@ -1,5 +1,6 @@
 .navlinkbtn:hover{
     background-color: whitesmoke;
+    cursor: pointer;
 }
 .icon-font{
 }

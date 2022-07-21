@@ -1,0 +1,11 @@
+.hover-focus:hover{
+    background-color: whitesmoke;
+    cursor: pointer;
+}
+
+.tool-icon{
+    width: 2em;
+    height: 2em;
+    padding: 4px 7px ;
+}
+
