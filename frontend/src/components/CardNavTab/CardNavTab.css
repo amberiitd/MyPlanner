@@ -1,0 +1,9 @@
+.tab-active{
+    border-bottom: 2px solid coral;
+    color: coral;
+}
+
+.tab:hover{
+    color: coral;
+    cursor: pointer;
+}

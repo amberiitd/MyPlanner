@@ -1,10 +1,12 @@
 import { FC, useEffect, useState } from 'react';
+import Cascader from '../../Cascader/Cascader';
 import NavBarLink from '../NavBarLink/NavBarLink';
 import './NavBarLinkList.css';
 
 interface NavBarLinkItem{
     id: string | number;
     label: string;
+    dropdownElement: JSX.Element;
 }
 interface NavBarLinkListProps{
     items: NavBarLinkItem[];
@@ -13,6 +15,7 @@ interface NavBarLinkListProps{
 const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
     const [selectedLink, setSelectedLink] = useState(props.selectedItem);
     const [cuttOff, setCuttOff] = useState(0);
+    const [moreLinks, setMoreLinks] = useState([]);
     const resize = () => {
         const MAX_ALLOWED_WIDTH = 1200;
         const AVG_LINK_WIDTH = 80;
@@ -36,6 +39,7 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
                     <NavBarLink key={`navlink-${index}`} 
                         label={item.label}
                         isActive={item.id === selectedLink.id}
+                        dropdownElement={item.dropdownElement}
                     />
                 ))
             }
@@ -43,6 +47,17 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
                 <NavBarLink
                     label={`More`}
                     isActive={false}
+                    dropdownElement={
+                        <Cascader 
+                            id="0"
+                            nodeList={props.items.slice(props.items.length - cuttOff, props.items.length).map(item => ({
+                                label: item.label,
+                                dropdownElement: item.dropdownElement,
+                                handleSelect: (e: any) => {}
+                            }))}
+                            parentView={true}
+                        />
+                    }
                 />
             </div>
             <div className='d-inline-flex'>

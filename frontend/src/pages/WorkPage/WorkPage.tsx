@@ -10,8 +10,13 @@ const WorkPage: FC<WorkPageProps> = () => {
 
     return (
         <div className='border'>
-            <LinkCard />
-
+            <LinkCard 
+                label='Card Label'
+                showLabel={true}
+                isLoading={false}
+                linkItems={[]}
+            />
+            {/* <div style={{border: '5px solid coral'}}> Border Test</div> */}
         </div>
     )
 };

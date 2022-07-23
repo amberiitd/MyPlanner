@@ -3,38 +3,20 @@ import CustomLink from '../CustomLink/CustomLink';
 import './LinkCard.css';
 
 interface LinkCardProps{
-
+    label: string;
+    showLabel: boolean;
+    isLoading: boolean;
+    linkItems: any[]
 }
 
 const LinkCard: FC<LinkCardProps> = (props) => {
     
-    const customLinkItems = [
-        {
-            label: 'Given Label',
-        },
-        {
-            label: 'Given Label',
-            bsIcon: 'bookmark-star',
-            caption: 'Software module',
-            actions: [
-                {
-                    label: 'favorite',
-                    bsIcon: 'star',
-                    flipBsIcon: 'star-fill',
-                    handleClick: (event: any) => {}
-                },
-                {
-                    label: 'view-later',
-                    bsIcon: 'hourglass',
-                    handleClick: (event: any) => {}
-                }
-            ]
-        }
-    ]
+    
     return (
-        <div className='w-100 shadow-sm'>
+        <div className='w-100 py-1'>
+            <div className='p-1 ps-3 label-card' hidden={!props.showLabel}>{props.label}</div>
             {
-                customLinkItems.map((item, index) => (
+                props.linkItems.map((item, index) => (
                     <CustomLink key ={`custom-link-${index}`} {...item}/>
                 ))
             }
