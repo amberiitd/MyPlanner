@@ -4,8 +4,6 @@ import NavBarLinkList from '../NavBarLinkList/NavBarLinkList';
 import NavBarToolList from '../NavBarToolList/NavBarToolList';
 import NavBrand from '../NavBrand/NavBrand';
 import './NavBarMain.css';
-import LinkCard from '../../LinkCard/LinkCard';
-import TabbedCard from '../../Tabbedcard/TabbedCard';
 import YourWork from '../../dropdowns/YourWork/YourWork';
 
 interface NavBarMainProps{

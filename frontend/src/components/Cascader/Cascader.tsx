@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from 'react';
-import CustomLink from '../CustomLink/CustomLink';
+import CustomOption from '../CustomOption/CustomOption';
 import './Cascader.css';
 
 export interface CascaderNode{
@@ -21,7 +21,7 @@ const Cascader: FC<CascaderProps> = (props) => {
         <div className='w-100 py-1 position-relative'>
             {
                 props.nodeList.map((node, index) =>(
-                    <Dropdown key={`cascader-parent-${props.id}${index}`}
+                    <DropdownTree key={`cascader-parent-${props.id}${index}`}
                         {...node}
                         index={index}
                     />
@@ -31,36 +31,40 @@ const Cascader: FC<CascaderProps> = (props) => {
     )
 }
 
-const Dropdown : FC<any> = (props) => {
+const DropdownTree : FC<any> = (props) => {
     const [dropdown, setDropdown] = useState(false);
     const submenu = ((props.children && props.children.length > 0) ||  !!props.dropdownElement);
-    const ref = useRef<HTMLHeadingElement>(null);
+    const toggleRef = useRef<HTMLDivElement>(null);
+    const bodyRef= useRef<HTMLDivElement>(null);
     useEffect(()=>{
         const handleClickOutside = (e: any)=> {
-            if (ref.current && !ref.current.contains(e.target)) {
+            if(bodyRef.current && bodyRef.current.contains(e.target)){
+                return;
+            }
+            if (toggleRef.current && !toggleRef.current.contains(e.target)) {
                 setDropdown(false);
-            }else if(ref.current && ref.current.contains(e.target)){
+            }else if(toggleRef.current && toggleRef.current.contains(e.target)){
                 setDropdown(!dropdown);
             }
         };
-            document.addEventListener('click', handleClickOutside, true);
-            return () => {
+        document.addEventListener('click', handleClickOutside, true);
+        return () => {
             document.removeEventListener('click', handleClickOutside, true);
-            };
+        };
     }, [setDropdown])
 
     return (
         <div className='dropdown dropend' >
-            <div className='' ref={ref}>
-                <CustomLink  
+            <div className='' ref={toggleRef}>
+                <CustomOption  
                     label={props.label}
+                    value={props.label.trim()}
                     rightBsIcon={`${submenu ? 'chevron-right': ''}`}
-                    handleClick={props.handleSelect}
                 />
             </div>
             {
                 submenu? (
-                    <div className={`dropdown-menu ${dropdown ? 'show': ''} position-absolute start-100 top-0`}>
+                    <div className={`dropdown-menu ${dropdown ? 'show': ''} position-absolute start-100 top-0`} ref={bodyRef}>
                         {(props.children && props.children.length > 0)? (
                         <Cascader 
                             id={`${props.id}${props.index}`}

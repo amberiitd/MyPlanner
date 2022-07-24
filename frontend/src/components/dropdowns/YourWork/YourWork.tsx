@@ -11,28 +11,31 @@ const YourWork: FC<YourWorkProps> = () => {
     const assignedToMeLinks = [
         {
             label: 'Given Label',
+            value: 'givenLabel1',
             bsIcon: 'bookmark-star',
             caption: 'Software module',
-            handleClick: (event: any) => {},
+            
         },
         {
             label: 'Given Label',
+            value: 'givenLabel2',
             bsIcon: 'bookmark-star',
             caption: 'Software module',
             actions: [
                 {
                     label: 'favorite',
+                    value:'favorite',
                     bsIcon: 'star',
                     flipBsIcon: 'star-fill',
                     handleClick: (event: any) => {}
                 },
                 {
                     label: 'view-later',
+                    value:'favorite',
                     bsIcon: 'hourglass',
                     handleClick: (event: any) => {}
                 }
-            ],
-            handleClick: (event: any) => {},
+            ]
         }
     ]
     const tabs =[
@@ -44,6 +47,7 @@ const YourWork: FC<YourWorkProps> = () => {
                     showLabel={true}
                     isLoading={false}
                     linkItems={assignedToMeLinks}
+                    handleClick={(event: any) => {}}
                 />
             ),
             footerElement: (
@@ -56,6 +60,7 @@ const YourWork: FC<YourWorkProps> = () => {
                             label: 'Go to Your Work Page'
                         }
                     ]}
+                    handleClick={(event: any) => {}}
                 />
             )
         },

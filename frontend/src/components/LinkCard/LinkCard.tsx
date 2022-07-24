@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import CustomLink from '../CustomLink/CustomLink';
+import CustomOption from '../CustomOption/CustomOption';
 import './LinkCard.css';
 
 interface LinkCardProps{
@@ -7,6 +7,7 @@ interface LinkCardProps{
     showLabel: boolean;
     isLoading: boolean;
     linkItems: any[]
+    handleClick: (event: any) => void;
 }
 
 const LinkCard: FC<LinkCardProps> = (props) => {
@@ -17,7 +18,9 @@ const LinkCard: FC<LinkCardProps> = (props) => {
             <div className='p-1 ps-3 label-card' hidden={!props.showLabel}>{props.label}</div>
             {
                 props.linkItems.map((item, index) => (
-                    <CustomLink key ={`custom-link-${index}`} {...item}/>
+                    <div key ={`custom-link-${index}`} onClick={() => {props.handleClick(item.value || item.label)}}>
+                        <CustomOption {...item}/>
+                    </div>
                 ))
             }
         </div>

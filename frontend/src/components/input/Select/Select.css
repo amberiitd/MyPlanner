@@ -1,0 +1,16 @@
+input:focus{
+    outline: none;
+}
+
+input{
+    outline: none;
+    border: 0;
+}
+
+.input-cursor{
+    width: 5px;
+}
+
+.focus-outline{
+    outline: 2px solid coral;
+}

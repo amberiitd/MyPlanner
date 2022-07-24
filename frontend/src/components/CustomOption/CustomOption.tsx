@@ -1,27 +1,28 @@
 import { FC } from 'react';
 import BinaryAction from '../BinaryAction/BinaryAction';
-import './CustomLink.css';
+import './CustomOption.css';
 
-interface CustomLinkAction{
+interface CustomOptionAction{
     label: string;
+    value: string;
     bsIcon: string;
     flipBsIcon?: string;
     handleClick: (event: any) => void;
 }
 
-interface CustomLinkProps{
+interface CustomOptionProps{
     label: string;
+    value: string;
     caption?: string;
     leftBsIcon?: string;
     rightBsIcon?: string;
-    actions?: CustomLinkAction[];
-    handleClick: (event: any) => void;
+    actions?: CustomOptionAction[];
 }
 
-const CustomLink: FC<CustomLinkProps> = (props) => {
+const CustomOption: FC<CustomOptionProps> = (props) => {
 
     return (
-        <div className='bg-smoke d-flex flex-nowrap p-2 ps-3' onClick={(e)=>{props.handleClick(e)}}>
+        <div className='bg-smoke d-flex flex-nowrap p-2 ps-3'>
             {/*  */}
             <div className='pe-2' hidden={!props.leftBsIcon}>
                 <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
@@ -40,7 +41,7 @@ const CustomLink: FC<CustomLinkProps> = (props) => {
                             label={action.label}
                             bsIcon0={action.bsIcon}
                             bsIcon1={action.flipBsIcon || action.bsIcon}
-                            handleClick={(event: any)=> {action.handleClick(event)}}
+                            handleClick={(event: any)=> {action.handleClick(action.value || action.label)}}
                             
                         />
                     ) )
@@ -53,4 +54,4 @@ const CustomLink: FC<CustomLinkProps> = (props) => {
     )
 }
 
-export default CustomLink;
+export default CustomOption;
