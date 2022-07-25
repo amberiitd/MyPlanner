@@ -16,13 +16,14 @@ interface CustomOptionProps{
     caption?: string;
     leftBsIcon?: string;
     rightBsIcon?: string;
+    extraClasses?: string;
     actions?: CustomOptionAction[];
 }
 
 const CustomOption: FC<CustomOptionProps> = (props) => {
 
     return (
-        <div className='bg-smoke d-flex flex-nowrap p-2 ps-3'>
+        <div className={`bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
             {/*  */}
             <div className='pe-2' hidden={!props.leftBsIcon}>
                 <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
