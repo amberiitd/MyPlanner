@@ -1,0 +1,11 @@
+.show{
+    display: block !important;
+}
+
+.create-select{
+    width: 22em;
+}
+
+.modal-body{
+    height: 700px;
+}

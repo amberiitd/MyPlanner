@@ -47,7 +47,7 @@ const Select: FC<SelectProps> = (props) => {
     return (
         <div >
             <div className='mb-1'>
-                {props.label}
+                {props.label}{props.isRequired? '*': ''}
             </div>
             <div ref={selectFormRef} className='dropdown'>
                 <div className={`d-flex flex-nowrap form-control border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 

@@ -56,6 +56,7 @@ const Project: FC<ProjectProps> = () => {
                         </div>
                     </div>
                 )}
+                isRequired={true}
                 selectedItem={selectedProject}
                 onSearch={(searchText: string) => {setFilteredData(data.filter(item => toLower(item.label).startsWith(toLower(searchText))))}}
             />

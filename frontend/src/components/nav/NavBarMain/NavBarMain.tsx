@@ -5,6 +5,8 @@ import NavBarToolList from '../NavBarToolList/NavBarToolList';
 import NavBrand from '../NavBrand/NavBrand';
 import './NavBarMain.css';
 import YourWork from '../../dropdowns/YourWork/YourWork';
+import Button from '../../Button/Button';
+import CreateNew from '../../form/CreateNew/CreateNew';
 
 interface NavBarMainProps{
 
@@ -74,6 +76,7 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
                 items={navLinks}
                 selectedItem={navLinks[0]}
             />
+            <CreateNew />
             <div className='ms-auto navSearchParent'>
                 <NavSearch/>
             </div>

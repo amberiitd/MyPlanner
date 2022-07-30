@@ -60,13 +60,6 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
                     }
                 />
             </div>
-            <div className='d-inline-flex'>
-                <button className="btn btn-primary nabarbutton mx-4 my-2 d-none d-lg-block">Create</button>
-                <button className="btn btn-primary nabarbutton mx-4 my-2 d-block d-lg-none">
-                    <i className='bi bi-plus-lg'></i>
-                </button>
-
-            </div>
         </div>
     )
 }
