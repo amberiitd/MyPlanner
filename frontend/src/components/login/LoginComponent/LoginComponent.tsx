@@ -98,7 +98,10 @@ export default class LoginComponent extends Component<LoginComponentProps, Login
                     }
                 >
                     <TextInput 
+                        label='Email'
+                        hideLabel={true}
                         value={this.state.emailInput}
+                        placeholder='Enter Email'
                         handleChange= {((value: string)=>{
                             this.setState({...this.state, emailInput: value})
                         }).bind(this)}

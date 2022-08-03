@@ -2,8 +2,13 @@ import { FC, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import Button from '../../Button/Button';
 import DropdownAction from '../../DropdownAction/DropdownAction';
+import NumberInput from '../../input/NumberInput/NumberInput';
+import Assignee from '../Assignee/Assignee';
 import IssueType from '../IssueType/IssueType';
 import Project from '../Project/Project';
+import Sprint from '../Sprint/Sprint';
+import StoryPoint from '../StoryPoint/StoryPoint';
+import Summary from '../Summary/Summary';
 import './CreateNew.css';
 
 interface CreateNewProps{
@@ -35,7 +40,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                 show={showModal}
                 backdrop='static'
                 size='lg'
-                dialogClassName='modal-dialog-scrollable'
+                dialogClassName='modal-dialog-scrollable font-theme'
             >
                 <Modal.Header className=''>
                     <div>
@@ -63,6 +68,20 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                         <IssueType />
                     </div>
                     <hr className='my-4 text-muted'/>
+                    <div className='mb-3'>
+                        <Summary />
+                    </div>
+                    <div className='create-select mb-3'>
+                        <Assignee />
+                    </div>
+
+                    <div className='create-select mb-3'>
+                        <Sprint />
+                    </div>
+
+                    <div className='create-select mb-3'>
+                        <StoryPoint />
+                    </div>
                     
                 </Modal.Body>
                 <Modal.Footer>

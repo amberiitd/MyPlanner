@@ -18,6 +18,7 @@ const HomePage: FC<HomePageProps> = (props) => {
                 <Route path='your-work' element={<WorkPage />} />
                 <Route path='*' element={ <Navigate to='your-work' />} />
             </Routes>
+            
         </div>
     )
 }

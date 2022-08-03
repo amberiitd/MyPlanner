@@ -7,6 +7,9 @@ import './NavBarMain.css';
 import YourWork from '../../dropdowns/YourWork/YourWork';
 import Button from '../../Button/Button';
 import CreateNew from '../../form/CreateNew/CreateNew';
+import Projects from '../../dropdowns/Projects/Projects';
+import ProjectModal from '../../dropdowns/Projects/ProjectModal/ProjectModal';
+import defaultModalService from '../../../modal.service';
 
 interface NavBarMainProps{
 
@@ -21,7 +24,7 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             {
                 id: 1,
                 label: 'Projects',
-                dropdownElement: (<div></div>)
+                dropdownElement: (<Projects />)
             },
             {
                 id: 2,
@@ -69,6 +72,15 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             bsIcon: 'person-circle'
         }
     ]) 
+
+    const [showProjectModal, setShowProjectModal] = useState(defaultModalService.getShowModel());
+
+    useEffect(()=>{
+        defaultModalService.subscribe(()=>{
+            setShowProjectModal(defaultModalService.getShowModel());
+        })
+    }, [])
+
     return (
         <div className='nav-simp d-inline-flex w-100 shadow-sm border  position-relative'>
             <NavBrand />
@@ -83,7 +95,10 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             <div className='me-3 my-1'>
                 <NavBarToolList items={toolItems} />
             </div>
-            
+            <ProjectModal 
+                showModal={showProjectModal}
+                handleCancel={()=>{defaultModalService.setShowModel(false)}}
+            />
 
         </div>
     )

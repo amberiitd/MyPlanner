@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash';
 import { FC } from 'react';
 import CustomOption from '../CustomOption/CustomOption';
 import './LinkCard.css';
@@ -8,6 +9,7 @@ interface LinkCardProps{
     isLoading: boolean;
     linkItems: any[];
     extraClasses?: string;
+    emptyElement?: JSX.Element;
     handleClick: (event: any) => void;
 }
 
@@ -24,6 +26,15 @@ const LinkCard: FC<LinkCardProps> = (props) => {
                     </div>
                 ))
             }
+            <div className='' hidden={!isEmpty(props.linkItems)}>
+                <div className='d-flex justify-content-center'>
+                    {props.emptyElement?? (
+                        <div>
+                            No Items.
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     )
 };

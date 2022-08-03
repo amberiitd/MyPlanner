@@ -9,6 +9,7 @@ interface SelectProps{
     readonly?: boolean;
     dropdownElement: JSX.Element;
     selectedItem?: any;
+    hideToggleIcon?: boolean;
     onSearch: (event: any) => void;
 }
 
@@ -50,14 +51,16 @@ const Select: FC<SelectProps> = (props) => {
                 {props.label}{props.isRequired? '*': ''}
             </div>
             <div ref={selectFormRef} className='dropdown'>
-                <div className={`d-flex flex-nowrap form-control border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 
+                <div className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 
                     <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {props.onSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
 
                     <div hidden={searchText.length > 0}>
                         {props.selectedItem?.label}
                     </div>
 
-                    <i className='bi bi-chevron-down ms-auto'></i>
+                    <div className='py-auto ms-auto'>
+                        <i className='bi bi-chevron-down ' hidden={!!props.hideToggleIcon} style={{fontSize: '70%'}}></i>
+                    </div>
                 </div>
 
                 <div ref={dropDownRef} className={`dropdown-menu mt-1 w-100 ${dropdown? 'show': ''} shadow-sm`}>
