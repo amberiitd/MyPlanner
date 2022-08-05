@@ -1,0 +1,9 @@
+
+.crumb-link:hover{
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.text-grey{
+    color: rgb(110, 109, 109);
+}

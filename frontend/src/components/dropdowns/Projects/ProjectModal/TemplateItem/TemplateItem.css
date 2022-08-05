@@ -1,0 +1,24 @@
+.template-icon{
+    background-color: rgb(232, 232, 232);
+}
+
+.template-body{
+    background-color: white;
+}
+
+.right-icon{
+    background-color: white;
+}
+
+.item-label{
+    font-size: 150%;
+    text-decoration: solid;
+}
+
+.text-grey{
+    color: rgb(110, 109, 109);
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
