@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Modal } from 'react-bootstrap';
 import Button from '../../../Button/Button';
+import MenuCard from '../../../MenuCard/MenuCard';
 import './ProjectModal.css';
 
 interface ProjectModalProps{
@@ -21,13 +22,41 @@ const ProjectModal: FC<ProjectModalProps> = (props) => {
                 <Modal.Body className='py-0'>
                     <div className='row border h-100'>
                         <div className='col-3 sidebar h-100 border'>
-                            <div className='d-flex flex-nowrap py-3 border'>
+                            <div className='d-flex flex-nowrap py-3'>
                                 <Button 
                                     label='Cancel'
                                     hideLabel={true}
                                     bsIcon='x-lg'
                                     extraClasses='bg-light'
                                     handleClick={props.handleCancel}                
+                                />
+                            </div>
+                            <div className=''>
+                                <MenuCard 
+                                    label='Project Templates'
+                                    menuItems={[
+                                        {
+                                            label: "Software development",
+                                            value: "software-development",
+
+                                        },
+                                        {
+                                            label: "Service management",
+                                            value: "service-management",
+                                            
+                                        },
+                                        {
+                                            label: "Work management",
+                                            value: "work-management",
+                                            
+                                        }
+                                    ]}
+                                    selectedItem={{
+                                        label: "Software development",
+                                        value: "software-development",
+
+                                    }}
+                                    handleClick={(valu: string) => {}}
                                 />
                             </div>
                         </div>

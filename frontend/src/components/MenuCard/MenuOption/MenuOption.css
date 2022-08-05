@@ -1,0 +1,26 @@
+.option{
+    padding: 8px;
+    padding-left: 12px;
+}
+.option:hover{
+    cursor: pointer;
+}
+.option-hover:hover{
+    background-color: lightgrey;
+    color: rgb(110, 109, 109);
+}
+
+.select-option{
+    background-color: coral;
+}
+
+
+.text-cut{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.caption{
+    font-size: 80%;
+}
