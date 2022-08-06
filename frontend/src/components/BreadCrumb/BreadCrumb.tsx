@@ -38,10 +38,12 @@ const BreadCrumb: FC<BreadCrumbProps> = (props) => {
         return path;
     }
     return (
-        <div className='d-flex flex-nowrap py-3 border text-grey'>
+        <div className='d-flex flex-nowrap py-3 text-grey'>
             {
-                getPath().map(item => (
-                    <div className='me-2' onClick={() => {props.handleClick(item)}}> <span className='crumb-link'>{item.label} </span><span>/</span></div>
+                getPath().map((item, index) => (
+                    <div className='me-2' key={`bread-curmb-item-${index}`} onClick={() => {props.handleClick(item)}}>    
+                        <span className='crumb-link'>{item.label} </span><span>/</span>
+                    </div>
                 ))
             }
         </div>

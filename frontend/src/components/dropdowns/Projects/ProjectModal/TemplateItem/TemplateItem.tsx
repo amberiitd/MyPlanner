@@ -17,7 +17,7 @@ const TemplateItem: FC<TemplateItemProps> = (props) => {
             <div className='p-3 px-5 rounded-start template-icon d-flex align-items-center'>
                 <i className={`bi bi-${props.leftBsIcon || '1-square'}`} style={{fontSize: '200%'}}></i>
             </div>
-            <div className='p-3 rounded-end template-body w-100'>
+            <div className='p-3 rounded-end template-item-body w-100'>
                 <div>
                     <span className='item-label'>{props.label}</span>
                 </div>

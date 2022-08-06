@@ -32,3 +32,20 @@
 .btn-as-light:hover{
     opacity: 1;
 }
+
+.btn-as-bg{
+    background-color: inherit;
+}
+
+.btn-as-bg:hover{
+    background-color: rgb(227, 227, 227);
+}
+
+.btn-as-white{
+    background-color: white;
+    color: black;
+}
+
+.btn-as-white:hover{
+    background-color: rgb(227, 227, 227);
+}

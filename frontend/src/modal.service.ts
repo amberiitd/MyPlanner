@@ -24,5 +24,7 @@ class ModalService{
     }
 }
 
-const defaultModalService = new ModalService();
-export default defaultModalService;
+const projectModalService = new ModalService();
+export default projectModalService;
+
+export const projectCreateModalService = new ModalService();

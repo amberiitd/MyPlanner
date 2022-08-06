@@ -1,0 +1,13 @@
+.info-header{
+    background-color: coral;
+    color: white;
+    border-radius: 15px 15px 0px 0px;
+}
+
+.info{
+    width: 900px;
+    border-radius: 15px 15px 0px 0px;
+}
+
+.info-footer{
+}

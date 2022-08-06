@@ -3,9 +3,13 @@
 }
 
 .template{
-    min-width: 900px;
+    margin-left: 300px;
+    overflow-x: auto;
 }
 
 .modal-container{
-    min-width: 1200px;
+}
+
+.template-body{
+    min-width: 900px;
 }

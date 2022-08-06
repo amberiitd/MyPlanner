@@ -1,0 +1,21 @@
+.card-item{
+}
+
+.text-cut{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-item-icon{
+    background-color: rgb(232, 232, 232);
+}
+
+.card-item-body{
+    background-color: white;
+}
+
+.card-item-label{
+    font-size: 150%;
+    text-decoration: solid;
+}

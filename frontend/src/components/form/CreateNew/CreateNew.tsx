@@ -23,7 +23,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
             <div className='d-none d-lg-block' >
                 <Button 
                     label='Create'
-                    bsIcon='plus-lg'
+                    rightBsIcon='plus-lg'
                     hideIcon={true}
                     handleClick={()=>{ setShowModal(true) }}
                 />
@@ -32,7 +32,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                 <Button 
                     label='Create'
                     hideLabel={true}
-                    bsIcon='plus-lg'
+                    rightBsIcon='plus-lg'
                     handleClick={()=>{ setShowModal(true) }}
                 />
             </div>

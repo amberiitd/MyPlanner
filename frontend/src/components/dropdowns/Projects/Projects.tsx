@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import LinkCard from '../../LinkCard/LinkCard';
 import ProjectModal from './ProjectModal/ProjectModal';
-import defaultModalService from '../../../modal.service';
+import projectModalService from '../../../modal.service';
 import './Projects.css';
 
 
@@ -13,7 +13,7 @@ const Projects: FC<ProjectsProps> = () => {
     // const [showCreateModal, setShowCreateModal] = useState(defaultModalService.showModel);
     const handleClickOption = (value: string) => {
         if (value === 'create-new'){
-            defaultModalService.setShowModel(true);
+            projectModalService.setShowModel(true);
         }
     }
     return (

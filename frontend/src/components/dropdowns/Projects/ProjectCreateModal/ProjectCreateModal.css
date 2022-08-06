@@ -1,0 +1,17 @@
+.form-body{
+    width: 1000px;
+}
+
+.form-container1{
+    height: 95%;
+    min-width: 1000px;
+}
+
+.form-col{
+    width: 47%;
+}
+
+.modal-container{
+    height: 100%;
+    overflow-x: auto;
+}

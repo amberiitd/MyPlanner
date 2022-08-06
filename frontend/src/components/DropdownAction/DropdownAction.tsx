@@ -33,7 +33,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
                 <Button 
                     label='Create Menu'
                     hideLabel={true}
-                    bsIcon='three-dots-vertical'
+                    rightBsIcon='three-dots-vertical'
                     extraClasses='btn-as-light'
                     handleClick={()=>{}}
                 />

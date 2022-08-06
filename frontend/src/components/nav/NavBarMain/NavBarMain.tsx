@@ -9,7 +9,7 @@ import Button from '../../Button/Button';
 import CreateNew from '../../form/CreateNew/CreateNew';
 import Projects from '../../dropdowns/Projects/Projects';
 import ProjectModal from '../../dropdowns/Projects/ProjectModal/ProjectModal';
-import defaultModalService from '../../../modal.service';
+import projectModalService from '../../../modal.service';
 
 interface NavBarMainProps{
 
@@ -73,11 +73,11 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
         }
     ]) 
 
-    const [showProjectModal, setShowProjectModal] = useState(defaultModalService.getShowModel());
+    const [showProjectModal, setShowProjectModal] = useState(projectModalService.getShowModel());
 
     useEffect(()=>{
-        defaultModalService.subscribe(()=>{
-            setShowProjectModal(defaultModalService.getShowModel());
+        projectModalService.subscribe(()=>{
+            setShowProjectModal(projectModalService.getShowModel());
         })
     }, [])
 
@@ -97,7 +97,7 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             </div>
             <ProjectModal 
                 showModal={showProjectModal}
-                handleCancel={()=>{defaultModalService.setShowModel(false)}}
+                handleCancel={()=>{projectModalService.setShowModel(false)}}
             />
 
         </div>

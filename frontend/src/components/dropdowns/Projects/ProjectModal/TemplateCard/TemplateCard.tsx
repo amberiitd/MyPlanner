@@ -22,8 +22,8 @@ const TemplateCard: FC<TemplateCardProps> =(props) => {
             </div>
             <div className='d-flex justify-content-center'>
                 <div className='item-list'>
-                    {props.items.map(item => (
-                        <div className='mb-3' onClick={()=>{props.handleClick(item)}}>
+                    {props.items.map((item, index) => (
+                        <div className='mb-3' key={`template-item-${index}`} onClick={()=>{props.handleClick(item)}}>
                             <TemplateItem 
                                 {...item}
                             />
