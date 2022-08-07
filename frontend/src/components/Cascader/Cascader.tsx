@@ -51,7 +51,7 @@ const DropdownTree : FC<any> = (props) => {
         return () => {
             document.removeEventListener('click', handleClickOutside, true);
         };
-    }, [setDropdown])
+    }, [dropdown])
 
     return (
         <div className='dropdown dropend' >

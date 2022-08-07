@@ -25,7 +25,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
 
         document.addEventListener('click', handleCLick, true);
         return () => {document.removeEventListener('click', handleCLick, true)};
-    },[]);
+    },[showMenu]);
 
     return (
         <div className='dropdown'>
