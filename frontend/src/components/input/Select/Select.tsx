@@ -1,44 +1,78 @@
+import { isEmpty, toLower } from 'lodash';
 import { FC, useEffect, useRef, useState } from 'react';
+import LinkCard from '../../LinkCard/LinkCard';
 import './Select.css';
 
+export interface SelectCategory{
+    label: string;
+    items: any[];
+    showLabel?: boolean;
+}
 interface SelectProps{
     label: string;
     caption?: string;
     isRequired?: boolean;
     disabled?: boolean;
     readonly?: boolean;
-    dropdownElement: JSX.Element;
     selectedItem?: any;
     hideToggleIcon?: boolean;
-    onSearch: (event: any) => void;
+    data: SelectCategory[];
+    onSelectionChange: (event: any) => void;
 }
 
 const Select: FC<SelectProps> = (props) => {
     const [isActive, setActive] = useState(false);
     const [dropdown, setDropdown] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [selectedItem, setSelectedItem] = useState(props.selectedItem);
+    const [filteredData, setFilteredData] = useState<SelectCategory[]>(props.data || []);
     const inputRef = useRef<HTMLInputElement>(null);
     const selectFormRef = useRef<HTMLDivElement>(null);
     const dropDownRef = useRef<HTMLDivElement>(null);
 
+    const handleSelection = (item: any) => {
+        for (let i = 0; i< props.data.length; i++){
+            const option = props.data[i].items.find(datum => datum.value === item.value);
+            if (!isEmpty(option)){
+                setSelectedItem(option);
+                props.onSelectionChange(option);
+
+                // due deligence
+                setDropdown(!dropdown);
+                setSearchText('');
+                setFilteredData(props.data);
+                inputRef.current?.blur();
+
+                return;
+            }
+        }
+    }
+
+    const handleSearch = (searchText: string) => {
+        setFilteredData((props.data || []).map((catg) => (
+            {
+                ...catg,
+                items: catg.items.filter(item => toLower(item.label).startsWith(toLower(searchText)))
+            }
+        )));
+    }
+    
     useEffect(()=>{
         const handleCLick = (event: any)=>{
             if (!!props.disabled){
                 return;
             }
             if(selectFormRef.current && selectFormRef.current.contains(event.target)){
-                if(dropDownRef.current && dropDownRef.current.contains(event.target)){
-                    setSearchText('');
-                    inputRef.current?.blur();
-                }else{
+                if(!(dropDownRef.current && dropDownRef.current.contains(event.target))){
                     inputRef.current?.focus();
                     setActive(true);
+                    setDropdown(!dropdown);
                 }
-                setDropdown(!dropdown);
             }else{
                 setActive(false);
                 setDropdown(false);
                 setSearchText('');
+                setFilteredData(props.data);
             } 
         }
         document.addEventListener('click', handleCLick, true);
@@ -52,10 +86,10 @@ const Select: FC<SelectProps> = (props) => {
             </div>
             <div ref={selectFormRef} className='dropdown'>
                 <div className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 
-                    <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {props.onSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
+                    <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
 
                     <div hidden={searchText.length > 0}>
-                        {props.selectedItem?.label}
+                        {selectedItem?.label}
                     </div>
 
                     <div className='py-auto ms-auto'>
@@ -64,7 +98,20 @@ const Select: FC<SelectProps> = (props) => {
                 </div>
 
                 <div ref={dropDownRef} className={`dropdown-menu mt-1 w-100 ${dropdown? 'show': ''} shadow-sm`}>
-                    {props.dropdownElement}
+                    <div>
+                        {filteredData.map((catg, index)=> (
+                            <div key={`category-${index}`} className='mt-1'>
+                                <LinkCard 
+                                    label={catg.label}
+                                    showLabel={!!catg.showLabel}
+                                    isLoading={false}
+                                    linkItems={catg.items}
+                                    extraClasses='quote'
+                                    handleClick={handleSelection}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

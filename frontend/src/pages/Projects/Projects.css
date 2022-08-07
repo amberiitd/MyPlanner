@@ -1,0 +1,11 @@
+.param{
+    min-width: 20%;
+}
+
+.project-container{
+    height: 100%;
+}
+
+.h-100c{
+    height: calc(100% - 3.7em);
+}

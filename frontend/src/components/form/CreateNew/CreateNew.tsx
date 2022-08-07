@@ -54,7 +54,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                                     value: 'fields'
                                 }
                             ]}
-                            handleItemCLick={()=> {}}
+                            handleItemClick={()=> {}}
                         />
                     </div>
                     

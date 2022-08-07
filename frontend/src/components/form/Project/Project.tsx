@@ -1,7 +1,5 @@
-import { divide, toLower } from 'lodash';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
 import Select from '../../input/Select/Select';
-import LinkCard from '../../LinkCard/LinkCard';
 import './Project.css';
 
 interface ProjectProps{
@@ -11,16 +9,40 @@ interface ProjectProps{
 const Project: FC<ProjectProps> = () => {
     const data= [
         {
-            label: 'Option 1',
-            value: 'value1',
+            label: 'Recent Projects',
+            items: [
+                {
+                    label: 'Option 1',
+                    value: 'value1',
+                },
+                {
+                    label: 'Value 2',
+                    value: 'value2',
+                },
+                {
+                    label: 'Choice 3',
+                    value: 'value3',
+                },
+            ],
+            showLabel: true
         },
         {
-            label: 'Value 2',
-            value: 'value2',
-        },
-        {
-            label: 'Choice 3',
-            value: 'value3',
+            label: 'All Projects',
+            items: [
+                {
+                    label: 'Option 1',
+                    value: 'value1',
+                },
+                {
+                    label: 'Value 2',
+                    value: 'value2',
+                },
+                {
+                    label: 'Choice 3',
+                    value: 'value3',
+                },
+            ],
+            showLabel: true
         },
     ];
     const [selectedProject, setSelectedProject] = useState<any>();
@@ -30,35 +52,10 @@ const Project: FC<ProjectProps> = () => {
         <div>
             <Select 
                 label='Project'
-                dropdownElement={(
-                    <div>
-                        <div>
-                            <LinkCard 
-                                label='Recent Projects'
-                                showLabel={true}
-                                isLoading={false}
-                                linkItems={filteredData}
-                                extraClasses='quote'
-                                handleClick={(value: string) => {setSelectedProject(data.find(item => item.value === value))}}
-                            />
-                        </div>
-                        
-
-                        <div className='mt-1'>
-                            <LinkCard 
-                                label='Recent Projects'
-                                showLabel={true}
-                                isLoading={false}
-                                linkItems={filteredData}
-                                extraClasses='quote'
-                                handleClick={(value: string) => {setSelectedProject(data.find(item => item.value === value))}}
-                            />
-                        </div>
-                    </div>
-                )}
+                data={filteredData}
                 isRequired={true}
                 selectedItem={selectedProject}
-                onSearch={(searchText: string) => {setFilteredData(data.filter(item => toLower(item.label).startsWith(toLower(searchText))))}}
+                onSelectionChange={()=> {}}
             />
         </div>
     )

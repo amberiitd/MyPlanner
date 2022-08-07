@@ -6,7 +6,7 @@ import './DropdownAction.css'
 
 interface DropdownActionProps{
     menuItems: any[];
-    handleItemCLick: (event: any) => void;
+    handleItemClick: (event: any) => void;
 }
 
 const DropdownAction: FC<DropdownActionProps> = (props) => {
@@ -45,7 +45,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
                     label='Create New Menu'
                     isLoading={false}
                     linkItems={props.menuItems}
-                    handleClick={props.handleItemCLick} 
+                    handleClick={props.handleItemClick} 
                     showLabel={false}                
                 />
             </div>

@@ -10,11 +10,12 @@ interface ButtonProps {
   disabled?: boolean;
   aslink?: boolean;
   extraClasses?: string
+  size?: 'sm' | 'lg';
   handleClick: () => void;
 }
 
 const Button: FC<ButtonProps> = (props) => (
-  <div className={`p-1 ${props.hideLabel? '': 'px-3'} d-flex flex-nowrap justify-content-center button rounded-1 ${props.disabled? 'btn-as-muted': ''} ${props.extraClasses?? 'btn-as-thm'}`} onClick={() => {props.handleClick()}}>
+  <div className={`${props.size === 'sm'? '': 'p-1'} ${props.hideLabel? '': 'px-3'} d-flex flex-nowrap justify-content-center button rounded-1 ${props.disabled? 'btn-as-muted': ''} ${props.extraClasses?? 'btn-as-thm'}`} onClick={() => {props.handleClick()}}>
     <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>
     </div>

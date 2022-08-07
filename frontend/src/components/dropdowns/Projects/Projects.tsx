@@ -11,8 +11,8 @@ interface ProjectsProps{
 
 const Projects: FC<ProjectsProps> = () => {
     // const [showCreateModal, setShowCreateModal] = useState(defaultModalService.showModel);
-    const handleClickOption = (value: string) => {
-        if (value === 'create-new'){
+    const handleClickOption = (item: any) => {
+        if (item.value === 'create-new'){
             projectModalService.setShowModel(true);
         }
     }

@@ -1,3 +1,4 @@
+import { isEmpty } from 'lodash';
 import React, { FC, useState } from 'react';
 import './TextInput.css';
 
@@ -8,6 +9,7 @@ interface TextInputProps {
   placeholder?: string;
   hidePlaceholder?: boolean;
   isRequired?: boolean;
+  rightBsIcon?: string;
   handleChange: (value: string)=> void;
 }
 
@@ -19,7 +21,7 @@ const TextInput: FC<TextInputProps> = (props) => {
       <div className='' hidden={!!props.hideLabel}>
         {props.label}{props.isRequired? '*': ''}
       </div>
-      <div className={`form-control rounded-1 ${active ? 'focus-thm': 'bg-light'}`}>
+      <div className={`d-flex flex-nowrap form-control rounded-1 ${active ? 'focus-thm': 'bg-light'}`}>
         <input 
           className="w-100 bg-transparent" 
           type="text" 
@@ -29,6 +31,9 @@ const TextInput: FC<TextInputProps> = (props) => {
           onFocus={()=> {setActive(true)}}
           onBlur={()=> {setActive(false)}}
         />
+        <div className='py-auto ms-auto'>
+            <i className={`bi bi-${props.rightBsIcon}`} hidden={isEmpty(props.rightBsIcon)} style={{fontSize: '70%'}}></i>
+        </div>
       </div>
     </div>
   )
