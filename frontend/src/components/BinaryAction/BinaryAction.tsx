@@ -11,8 +11,9 @@ interface BinaryActionProps{
 
 const BinaryAction: FC<BinaryActionProps> = (props) => {
     const [value, setValue] = useState(props.value || 0);
+
     return (
-        <div className='p-1 mx-1' onClick={()=> {setValue(1-value); }}>
+        <div className='p-1 mx-1' onClick={()=> { props.handleClick(value); setValue(1-value);}}>
             <i className={`bi bi-${props.bsIcon0}`} style={{fontSize: "70%"}} hidden={value  === 1}></i>
             <i className={`bi bi-${props.bsIcon1}`} style={{fontSize: "70%"}} hidden={value  === 0}></i>
         </div>
