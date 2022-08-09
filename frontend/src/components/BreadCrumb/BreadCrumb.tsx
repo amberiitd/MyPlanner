@@ -1,5 +1,5 @@
 import _, { isEmpty } from 'lodash';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
 import './BreadCrumb.css';
 
 interface BreadCrumbItem{
@@ -15,6 +15,7 @@ interface BreadCrumbProps{
 }
 
 const BreadCrumb: FC<BreadCrumbProps> = (props) => {
+    const [path, setPath] = useState<BreadCrumbItem[]>([]);
     const getPathHelper: (itemNode: BreadCrumbItem, lastItem: BreadCrumbItem, path: BreadCrumbItem[]) => {path: BreadCrumbItem[], found: boolean} = (itemNode, lastItem, path) => {
         if (lastItem.value === itemNode.value){
             return {path, found: true};
@@ -33,14 +34,16 @@ const BreadCrumb: FC<BreadCrumbProps> = (props) => {
         path.pop();
         return {path, found: false};
     }
-    const getPath = () => {
+
+    useEffect(()=>{
         const {path, found} = getPathHelper(props.itemTree, props.selectedItem, []);
-        return path;
-    }
+        setPath(path);
+    },[props])
+    
     return (
         <div className='d-flex flex-nowrap py-3 text-grey'>
             {
-                getPath().map((item, index) => (
+                path.map((item, index) => (
                     <div className='me-2' key={`bread-curmb-item-${index}`} onClick={() => {props.handleClick(item)}}>    
                         <span className='crumb-link'>{item.label} </span><span>/</span>
                     </div>

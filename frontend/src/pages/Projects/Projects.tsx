@@ -7,6 +7,9 @@ import Table, { ColDef, RowAction, SimpleAction } from '../../components/Table/T
 import { Project } from '../../data/types';
 import BinaryAction from '../../components/BinaryAction/BinaryAction'
 import './Projects.css';
+import projectModalService, { projectCreateModalService } from '../../modal.service';
+import { divide } from 'lodash';
+import ProjectBoard from './ProjectBoard/ProjectBoard';
 
 interface ProjectsProps{
 
@@ -67,10 +70,12 @@ const Projects: FC<ProjectsProps> = (props) => {
             aslink: {
                 to: '#'
             },
+            sortable: true,
         },
         {
             label: 'Key',
-            value: 'key'
+            value: 'key',
+            sortable: true,
         },
         {
             label: 'Type',
@@ -106,7 +111,7 @@ const Projects: FC<ProjectsProps> = (props) => {
                 <div className='ms-auto'>
                     <Button 
                         label='Create Projects'
-                        handleClick={()=> {}}
+                        handleClick={()=> {projectModalService.setShowModel(true)}}
                     />
                 </div>
             </div>
@@ -142,7 +147,7 @@ const Projects: FC<ProjectsProps> = (props) => {
         <div className='h-100c'>
             <Routes>
                 
-                {/* <Route path='' element={ <Navigate to='' />} /> */}
+                <Route path='/:projectKey/board' element={ <ProjectBoard /> } />
                 <Route path='*' element={projectRoot} />
             </Routes>
         </div>

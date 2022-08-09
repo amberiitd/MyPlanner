@@ -35,11 +35,12 @@ const ProjectModal: FC<ProjectModalProps> = (props) => {
                                     label='Cancel'
                                     hideLabel={true}
                                     rightBsIcon='x-lg'
-                                    extraClasses='bg-light'
+                                    extraClasses='btn-as-bg p-1'
                                     handleClick={props.handleCancel}                
                                 />
                             </div>
                             <div className=''>
+                                <div className='h4 p-2'>Project Templates</div>
                                 <MenuCard 
                                     label='Project Templates'
                                     menuItems={projectTemplate.children}

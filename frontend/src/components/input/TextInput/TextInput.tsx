@@ -25,7 +25,7 @@ const TextInput: FC<TextInputProps> = (props) => {
         <input 
           className="w-100 bg-transparent" 
           type="text" 
-          placeholder={!!props.hidePlaceholder? '': props.placeholder?? 'Enter Value'} 
+          placeholder={!!props.hidePlaceholder? '': active? (props.placeholder?? 'Enter Value'): ''} 
           value ={props.value} 
           onChange={(e)=> props.handleChange(e.target.value)} 
           onFocus={()=> {setActive(true)}}

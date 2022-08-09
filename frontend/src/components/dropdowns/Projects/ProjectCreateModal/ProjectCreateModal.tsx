@@ -34,7 +34,7 @@ const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
                                 <Button 
                                     label='Back to project templates'
                                     leftBsIcon='arrow-left'
-                                    extraClasses='btn-as-bg'
+                                    extraClasses='btn-as-bg px-3 p-1'
                                     handleClick={props.handleCancel}
                                 />
                             </div>
@@ -88,14 +88,13 @@ const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
                                                 <div className='ms-auto me-2'>
                                                     <Button 
                                                         label='Cancel'
-                                                        extraClasses='btn-as-light'
+                                                        extraClasses='btn-as-light px-3 py-1'
                                                         handleClick={cancelProcess}
                                                     />
                                                 </div>
                                                 <div>
                                                     <Button 
                                                         label='Create'
-                                                        extraClasses='btn-as-thm'
                                                         handleClick={()=>{}}
                                                     />
                                                 </div>

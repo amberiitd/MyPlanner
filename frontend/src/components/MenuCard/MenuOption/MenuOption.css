@@ -6,12 +6,16 @@
     cursor: pointer;
 }
 .option-hover:hover{
-    background-color: lightgrey;
+    background-color: rgb(229, 229, 229);
     color: rgb(110, 109, 109);
 }
 
-.select-option{
-    background-color: coral;
+.option-hover-thm:hover{
+    background-color: rgb(253, 218, 206);
+}
+
+.option-select{
+    background-color: rgb(253, 218, 206);
 }
 
 
@@ -23,4 +27,23 @@
 
 .caption{
     font-size: 80%;
+}
+
+.option-quote-sm{
+    width: 4px;
+    height: 15px;
+    margin-right: 10px;
+}
+
+.option-quote{
+    width: 4px;
+    height: 100%;
+}
+
+.option-quote-select, .option-quote-sm-select{
+    background-color: coral;
+}
+
+.option-1{
+    padding-left: 10px;
 }

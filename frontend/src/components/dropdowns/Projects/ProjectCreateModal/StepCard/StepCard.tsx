@@ -32,7 +32,7 @@ const StepCard: FC<StepCardProps> = (props) => {
                             <div className='ms-auto'>
                                 <Button 
                                     label={`Change ${toLower(item.label)}`}
-                                    extraClasses='btn-as-bg'
+                                    extraClasses='btn-as-bg px-3 py-1'
                                     handleClick={()=>{}}                                    
                                 />
                             </div>

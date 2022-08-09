@@ -1,6 +1,7 @@
 import { isEmpty, startCase } from 'lodash';
 import { FC, useEffect, useState } from 'react';
 import { Type } from 'typescript';
+import BinaryAction from '../BinaryAction/BinaryAction';
 import Button from '../Button/Button';
 import DropdownAction from '../DropdownAction/DropdownAction';
 import './Table.css';
@@ -81,8 +82,21 @@ const Table: FC<TableProps> = (props) => {
                     <tr>
                         {
                             (props.colDef || defaultColDef).map((col, index) => (
-                                <th key={`header-${index}`} scope="col">
-                                    {col.hideLabel? '': col.label}
+                                <th className={`col-header ${col.sortable? 'col-header-hover': ''}`} key={`header-${index}`} scope="col">
+                                    <div className='d-flex flex-nowrap'>
+                                        <div>
+                                            {col.hideLabel? '': col.label}
+                                        </div>
+                                        <div className='ms-auto' hidden={!col.sortable}>
+                                            <BinaryAction 
+                                                label='Sort' 
+                                                bsIcon0='sort-up' 
+                                                bsIcon1='sort-down' 
+                                                handleClick={()=> {}} 
+                                            />
+                                        </div>
+                                    </div>
+                                    
                                 </th>
                             ))
                         }
@@ -108,9 +122,10 @@ const Table: FC<TableProps> = (props) => {
                                             <div className='d-flex '>
                                                 {
                                                     props.actions?.items.map((action, indexb)=> (
-                                                        <div key={`action-button-${indexi}${indexb}`}>
+                                                        <div className='me-1' key={`action-button-${indexi}${indexb}`}>
                                                             <Button
                                                                 label={action.label}
+                                                                extraClasses='btn-as-bg shadow-sm px-2 py-1'
                                                                 handleClick={()=> {props.actions?.handleAction(rowdata, action)}}
                                                             />
                                                         </div>
@@ -119,9 +134,11 @@ const Table: FC<TableProps> = (props) => {
                                                 }
                                             </div>
                                         ):(
-                                            <div className=''>
+                                            <div className='action-dropdown'>
                                                 <DropdownAction 
                                                     menuItems={props.actions?.items || []} 
+                                                    bsIcon='three-dots'
+                                                    dropdownClass='btn-as-bg p-1'
                                                     handleItemClick={(event: any)=> {props.actions?.handleAction(rowdata, event)}}
                                                 />
                                             </div>

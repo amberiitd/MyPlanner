@@ -120,7 +120,7 @@ export default class LoginComponent extends Component<LoginComponentProps, Login
                     <Button
                         label={this.loginActionLabel[this.state.verificationStatus]}
                         handleClick= {this.handleLoginAction.bind(this)}
-                        extraClasses='btn-as-thm w-100'
+                        extraClasses='btn-as-thm w-100 px-3 py-1'
                     />
                 </div>
                 

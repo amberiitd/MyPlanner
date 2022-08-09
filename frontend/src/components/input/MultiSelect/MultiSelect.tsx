@@ -113,7 +113,6 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                             label='Cancel'
                             hideLabel={true}
                             rightBsIcon='x'
-                            size='sm'
                             extraClasses='btn-as-light rounded-circle'
                             handleClick={()=>{setSelectedItems([])}}
                         />

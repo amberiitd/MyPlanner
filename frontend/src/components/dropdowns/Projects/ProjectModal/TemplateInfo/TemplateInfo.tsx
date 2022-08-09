@@ -64,7 +64,7 @@ const TemplateInfo: FC<TemplateInfoProps> = (props) => {
                         <div className='me-2'>
                             <Button 
                                 label='Use template'
-                                extraClasses='btn-as-white'
+                                extraClasses='btn-as-white px-3 py-1'
                                 handleClick={()=> {projectCreateModalService.setShowModel(true)}}                     
                             />
                         </div>
@@ -73,7 +73,7 @@ const TemplateInfo: FC<TemplateInfoProps> = (props) => {
                                 label='Cancel'
                                 hideLabel={true}
                                 rightBsIcon='x-lg'
-                                extraClasses='btn-as-bg'
+                                extraClasses='btn-as-bg p-1'
                                 handleClick={()=> {}}                     
                             />
                         </div>

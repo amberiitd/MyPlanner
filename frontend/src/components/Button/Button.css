@@ -49,3 +49,9 @@
 .btn-as-white:hover{
     background-color: rgb(227, 227, 227);
 }
+
+.circle-1{
+    width: 2em;
+    height: 2em;
+    padding: 4px 3px;
+}

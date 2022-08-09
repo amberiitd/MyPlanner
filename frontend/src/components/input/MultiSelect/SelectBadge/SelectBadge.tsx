@@ -21,7 +21,6 @@ const SelectBadge: FC<SelectBadgeProps> = (props) => {
                     hideLabel={true}
                     rightBsIcon='x'
                     extraClasses='btn-as-bg'
-                    size='sm'
                     handleClick={()=>props.handleCancel(props.value)}
                 />
             </div>

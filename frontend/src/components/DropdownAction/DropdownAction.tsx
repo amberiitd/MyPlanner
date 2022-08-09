@@ -1,5 +1,4 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import { Dropdown } from 'react-bootstrap'
 import Button from '../Button/Button'
 import LinkCard from '../LinkCard/LinkCard';
 import './DropdownAction.css'
@@ -7,6 +6,8 @@ import './DropdownAction.css'
 interface DropdownActionProps{
     menuItems: any[];
     handleItemClick: (event: any) => void;
+    bsIcon?: string;
+    dropdownClass?: string;
 }
 
 const DropdownAction: FC<DropdownActionProps> = (props) => {
@@ -33,8 +34,8 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
                 <Button 
                     label='Create Menu'
                     hideLabel={true}
-                    rightBsIcon='three-dots-vertical'
-                    extraClasses='btn-as-light'
+                    rightBsIcon={props.bsIcon??'three-dots-vertical'}
+                    extraClasses={props.dropdownClass??'btn-as-light p-1'}
                     handleClick={()=>{}}
                 />
             </div>
