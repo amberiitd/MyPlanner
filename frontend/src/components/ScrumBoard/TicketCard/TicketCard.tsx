@@ -1,0 +1,53 @@
+import { FC } from 'react';
+import Badge from '../../Badge/Badge';
+import DropdownAction from '../../DropdownAction/DropdownAction';
+import './TicketCard.css';
+
+interface TicketCardProps{
+    projectInfo: {
+        label: string;
+        bsIcon: string;
+    };
+    ticketInfo: {
+        label: string;
+        storyPoint: number;
+    };
+    menuItems: any[];
+    handleMenuClick: (event: any, event2: any) => void;
+    onClick: (event1: any) => void;
+}
+
+const TicketCard: FC<TicketCardProps> = (props) => {
+
+    return (
+        <div className='p-2 shadow-sm ticket-card text-muted'>
+            <div className='d-flex flex-nowrap mb-1'>
+                <div className='h5'>
+                    {props.ticketInfo.label}
+                </div>
+                <div className='ms-auto'>
+                    <DropdownAction 
+                        menuItems={props.menuItems}
+                        bsIcon='three-dots'
+                        handleItemClick={(menuevent: any)=>{props.handleMenuClick(props.ticketInfo, menuevent)}}
+                    />
+                </div>
+            </div>
+            <div className='d-flex flex-nowrap'>
+                <div>
+                    <i className={`bi bi-${props.projectInfo.bsIcon} me-2`}></i>
+                    <span>{props.projectInfo.label}</span>
+                </div>
+                <div className='ms-auto'>
+                    <Badge
+                        data={props.ticketInfo.storyPoint}
+                        extraClasses='bg-light'
+                    />
+                </div>
+            </div>
+
+        </div>
+    )
+}
+
+export default TicketCard;

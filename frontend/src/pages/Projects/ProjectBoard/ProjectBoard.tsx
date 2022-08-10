@@ -5,6 +5,7 @@ import Button from '../../../components/Button/Button';
 import DropdownAction from '../../../components/DropdownAction/DropdownAction';
 import TextInput from '../../../components/input/TextInput/TextInput';
 import MenuCard from '../../../components/MenuCard/MenuCard';
+import TicketCard from '../../../components/ScrumBoard/TicketCard/TicketCard';
 import './ProjectBoard.css';
 
 interface ProjectBoardProps{
@@ -69,7 +70,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                         />
                     </div>
                 </div>
-                <div className='px-5 py-3 board-body w-100'>
+                <div className='px-5 py-3 board-body w-100 border'>
                     <div>
                         <BreadCrumb 
                             itemTree={breadCrumbLinks}
@@ -114,7 +115,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                             />
                         </div>
                     </div>
-                    <div className='d-flex flex-nowrap align-items-center'>
+                    <div className='d-flex flex-nowrap align-items-center mb-3'>
                         <div>
                             <TextInput 
                                 label='Search Project' 
@@ -147,6 +148,21 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                                 />
                             </div>
                         </div>
+                    </div>
+                    <div className='d-flex '>
+                        <TicketCard 
+                            projectInfo={{
+                                label: 'Proj 1',
+                                bsIcon: 'x-diamond-fill'
+                            }} 
+                            ticketInfo={{
+                                label: 'Test Issue',
+                                storyPoint: 2
+                            }} 
+                            menuItems={[]} 
+                            handleMenuClick={(event: any, event2: any)=> {} } 
+                            onClick={(event1: any)=> {} }                            
+                        />
                     </div>
                 </div>
             </div>
