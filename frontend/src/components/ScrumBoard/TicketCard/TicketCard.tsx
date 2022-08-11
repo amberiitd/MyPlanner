@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useRef, useCallback,  useState } from 'react';
 import Badge from '../../Badge/Badge';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import './TicketCard.css';
@@ -20,7 +20,7 @@ interface TicketCardProps{
 const TicketCard: FC<TicketCardProps> = (props) => {
 
     return (
-        <div className='p-2 shadow-sm ticket-card text-muted'>
+        <div className='p-2 shadow-sm ticket-card text-muted grabbable'>
             <div className='d-flex flex-nowrap mb-1'>
                 <div className='h5'>
                     {props.ticketInfo.label}
@@ -51,3 +51,7 @@ const TicketCard: FC<TicketCardProps> = (props) => {
 }
 
 export default TicketCard;
+
+function useCallBack(arg0: (e: any) => void, arg1: number[]) {
+    throw new Error('Function not implemented.');
+}

@@ -5,7 +5,9 @@ import Button from '../../../components/Button/Button';
 import DropdownAction from '../../../components/DropdownAction/DropdownAction';
 import TextInput from '../../../components/input/TextInput/TextInput';
 import MenuCard from '../../../components/MenuCard/MenuCard';
+import ScrumBoard from '../../../components/ScrumBoard/ScrumBoard';
 import TicketCard from '../../../components/ScrumBoard/TicketCard/TicketCard';
+import TicketStage from '../../../components/ScrumBoard/TicketStage/TicketStage';
 import './ProjectBoard.css';
 
 interface ProjectBoardProps{
@@ -150,19 +152,11 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                         </div>
                     </div>
                     <div className='d-flex '>
-                        <TicketCard 
-                            projectInfo={{
-                                label: 'Proj 1',
-                                bsIcon: 'x-diamond-fill'
-                            }} 
-                            ticketInfo={{
-                                label: 'Test Issue',
-                                storyPoint: 2
-                            }} 
-                            menuItems={[]} 
-                            handleMenuClick={(event: any, event2: any)=> {} } 
-                            onClick={(event1: any)=> {} }                            
-                        />
+                        <div>
+                            <ScrumBoard
+                            />
+                        </div>
+                        
                     </div>
                 </div>
             </div>

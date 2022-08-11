@@ -1,8 +1,22 @@
 .ticket-card{
-    width: 20em;
+    width: 17em;
     background-color: rgb(255, 244, 240);
 }
 
 .ticket-card:hover{
     background-color: rgb(255, 232, 223);
+}
+
+.grabbable {
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+ /* (Optional) Apply a "closed-hand" cursor during drag operation. */
+.grabbable:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
 }
