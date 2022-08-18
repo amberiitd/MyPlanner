@@ -3,6 +3,7 @@ import BinaryAction from '../../../components/BinaryAction/BinaryAction';
 import BreadCrumb from '../../../components/BreadCrumb/BreadCrumb';
 import Button from '../../../components/Button/Button';
 import DropdownAction from '../../../components/DropdownAction/DropdownAction';
+import MultiSelect from '../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../components/input/TextInput/TextInput';
 import MenuCard from '../../../components/MenuCard/MenuCard';
 import ScrumBoard from '../../../components/ScrumBoard/ScrumBoard';
@@ -118,7 +119,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                         </div>
                     </div>
                     <div className='d-flex flex-nowrap align-items-center mb-3'>
-                        <div>
+                        <div className='me-2'>
                             <TextInput 
                                 label='Search Project' 
                                 hideLabel={true}
@@ -140,7 +141,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                                     </div>
                                 ))
                             }
-                            <div className='mx-1'>
+                            <div className='mx-2'>
                                 <Button
                                     label='Add member'
                                     hideLabel={true}
@@ -148,6 +149,30 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                                     extraClasses='rounded-circle circle-1 btn-as-light'
                                     handleClick={()=>{}}
                                 />
+                            </div>
+                            <div className='filter mx-2'>
+                                <MultiSelect 
+                                    label='Issue Type'
+                                    data={[
+                                        {
+                                            label: 'Type',
+                                            items: [
+                                                {
+                                                    label: 'Bug',
+                                                    value: 'bug'
+                                                },
+                                                {
+                                                    label: 'Story',
+                                                    value: 'story'
+                                                }
+                                            ],
+                                            showLabel: false
+                                        }
+                                    ]} 
+                                    hideLabel={true}
+                                    onSelectionChange={()=>{}}
+                                />
+
                             </div>
                         </div>
                     </div>

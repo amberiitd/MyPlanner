@@ -1,5 +1,9 @@
 .ticket-stage{
-    width: 20em;
+    width: 18em;
     min-height: 10em;
     height: 100%;
+}
+
+.stage-header{
+    height: 2.5em;
 }

@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import Button from '../../Button/Button';
 import LinkCard from '../../LinkCard/LinkCard';
 import { SelectCategory } from '../Select/Select';
+import SelectCard from '../SelectCard/SelectCard';
 import './MultiSelect.css';
 import SelectBadge from './SelectBadge/SelectBadge';
 
@@ -29,16 +30,24 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
     const cancelSeclectRef = useRef<HTMLDivElement>(null);
 
     const handleSelection = (item: any) => {
-        const index = selectedItems.findIndex(selection => selection.value === item.value);
-        let newSelectedItems= [];
-        if (index >=0){
-            newSelectedItems= selectedItems.splice(index, 1);
+        let newSelection;
+        if (item === 'cancel-all'){
+            newSelection = [];
         }
-        else{
-            newSelectedItems= [...selectedItems, item];
+        else {
+            const index = selectedItems.findIndex(selection => selection.value === item.value);
+            if (index >=0){
+                selectedItems.splice(index, 1);
+                newSelection = selectedItems;
+            }
+            else{
+                selectedItems.push(item);
+                newSelection = selectedItems;
+            }
         }
-        setSelectedItems(newSelectedItems);
-        props.onSelectionChange(newSelectedItems);
+        
+        setSelectedItems([...newSelection]);
+        props.onSelectionChange([...newSelection]);
     }
 
     const handleSelectBadgeCancel = (value: string) => {
@@ -74,6 +83,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
         return () => {document.removeEventListener('click', handleCLick, true)};
     }, [dropdown]);
 
+
     return (
         <div className='multiselect w-100'>
             <div className='mb-1' hidden={props.hideLabel}>
@@ -100,7 +110,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                                     <SelectBadge 
                                         label={item.label}
                                         value={item.value}
-                                        handleCancel={handleSelectBadgeCancel}
+                                        handleCancel={()=> {handleSelection(item)}}
                                     />
                                 </div>
                             ))
@@ -114,7 +124,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                             hideLabel={true}
                             rightBsIcon='x'
                             extraClasses='btn-as-light rounded-circle'
-                            handleClick={()=>{setSelectedItems([])}}
+                            handleClick={()=> {handleSelection('cancel-all')}}
                         />
                     </div>
                     <div className='py-auto ms-1'>
@@ -126,12 +136,14 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                     <div>
                         {props.data.map((catg, index)=> (
                             <div key={`category-${index}`} className='mt-1'>
-                                <LinkCard 
+                                <SelectCard 
                                     label={catg.label}
                                     showLabel={!!catg.showLabel}
                                     isLoading={false}
-                                    linkItems={catg.items}
+                                    items={catg.items}
                                     extraClasses='quote'
+                                    multiSelect={true}
+                                    selectedItems={selectedItems}
                                     handleClick={handleSelection}
                                 />
                             </div>

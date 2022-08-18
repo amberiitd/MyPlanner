@@ -18,14 +18,17 @@ interface TicketCardProps{
 }
 
 const TicketCard: FC<TicketCardProps> = (props) => {
-
+    const [hover, setHover] = useState(false);
     return (
-        <div className='p-2 shadow-sm ticket-card text-muted grabbable'>
+        <div className='p-2 shadow-sm ticket-card text-muted grabbable'
+            onMouseEnter={()=> {setHover(true)}}
+            onMouseLeave={()=> {setHover(false)}}
+        >
             <div className='d-flex flex-nowrap mb-1'>
                 <div className='h5'>
                     {props.ticketInfo.label}
                 </div>
-                <div className='ms-auto'>
+                <div className='ms-auto' hidden={!hover}>
                     <DropdownAction 
                         menuItems={props.menuItems}
                         bsIcon='three-dots'
