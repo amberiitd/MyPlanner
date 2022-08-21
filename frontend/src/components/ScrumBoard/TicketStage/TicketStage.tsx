@@ -6,7 +6,6 @@ import TicketCard from '../TicketCard/TicketCard';
 import './TicketStage.css';
 
 interface TicketStageProps{
-    tickets: any[];
     stage: string;
 }
 
@@ -75,16 +74,21 @@ const TicketStage: FC<TicketStageProps> = (props) => {
 
                 <div className='ms-auto' hidden={!hover}>
                     <DropdownAction 
-                        menuItems={[
+                        actionCategory={[
                             {
-                                label: 'Set column limit',
-                                value: 'column-limit'
-                            },
-                            {
-                                label: 'Delete',
-                                value: 'delete'
+                                label: 'Action',
+                                items: [
+                                    {
+                                        label: 'Set column limit',
+                                        value: 'column-limit'
+                                    },
+                                    {
+                                        label: 'Delete',
+                                        value: 'delete'
+                                    }
+                                ],
                             }
-                        ]} 
+                        ]}
                         bsIcon='three-dots'
                         handleItemClick={()=>{}}                    />
                 </div>

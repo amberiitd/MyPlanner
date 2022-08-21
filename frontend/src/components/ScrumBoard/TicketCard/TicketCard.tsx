@@ -30,7 +30,12 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                 </div>
                 <div className='ms-auto' hidden={!hover}>
                     <DropdownAction 
-                        menuItems={props.menuItems}
+                        actionCategory={[
+                            {
+                                label: 'Action',
+                                items: props.menuItems,
+                            }
+                        ]}
                         bsIcon='three-dots'
                         handleItemClick={(menuevent: any)=>{props.handleMenuClick(props.ticketInfo, menuevent)}}
                     />

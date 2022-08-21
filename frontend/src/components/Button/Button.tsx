@@ -14,7 +14,7 @@ interface ButtonProps {
 }
 
 const Button: FC<ButtonProps> = (props) => (
-  <div className={`d-flex flex-nowrap justify-content-center button rounded-1 ${props.extraClasses?? 'btn-as-thm px-3 py-1'} ${props.disabled? 'btn-as-muted': ''} `} onClick={() => {props.handleClick()}}>
+  <div className={`d-flex flex-nowrap button rounded-1 ${props.extraClasses?? 'btn-as-thm px-3 py-1'} ${props.disabled? 'btn-as-muted': ''}`} onClick={() => {props.handleClick()}}>
     <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>
     </div>

@@ -108,13 +108,11 @@ const ScrumBoard: FC<ScrumBoardProps> = (props) => {
             <div className='d-flex border w-100 h-100 p-5 '>
                 <div className='h-100'>
                     <TicketStage 
-                        tickets={ticketList.filter(item => item.stage === 'todo')}
                         stage='todo'
                     />
                 </div>
                 <div className='h-100 ms-2'>
                     <TicketStage 
-                        tickets={ticketList.filter(item => item.stage === 'dev')}
                         stage='dev'
                     />
                 </div>

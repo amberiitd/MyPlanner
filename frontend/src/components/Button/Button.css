@@ -17,6 +17,7 @@
 
 .button{
     height: fit-content;
+    justify-content: center; 
 }
 
 .button:hover{
@@ -54,4 +55,11 @@
     width: 2em;
     height: 2em;
     padding: 4px 3px;
+}
+
+.circle-2{
+    width: 2em;
+    height: 2em;
+    padding: 3px;
+    font-size: 70%;
 }

@@ -2,7 +2,7 @@ import { FC } from 'react';
 import './Badge.css';
 
 interface BadgeProps{
-    data: any;
+    data: string | number;
     extraClasses?: string;
 }
 

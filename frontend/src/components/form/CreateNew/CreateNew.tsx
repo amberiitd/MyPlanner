@@ -49,10 +49,15 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                     </div>
                     <div className='d-flex flex-nowrap ms-auto'>
                         <DropdownAction 
-                            menuItems={[
+                            actionCategory={[
                                 {
-                                    label: 'Show Fields',
-                                    value: 'fields'
+                                    label: 'Action',
+                                    items: [
+                                        {
+                                            label: 'Show Fields',
+                                            value: 'fields'
+                                        }
+                                    ]
                                 }
                             ]}
                             handleItemClick={()=> {}}

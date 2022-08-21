@@ -136,7 +136,12 @@ const Table: FC<TableProps> = (props) => {
                                         ):(
                                             <div className='action-dropdown'>
                                                 <DropdownAction 
-                                                    menuItems={props.actions?.items || []} 
+                                                    actionCategory={[
+                                                        {
+                                                            label: 'Action',
+                                                            items: props.actions?.items || []
+                                                        }
+                                                    ]}
                                                     bsIcon='three-dots'
                                                     dropdownClass='btn-as-bg p-1'
                                                     handleItemClick={(event: any)=> {props.actions?.handleAction(rowdata, event)}}

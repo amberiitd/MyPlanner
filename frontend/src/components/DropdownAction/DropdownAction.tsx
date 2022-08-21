@@ -4,7 +4,7 @@ import LinkCard from '../LinkCard/LinkCard';
 import './DropdownAction.css'
 
 interface DropdownActionProps{
-    menuItems: any[];
+    actionCategory: {label: string; items: any[]; showLabel?: boolean;}[];
     handleItemClick: (event: any) => void;
     bsIcon?: string;
     dropdownClass?: string;
@@ -41,14 +41,20 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
             </div>
             
 
-            <div className={`dropdown-menu ${showMenu? 'show': ''} shadow-sm`} style={{right: 0}}>
-                <LinkCard 
-                    label='Create New Menu'
-                    isLoading={false}
-                    linkItems={props.menuItems}
-                    handleClick={props.handleItemClick} 
-                    showLabel={false}                
-                />
+            <div className={`dropdown-menu bg-light ${showMenu? 'show': ''} shadow-sm`} style={{right: 0}}>
+                {
+                   props.actionCategory.map((cat, index) => (
+                    <div className='bg-white mt-1' key={`action-cat-${cat.label}`}>
+                        <LinkCard 
+                            label={cat.label}
+                            isLoading={false}
+                            linkItems={cat.items}
+                            handleClick={props.handleItemClick} 
+                            showLabel={cat.showLabel?? false}                
+                        />
+                    </div>
+                   ))
+                }
             </div>
         </div>
     )
