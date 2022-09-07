@@ -4,8 +4,8 @@ frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: python3.8
+  runtime: nodejs16.x
 
 functions:
   hello:
-    handler: handler.hello
+    handler: compiled/test.handler

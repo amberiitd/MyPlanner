@@ -1,3 +1,7 @@
 .sidebar{
     width: 20em !important;
 }
+
+.board-body{
+    height: calc(100% - 3em);
+}

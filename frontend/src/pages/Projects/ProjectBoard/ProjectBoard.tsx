@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import BreadCrumb from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
 import Backlog from './Backlog/Backlog';
@@ -10,6 +10,10 @@ interface ProjectBoardProps{
 }
 
 const ProjectBoard: FC<ProjectBoardProps> = (props) => {
+    const [boardView, setBoardView] = useState({
+        label: 'Backlog',
+        value: 'backlog'
+    })
 
     const breadCrumbLinks = {
         label: 'Projects',
@@ -46,19 +50,16 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                                     value: 'board'
                                 }
                             ]} 
-                            handleClick={()=>{}}
+                            handleClick={(item)=>{setBoardView(item)}}
                             collapsable={true}
                             showLabel={true}
                             itemClass='option-hover-thm'
                             itemType='option-quote-sm'
-                            selectedItem={{
-                                label: 'Backlog',
-                                value: 'backlog'
-                            }}
+                            selectedItem={boardView}
                         />
                     </div>
                 </div>
-                <div className='px-5 py-3 board-body w-100 border'>
+                <div className='px-5 py-3 board-body w-100 border h-100'>
                     <div>
                         <BreadCrumb 
                             itemTree={breadCrumbLinks}
@@ -66,10 +67,10 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                             handleClick={()=>{}}
                         />
                     </div>
-                    <div hidden={true}>
+                    <div hidden={boardView.value !== 'board'}>
                         <Sprint />
                     </div>
-                    <div hidden={false}>
+                    <div className='board-body' hidden={boardView.value !== 'backlog'}>
                         <Backlog />
                     </div>
                 </div>

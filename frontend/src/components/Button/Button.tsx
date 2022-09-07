@@ -18,7 +18,7 @@ const Button: FC<ButtonProps> = (props) => (
     <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>
     </div>
-    <div hidden={!!props.hideLabel}>{props.label}</div>
+    <div className='btn-label' hidden={!!props.hideLabel}>{props.label}</div>
     <div className='mx-1' hidden={!!props.hideIcon || !props.rightBsIcon}>
         <i className={`bi bi-${props.rightBsIcon}`}></i>
     </div>

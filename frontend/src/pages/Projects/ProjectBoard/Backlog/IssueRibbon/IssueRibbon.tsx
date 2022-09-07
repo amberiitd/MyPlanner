@@ -1,4 +1,5 @@
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
+import { useDrag } from 'react-dnd';
 import Badge from '../../../../../components/Badge/Badge';
 import DropdownAction from '../../../../../components/DropdownAction/DropdownAction';
 import NumberBadge from '../../../../../components/NumberBadge/NumberBadge';
@@ -22,13 +23,21 @@ interface IssueRibbonProps{
 
 const IssueRibbon: FC<IssueRibbonProps> = (props) => {
 
+    const [{isDragging, didDrop}, drag] = useDrag(()=>({
+        type: "issue",
+        item: {id: props.issue.id},
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+            didDrop: !!monitor.didDrop()
+        })
+    }))
     return (
-        <div className='d-flex flex-nowrap align-items-center border w-100 p-2 ribbon'>
+        <div ref={drag} className='d-flex flex-nowrap align-items-center border rounded bg-white w-100 p-2 ribbon' style={isDragging? {opacity: 0.5}: {}}>
             <div className='mx-1'>
                 <i className={`bi bi-${props.issue.type.leftBsIcon}`}></i>
             </div>
             <div className='mx-1'>
-                {props.issue.project.label}
+                {props.issue.project.label} id: {props.issue.id}
             </div>
             <div className='mx-1'>
                 {props.issue.label}

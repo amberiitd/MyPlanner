@@ -28,7 +28,7 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
         }
     }, [])
     return (
-        <div ref={compRef} className='border' >
+        <div ref={compRef} className='bg-inherit' >
             <div className=''  hidden={!active}>
                 <div className='d-flex flex-nowrap align-items-center'>
                     <div className='my-2 me-1 ms-2'>
