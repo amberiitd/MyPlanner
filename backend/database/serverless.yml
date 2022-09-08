@@ -1,0 +1,41 @@
+service: database
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+
+resources:
+  Resources:
+    mainTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        TableName: ${self:provider.stage}-mainTable
+  
+  Outputs:
+    DynamoDBTableName:
+      Value: !Ref mainTable
+      Export:
+        Name: ${self:provider.stage}-mainTable-name
+    DynamoDBTableARN:
+      Value: !GetAtt mainTable.Arn
+      Export:
+        Name: ${self:provider.stage}-mainTable-arn
+
+plugins:
