@@ -77,6 +77,7 @@ const TicketStage: FC<TicketStageProps> = (props) => {
                         actionCategory={[
                             {
                                 label: 'Action',
+                                value: 'action',
                                 items: [
                                     {
                                         label: 'Set column limit',

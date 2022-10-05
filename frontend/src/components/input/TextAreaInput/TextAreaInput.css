@@ -1,0 +1,7 @@
+textarea:focus-visible{
+    outline: none;
+}
+
+textarea{
+    height: 100px;
+}

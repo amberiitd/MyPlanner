@@ -23,3 +23,8 @@
     font-size: 80%;
 }
 
+.quote-static{
+    padding-left: 10px !important;
+    border-left: 2px solid coral;
+}
+

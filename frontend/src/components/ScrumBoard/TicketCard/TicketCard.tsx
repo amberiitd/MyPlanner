@@ -33,11 +33,12 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                         actionCategory={[
                             {
                                 label: 'Action',
+                                value: 'action',
                                 items: props.menuItems,
                             }
                         ]}
                         bsIcon='three-dots'
-                        handleItemClick={(menuevent: any)=>{props.handleMenuClick(props.ticketInfo, menuevent)}}
+                        handleItemClick={(menuevent: any)=>{props.handleMenuClick(props.ticketInfo, menuevent.item)}}
                     />
                 </div>
             </div>

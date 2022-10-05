@@ -13,16 +13,11 @@ interface TemplateInfoProps{
         learnMoreLabel: string; 
         learnMoreTo: string;
     }[];
+    handleCancel: ()=> void;
 }
 
 const TemplateInfo: FC<TemplateInfoProps> = (props) => {
-    const [showProjectModal, setShowProjectModal] = useState(projectCreateModalService.getShowModel());
-
-    useEffect(()=>{
-        projectCreateModalService.subscribe(()=>{
-            setShowProjectModal(projectCreateModalService.getShowModel());
-        })
-    }, [])
+    
     const infoLetLayout = (info: any, index=0) => {
         const layoutClass = 'row flex-nowrap py-4 border-bottom';
         const key =`${props.label}-info-layout-${index}`;
@@ -74,7 +69,7 @@ const TemplateInfo: FC<TemplateInfoProps> = (props) => {
                                 hideLabel={true}
                                 rightBsIcon='x-lg'
                                 extraClasses='btn-as-bg p-1'
-                                handleClick={()=> {}}                     
+                                handleClick={()=> {props.handleCancel()}}                     
                             />
                         </div>
                     </div>
@@ -85,7 +80,7 @@ const TemplateInfo: FC<TemplateInfoProps> = (props) => {
                             {props.descText}
                         </div>
                         {
-                            props.infoItem.map((item, index) => (
+                            (props.infoItem || []).map((item, index) => (
                                 infoLetLayout(item, index)
                             ))
                         }
@@ -96,25 +91,14 @@ const TemplateInfo: FC<TemplateInfoProps> = (props) => {
 
                 </div>
                 <div className='info-footer px-5 d-flex flex-nowrap align-items-center py-4'>
-                        <div className='ms-auto'>
+                        {/* <div className='ms-auto'>
                             <Button 
                                 label='Use template' 
-                                handleClick={()=> {}}                     
+                                handleClick={()=> {projectCreateModalService.setShowModel(true)}}                     
                             />
-                        </div>
+                        </div> */}
                 </div>
             </div>
-            <ProjectCreateModal 
-                showModal={showProjectModal}
-                handleCancel={()=>{projectCreateModalService.setShowModel(false)}}
-                selectedStepItems={[
-                    {
-                        stepLabel: 'Template',
-                        label: props.label,
-                        descText: 'Sprint toward your project goals with a board, backlog, and roadmap.'
-                    }
-                ]}
-            />
         </div>
     )
 }

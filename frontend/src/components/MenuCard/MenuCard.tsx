@@ -34,7 +34,7 @@ const MenuCard: FC<MenuCardProps> = (props) => {
             
             <div hidden={!showMenu}>
                 {props.menuItems.map((item, index) => (
-                    <div className='mb-1' key={`menu-card-item-${index}`} onClick={() => {props.handleClick(item)}}>
+                    <div className='mb-1' key={`menu-card-item-${index}`} onClick={() => {props.handleClick(item.value)}}>
                         <MenuOption 
                             {...item}
                             extraClasses={props.itemClass} 

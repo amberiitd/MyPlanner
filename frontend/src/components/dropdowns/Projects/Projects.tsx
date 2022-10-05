@@ -3,6 +3,7 @@ import LinkCard from '../../LinkCard/LinkCard';
 import ProjectModal from './ProjectModal/ProjectModal';
 import projectModalService from '../../../modal.service';
 import './Projects.css';
+import { useNavigate } from 'react-router-dom';
 
 
 interface ProjectsProps{
@@ -11,9 +12,14 @@ interface ProjectsProps{
 
 const Projects: FC<ProjectsProps> = () => {
     // const [showCreateModal, setShowCreateModal] = useState(defaultModalService.showModel);
+    const navigate = useNavigate();
+
     const handleClickOption = (item: any) => {
         if (item.value === 'create-new'){
             projectModalService.setShowModel(true);
+        }
+        if (item.value === 'view-all'){
+            navigate('/myp/projects')
         }
     }
     return (

@@ -6,3 +6,11 @@ input{
 .focus-thm{
     outline: 2px solid coral !important;
 }
+
+.text-thm{
+    color: coral;
+}
+
+.text-sm{
+    font-size: 'small' !important;
+}

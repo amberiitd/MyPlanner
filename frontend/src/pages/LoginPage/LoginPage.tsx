@@ -2,17 +2,21 @@ import React, { FC } from 'react';
 import './LoginPage.css';
 import LoginComponent from '../../components/login/LoginComponent/LoginComponent';
 import LinkGroup, { SimpleLink } from '../../components/LinkGroup/LinkGroup';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface LoginPageProps {}
 
 const LoginPage: FC<LoginPageProps> = (props: LoginPageProps) => {
+    const [searchParam, setSearchParam] = useSearchParams();
     const pageLinks: SimpleLink[] = [
         {
             label: 'Privacy Policy',
+            value: 'privacy-policy',
             to: "/myp/page-not-found"
         },
         {
             label: 'User Notice',
+            value: 'user-notice',
             to: "/myp/page-not-found"
         }
     ]
@@ -23,11 +27,11 @@ const LoginPage: FC<LoginPageProps> = (props: LoginPageProps) => {
                 <div className='h2 ms-3'>MyPlanner</div>
             </div>
             <div className='d-flex justify-content-center '>
-                <LoginComponent/>
+                <LoginComponent navigate={useNavigate()} searchParam={searchParam} setSearchParam={setSearchParam}/>
             </div>
             
             <div className='mt-4'>
-                <LinkGroup links={pageLinks}/>
+                <LinkGroup links={pageLinks} handleClick={()=>{}}/>
             </div>
         </div>
         

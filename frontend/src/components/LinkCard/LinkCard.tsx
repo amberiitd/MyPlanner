@@ -8,6 +8,7 @@ interface LinkCardProps{
     showLabel: boolean;
     isLoading: boolean;
     linkItems: any[];
+    selectedLink?: any;
     extraClasses?: string;
     emptyElement?: JSX.Element;
     handleClick: (event: any) => void;
@@ -22,7 +23,10 @@ const LinkCard: FC<LinkCardProps> = (props) => {
             {
                 props.linkItems.map((item, index) => (
                     <div key ={`custom-link-${index}`} onClick={() => {props.handleClick(item)}}>
-                        <CustomOption {...item} extraClasses={props.extraClasses}/>
+                        <CustomOption {...item} 
+                            extraClasses={props.extraClasses + (props.selectedLink && props.selectedLink.value === item.value? ' quote-static': '')
+                            }
+                        />
                     </div>
                 ))
             }

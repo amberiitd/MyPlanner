@@ -52,6 +52,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                             actionCategory={[
                                 {
                                     label: 'Action',
+                                    value: 'action',
                                     items: [
                                         {
                                             label: 'Show Fields',
@@ -95,7 +96,7 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                     <div className='d-flex flex-nowrap'>
                         <Button 
                             label='Close'
-                            extraClasses='btn-as-link'
+                            extraClasses='btn-as-link px-3 py-1'
                             handleClick={()=>{ setShowModal(false) }}
                         />
                         <Button 

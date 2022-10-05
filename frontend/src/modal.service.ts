@@ -3,6 +3,7 @@ import { divide } from "lodash";
 class ModalService{
 
     private showModel: boolean = false;
+    private props: any = {};
     private subscription: {func: ()=> void;}[] = [];
     constructor(){
 
@@ -19,7 +20,15 @@ class ModalService{
         })
     }
 
-    public getShowModel(){
+    public getProps(){
+        return this.props;
+    }
+
+    public setProps(props: any){
+        this.props = props;
+    }
+
+    public getShowModal(){
         return this.showModel;
     }
 }
@@ -28,3 +37,5 @@ const projectModalService = new ModalService();
 export default projectModalService;
 
 export const projectCreateModalService = new ModalService();
+
+export const sprintModalService = new ModalService();

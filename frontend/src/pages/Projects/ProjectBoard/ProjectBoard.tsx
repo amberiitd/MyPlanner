@@ -1,6 +1,11 @@
-import { FC, useState } from 'react';
-import BreadCrumb from '../../../components/BreadCrumb/BreadCrumb';
+import { FC, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { RootState } from '../../../app/store';
+import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
+import PageNotFound from '../../../components/PageNotFound/PageNotFound';
+import { EMPTY_PROJECT } from '../../../model/types';
 import Backlog from './Backlog/Backlog';
 import './ProjectBoard.css';
 import Sprint from './Sprint/Sprint';
@@ -10,28 +15,48 @@ interface ProjectBoardProps{
 }
 
 const ProjectBoard: FC<ProjectBoardProps> = (props) => {
-    const [boardView, setBoardView] = useState({
-        label: 'Backlog',
-        value: 'backlog'
-    })
+    const { projectKey, view } = useParams();
+    const navigate = useNavigate();
+    const projects = useSelector((state: RootState) => state.projects.values)
 
-    const breadCrumbLinks = {
+    const viewItems: BreadCrumbItem[] = [
+        {
+            label: 'Backlog',
+            value: 'backlog',
+            children: []
+        },
+        {
+            label: 'Board',
+            value: 'board',
+            children: []
+        }
+    ];
+
+    // since projectBoard is a route component, you can keep selected project as non-state const.
+    const selectedProject = projects.find(p => p.key === projectKey) || EMPTY_PROJECT;
+    const breadCrumbLinks: BreadCrumbItem = {
         label: 'Projects',
         value: 'projects',
         children: [
             {
-                label: 'Test Project 1',
-                value: 'prohect-1',
-                children: [
-                    {
-                        label: 'Board',
-                        value: 'board',
-                        children: []
-                    }
-                ]
+                label: selectedProject.name,
+                value: selectedProject.key,
+                children: viewItems,
+                navigateTo: `/myp/projects/${projectKey}/board`
             }
-        ]
+        ],
+        navigateTo: '/myp/projects'
     };
+    const notFoundCrumb: BreadCrumbItem = {
+        label: 'Page Not Found', 
+        value: 'page-not-found', 
+        children: []
+    }; 
+    const [boardView, setBoardView] = useState<BreadCrumbItem>(notFoundCrumb)
+
+    useEffect(()=>{
+        setBoardView(viewItems.find(item => item.value === view) || notFoundCrumb)
+    }, [view]);
 
     return (
         <div className='h-100'>
@@ -40,17 +65,10 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                     <div>
                         <MenuCard 
                             label='PLANNING'
-                            menuItems={[
-                                {
-                                    label: 'Backlog',
-                                    value: 'backlog'
-                                },
-                                {
-                                    label: 'Board',
-                                    value: 'board'
-                                }
-                            ]} 
-                            handleClick={(item)=>{setBoardView(item)}}
+                            menuItems={viewItems} 
+                            handleClick={(value)=>{
+                                navigate(`/myp/projects/${projectKey}/${value}`);
+                            }}
                             collapsable={true}
                             showLabel={true}
                             itemClass='option-hover-thm'
@@ -63,16 +81,19 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                     <div>
                         <BreadCrumb 
                             itemTree={breadCrumbLinks}
-                            selectedItem={breadCrumbLinks.children[0].children[0]}
-                            handleClick={()=>{}}
+                            selectedItem={boardView}
+                            handleClick={(item: BreadCrumbItem)=>{ item.navigateTo? navigate(item.navigateTo): (()=>{})()}}
                         />
                     </div>
-                    <div hidden={boardView.value !== 'board'}>
-                        <Sprint />
+                    <div className='board-body'>
+                        {
+                            boardView.value === 'board'? <Sprint project={selectedProject}/> 
+                            : boardView.value === 'backlog'? <Backlog project={selectedProject}/>
+                            : <PageNotFound />
+                        } 
                     </div>
-                    <div className='board-body' hidden={boardView.value !== 'backlog'}>
-                        <Backlog />
-                    </div>
+
+
                 </div>
             </div>
         </div>

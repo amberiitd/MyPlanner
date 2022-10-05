@@ -10,13 +10,13 @@ interface LoginButtonProps {
     bsIcon: string;
     extraClasses?: string;
     extraProps?: any;
-    configure: ()=> void;
+    configure?: ()=> void;
 }
     
 const LoginButton: FC<LoginButtonProps> = (props) => {
     
     useEffect(()=> {
-        props.configure();
+        (props.configure || (() => {}))();
     }, []);
 
     return (

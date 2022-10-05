@@ -4,7 +4,7 @@ import './TemplateDescription.css';
 
 interface TemplateDescriptionProps{
     label: string;
-    descText: string;
+    descText?: string;
 }
 const TemplateDescription: FC<TemplateDescriptionProps> = (props) => {
 

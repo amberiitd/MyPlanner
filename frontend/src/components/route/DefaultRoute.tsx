@@ -1,5 +1,4 @@
-import React, { FC } from 'react';
-import { Route, Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 interface SimpleNavigator {
     validate: () => boolean;
@@ -7,11 +6,10 @@ interface SimpleNavigator {
 }
 const DefaultRoute = (props: { element: JSX.Element }) => {
     const location = useLocation();
-    const currentPath = location.pathname;
     const navigation: {
         [key: string]: SimpleNavigator;
     } = {
-        '/myp/login': {
+        '/login': {
             validate: () => {
                 return true;
             },
@@ -26,7 +24,7 @@ const DefaultRoute = (props: { element: JSX.Element }) => {
         defaultPath: '/myp/home'
     };
 
-    const pathNav = navigation[currentPath] || defaultNavigation;
+    const pathNav = navigation[location.pathname] || defaultNavigation;
     return pathNav.validate()
         ? props.element
         : <Navigate to={pathNav.defaultPath} />

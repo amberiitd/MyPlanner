@@ -1,22 +1,48 @@
-import { FC } from 'react';
+import { max, uniqueId } from 'lodash';
+import { FC, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { addSprint } from '../../../../../../app/slices/sprintSlice';
+import { RootState } from '../../../../../../app/store';
 import Badge from '../../../../../../components/Badge/Badge';
 import Button from '../../../../../../components/Button/Button';
+import { EMPTY_PROJECT, EMPTY_SPRINT, Project } from '../../../../../../model/types';
 import './BacklogHeaderRibbon.css';
 
 interface BacklogHeaderRibbonProps{
     label: string;
-    metric: {storyPoints: { stageLabel: string; value: number; color?: string;}[];};
+    metric: {storyPoints: { stageLabel: string; value: number; color?: string;}[]; issueCount: number};
     collapse: boolean;
     handleClick: () => void;
+    project: Project;
 }
 
 const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
+    const dispatch = useDispatch();
+    const sprints = useSelector((state: RootState) => state.sprints);
+    const createSprint = useCallback(() => {
+        const index = sprints.values
+            .filter(sprint => sprint.projectKey === props.project.key)
+            .reduce((pre: number, cur)=> {
+                return max([pre, cur.index]) || 0
+            }, 0) + 1;
+        const newSprint = {
+            ...EMPTY_SPRINT,
+            id: uniqueId(),
+            index,
+            name: `Sprint ${index}`,
+            projectKey: props.project.key
+        }
+
+        dispatch(addSprint(newSprint));
+    }, [sprints, props]);
     return (
         <div className='d-flex flex-nowrap align-items-center w-100 px-1'>
             <div className='w-100 py-1' onClick={props.handleClick}>
                 <i className='bi bi-chevron-right' hidden={!props.collapse}></i>
                 <i className='bi bi-chevron-down' hidden={props.collapse}></i>
                 <span className='mx-1'>{props.label}</span>
+                <span className='mx-1 text-muted'>{`(${props.metric.issueCount} issues)`}</span>
             </div>
             <div className='d-flex flex-nowrap align-items-center ms-auto'>
                 {
@@ -33,7 +59,7 @@ const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
                 <div className='mx-1'>
                     <Button
                         label='Create sprint'
-                        handleClick={()=>{}}
+                        handleClick={createSprint}
                     />
                 </div>
             </div>

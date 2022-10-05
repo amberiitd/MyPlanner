@@ -1,24 +1,97 @@
-import { FC, useState } from 'react';
+import { isEmpty, uniqueId } from 'lodash';
+import { FC, useCallback, useContext, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import projectModalService, { projectCreateModalService } from '../../../../modal.service';
+import { ModalViewType } from '../../../BreadCrumb/BreadCrumb';
 import Button from '../../../Button/Button';
 import TextInput from '../../../input/TextInput/TextInput';
+import { ProjectContext } from '../ProjectModal/ProjectModal';
 import './ProjectCreateModal.css';
 import StepCard from './StepCard/StepCard';
+import { useDispatch } from 'react-redux';
+import { addProject } from '../../../../app/slices/projectSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../app/store';
+import { API, Auth } from 'aws-amplify';
+import { CrudPayload, Project } from '../../../../model/types';
+import { useNavigate } from 'react-router-dom';
+
+export interface StepItem{
+    label: 'Template' | 'Template type',
+    value: 'template' | 'templateType'
+    selectedItem: {
+        label: string;
+        value: string;
+    },
+    descText: string,
+    viewType: ModalViewType
+}
 
 interface ProjectCreateModalProps{
     showModal: boolean;
     handleCancel: () => void;
-    selectedStepItems: any[];
+    selectedStepItems: StepItem[];
 }
 
 const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
     const [projectName, setProjectName] = useState('');
     const [projectKey, setProjectKey] = useState('');
+    const {setCurrentViewType} = useContext(ProjectContext) as any;
     const cancelProcess =() => {
         props.handleCancel();
         projectModalService.setShowModel(false);
     }
+    const projects  = useSelector((state: RootState) => state.projects.values);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const createProject = useCallback(() => {
+        const index = projects.findIndex(p => p.key === projectKey);
+        if (index >= 0 || isEmpty(projectKey) || isEmpty(projectName)){
+            return;
+        }
+        const newProject: Project = props.selectedStepItems.reduce((pre: any, cur) => {
+            pre[cur.value] = cur.selectedItem.value;
+            return pre;
+        }, {
+            key: projectKey, 
+            name: projectName,
+            id: uniqueId('project'),
+            managementType: 'team-managed'
+        });
+
+        const payload: CrudPayload = {
+            itemType: 'project',
+            action: 'CREATE',
+            data: newProject
+        }
+        Auth.currentSession()
+        .then(res => {
+            console.log(res)
+            API.post('base_url', '/projects', {
+                body: payload,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': res.getIdToken().getJwtToken()
+                }
+            })
+            .then(res => {
+                const body = JSON.parse(res.body);
+                if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
+                    dispatch(addProject(newProject))
+                    cancelProcess();
+                    navigate(`/myp/projects/${projectKey}/board`)
+                }else{
+                    console.log(res)
+                }
+            })
+            .catch(err => console.log(err))
+            ;
+        })
+        
+
+    }, [projectName, projectKey, props.selectedStepItems]);
+    
     return (
         <Modal
                 show={props.showModal}
@@ -39,7 +112,12 @@ const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
                                 />
                             </div>
                         </div>
-                        <div className='form-container1'>
+                        <form className='form-container1'
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                createProject();
+                            }}
+                        >
                             <div className='px-3 d-flex justify-content-center align-items-center h-100'>
                                 <div>
                                     <div className='form-body d-flex flex-nowrap justify-content-between'>
@@ -72,37 +150,43 @@ const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
                                         <div className='form-col'>
                                             <StepCard 
                                                 label='Create Project'
-                                                stepItems={props.selectedStepItems.map(item => ({
-                                                    label: item.stepLabel,
-                                                    selectedItem: {
+                                                stepItems={props.selectedStepItems
+                                                    .filter(item => !isEmpty(item))
+                                                    .map(item => ({
                                                         label: item.label,
-                                                        descText: item.descText
-                                                    },
-                                                    handleRefClick: ()=> {}
-                                                }))}                                
+                                                        selectedItem: {
+                                                            label: item.selectedItem.label,
+                                                            descText: item.descText
+                                                        },
+                                                        handleRefClick: ()=> { 
+                                                            props.handleCancel();
+                                                            setCurrentViewType({value: item.viewType})
+                                                        }
+                                                    }))
+                                                }                                
                                             />
                                         </div>
                                     </div>
                                     <hr />
                                     <div className='form-footer py-3 d-flex flex-nowrap'>
-                                                <div className='ms-auto me-2'>
-                                                    <Button 
-                                                        label='Cancel'
-                                                        extraClasses='btn-as-light px-3 py-1'
-                                                        handleClick={cancelProcess}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <Button 
-                                                        label='Create'
-                                                        handleClick={()=>{}}
-                                                    />
-                                                </div>
+                                        <div className='ms-auto me-2'>
+                                            <Button 
+                                                label='Cancel'
+                                                extraClasses='btn-as-light px-3 py-1'
+                                                handleClick={cancelProcess}
+                                            />
+                                        </div>
+                                        <button type ='submit'>
+                                            <Button 
+                                                label='Create'
+                                                handleClick={()=>{}}
+                                            />
+                                        </button>
                                     </div>
                                 </div>
                                 
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </Modal.Body>
         </Modal>

@@ -1,19 +1,34 @@
-import { FC, useState } from 'react';
+import { uniqueId } from 'lodash';
+import { FC, useCallback, useEffect, useState } from 'react';
+import { Modal } from 'react-bootstrap';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { updateIssue } from '../../../../app/slices/issueSlice';
+import { RootState } from '../../../../app/store';
 import Button from '../../../../components/Button/Button';
 import DropdownAction from '../../../../components/DropdownAction/DropdownAction';
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
+import { sprintModalService } from '../../../../modal.service';
+import { Project, Sprint } from '../../../../model/types';
 import './Backlog.css';
 import BacklogCard from './BacklogCard/BacklogCard';
+import { Issue } from './IssueRibbon/IssueRibbon';
 import SprintCard from './SprintCard/SprintCard';
+import SprintModal from './SprintModal/SprintModal';
 
 interface BacklogProps{
-
+    project: Project;
 }
 
 const Backlog: FC<BacklogProps>  = (props) => {
+    const sprints = useSelector((state: RootState) => state.sprints);
+    const issues = useSelector((state: RootState) => state.issues);
+    const [projectIssues, setProjectIssues] = useState<Issue[]>([]); 
+    const [projectSprints, setProjectSprints] = useState<Sprint[]>([]);
+    const dispatch = useDispatch();
     const members = [
         {
             name: 'Nazish Amber'
@@ -23,77 +38,17 @@ const Backlog: FC<BacklogProps>  = (props) => {
         }
     ];
 
-    const [issueList, setIssueList]  = useState([
-        {
-            id: "1",
-            type: {
-                leftBsIcon: 'bookmark'
-            },
-            label: 'Test Issue 1',
-            project: {
-                label: 'Project 1'
-            },
-            storyPoint: 2,
-            stage: {
-                label: 'to-do'
-            },
-            sprintId: "1"
-        },
-        {
-            id: "2",
-            type: {
-                leftBsIcon: 'bookmark'
-            },
-            label: 'Test Issue 2',
-            project: {
-                label: 'Project 1'
-            },
-            storyPoint: 2,
-            stage: {
-                label: 'to-do'
-            },
-            sprintId: "2"
-        },
-        {
-            id: "3",
-            type: {
-                leftBsIcon: 'bookmark'
-            },
-            label: 'Test Issue 3',
-            project: {
-                label: 'Project 1'
-            },
-            storyPoint: 2,
-            stage: {
-                label: 'to-do'
-            },
-            sprintId: "3"
-        },
-        {
-            id: "4",
-            type: {
-                leftBsIcon: 'bookmark'
-            },
-            label: 'Test Issue 4',
-            project: {
-                label: 'Project 1'
-            },
-            storyPoint: 2,
-            stage: {
-                label: 'to-do'
-            },
-            sprintId: "0"
-        }
-
-    ])
-
-    const handleDrop = (event: {itemId: string; sprintId: string})=>{
-        const index = issueList.findIndex(item => item.id === event.itemId);
+    const handleDrop = useCallback((event: {itemId: string; cardId: string})=>{
+        const index = projectIssues.findIndex(item => item.id === event.itemId);
         if (index >= 0){
-            issueList[index].sprintId = event.sprintId;
-            setIssueList([...issueList]);
+            dispatch(updateIssue({id: event.itemId, data: {sprintId: event.cardId}}))
         }
-    }
+    }, [projectIssues])
+
+    useEffect(() => {
+        setProjectIssues(issues.values.filter(issue => issue.projectKey === props.project.key));
+        setProjectSprints(sprints.values.filter(sprint => sprint.projectKey === props.project.key));
+    }, [issues, sprints, props])
 
     return (
         <DndProvider backend={HTML5Backend}>
@@ -107,6 +62,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                             actionCategory={[
                                 {
                                     label: 'Action',
+                                    value: 'action',
                                     items: [
                                         
                                     ]
@@ -131,7 +87,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     <div className='d-flex flex-nowrap'>
                         {
                             members.map((item, index)=>(
-                                <div className='mx-1'>
+                                <div key={uniqueId()} className='mx-1'>
                                     <Button
                                         label={item.name.split(' ').map(w => w[0]).join('')}
                                         extraClasses='rounded-circle circle-1 btn-as-thm'
@@ -176,35 +132,29 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     </div>
                 </div>
                 <div className='overflow-auto backlog-body' >
-                    <div className='my-3'>
-                        <SprintCard 
-                            issueList={issueList.filter(item => item.sprintId === '1')}
-                            sprintId='1'
-                            handleDrop={handleDrop}
-                        />
-                    </div>
-                    <div className='my-3'>
-                        <SprintCard 
-                            issueList={issueList.filter(item => item.sprintId === '2')}
-                            sprintId='2'
-                            handleDrop={handleDrop}
-                        />
-                    </div>
-                    <div className='my-3'>
-                        <SprintCard 
-                            issueList={issueList.filter(item => item.sprintId === '3')}
-                            sprintId='3'
-                            handleDrop={handleDrop}
-                        />
-                    </div>
+                    {
+                        projectSprints.map(sprint => (
+                            <div key={uniqueId()} className='my-3'>
+                                <SprintCard 
+                                    issueList={projectIssues.filter(issue => issue.sprintId === sprint.id)}
+                                    sprintId={sprint.id}
+                                    sprintIndex={sprint.index}
+                                    sprintStatus={sprint.status}
+                                    handleDrop={handleDrop}
+                                    project={props.project}
+                                />
+                            </div>
+                        ))
+                    }
                     <div className='my-3'>
                         <BacklogCard 
-                            issueList={issueList.filter(item => item.sprintId === '0')}
+                            issueList={issues.values.filter(item => item.sprintId === 'backlog')}
                             handleDrop={handleDrop}
+                            project={props.project}
                         />
                     </div>
                 </div>
-                
+                <SprintModal />
             </div>
         </DndProvider>
     )

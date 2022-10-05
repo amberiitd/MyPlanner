@@ -19,7 +19,7 @@ const TextInput: FC<TextInputProps> = (props) => {
   return (
     <div className="" data-testid="TextInput">
       <div className='' hidden={!!props.hideLabel}>
-        {props.label}{props.isRequired? '*': ''}
+        {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
       </div>
       <div className={`d-flex flex-nowrap form-control rounded-1 ${active ? 'focus-thm': 'bg-light'}`}>
         <input 

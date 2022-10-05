@@ -5,10 +5,11 @@ import DropdownAction from '../../../../components/DropdownAction/DropdownAction
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
 import ScrumBoard from '../../../../components/ScrumBoard/ScrumBoard';
+import { Project } from '../../../../model/types';
 import './Sprint.css';
 
 interface SprintProps{
-
+    project: Project;
 }
 
 const Sprint: FC<SprintProps> = (props) => {
@@ -24,7 +25,7 @@ const Sprint: FC<SprintProps> = (props) => {
         <div>
             <div className='d-flex flex-nowrap align-items-center mb-3'>
                 <div className='h3'>
-                    {'Proj1 Sprint 1'}
+                    {`${props.project.name} ${'Sprint 1'}`}
                 </div>
                 <div className='ms-auto me-2'>
                     <BinaryAction 
@@ -47,6 +48,7 @@ const Sprint: FC<SprintProps> = (props) => {
                         actionCategory={[
                             {
                                 label: 'Action',
+                                value: 'action',
                                 items: [
                                     {
                                         label: 'Edit Sprint',
@@ -78,7 +80,7 @@ const Sprint: FC<SprintProps> = (props) => {
                 <div className='d-flex flex-nowrap'>
                     {
                         members.map((item, index)=>(
-                            <div className='mx-1'>
+                            <div key={`members-${index}`} className='mx-1'>
                                 <Button
                                     label={item.name.split(' ').map(w => w[0]).join('')}
                                     extraClasses='rounded-circle circle-1 btn-as-thm'

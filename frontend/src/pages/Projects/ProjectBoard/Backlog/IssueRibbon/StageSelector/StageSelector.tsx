@@ -1,18 +1,22 @@
 import { FC, useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { updateIssue } from '../../../../../../app/slices/issueSlice';
 import Button from '../../../../../../components/Button/Button';
 import LinkCard from '../../../../../../components/LinkCard/LinkCard';
+import { Stage, stages } from './stages';
 import './StageSelector.css';
 
 interface StageSelectorProps{
-
+    selectedStage: Stage,
+    issueId: string;
 }
 
 const StageSelector: FC<StageSelectorProps> = (props) => {
-
-    const [selectedStage, setSelectedStage] = useState<any>();
     const [dropdown, setDropdown] = useState(false);
     const compRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const dispatch = useDispatch();
 
     useEffect(()=> {
         const handleWindowClick = (e: any) => {
@@ -35,9 +39,9 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
         <div ref={compRef} className={`dropdown`}>
             <div>
                 <Button
-                    label={selectedStage?.label}
+                    label={props.selectedStage.label}
                     rightBsIcon={dropdown? 'chevron-up': 'chevron-down'}
-                    extraClasses='px-1 btn-as-light rounded'
+                    extraClasses='ps-2 btn-as-light rounded'
                     handleClick={()=>{setDropdown(!dropdown)}}
                 />
             </div>
@@ -47,22 +51,12 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                         label='Issue Type'
                         showLabel={false}
                         isLoading={false}
-                        linkItems={[
-                            {
-                                label: 'IN PROGRESS',
-                                value: 'in-progress',
-                            },
-                            {
-                                label: 'DONE',
-                                value: 'done',
-                            },
-                            {
-                                label: 'TO DO',
-                                value: 'to-do',
-                            }
-                        ]}
+                        linkItems={stages}
                         extraClasses='quote'
-                        handleClick={(item) => { setSelectedStage(item); setDropdown(false); }}
+                        handleClick={(item: Stage) => { 
+                            dispatch(updateIssue({id: props.issueId, data: {stage: item.value}})); 
+                            setDropdown(false); 
+                        }}
                     />
                 </div>
                 <div className='bg-white mt-1'>
@@ -76,7 +70,6 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                                 value: 'view-workflow'
                             }
                         ]}
-                        extraClasses='quote'
                         handleClick={()=> {}}
                     />
                 </div>

@@ -1,9 +1,12 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import Button from '../../../../../../components/Button/Button';
 import LinkCard from '../../../../../../components/LinkCard/LinkCard';
+import { issueTypes } from './issueTypes';
 import './IssueTypeSelector.css';
 
 interface IssueTypeSelectorProps{
+    selectedIssueTypeValue?: 'story' | 'bug' | 'task';
+    handleSelection: (value: string) => void;
 }
 
 const IssueTypeSelector: FC<IssueTypeSelectorProps> = (props) => {
@@ -29,6 +32,13 @@ const IssueTypeSelector: FC<IssueTypeSelectorProps> = (props) => {
         }
     }, [])
 
+
+    useEffect(() => {
+        if (props.selectedIssueTypeValue){
+            setSelectedIssue(issueTypes.find(item => item.value === props.selectedIssueTypeValue));
+        }
+    }, [props.selectedIssueTypeValue])
+
     return (
         <div ref={compRef} className={`dropdown`}>
             <div>
@@ -47,20 +57,9 @@ const IssueTypeSelector: FC<IssueTypeSelectorProps> = (props) => {
                         label='Issue Type'
                         showLabel={false}
                         isLoading={false}
-                        linkItems={[
-                            {
-                                label: 'Story',
-                                value: 'story',
-                                leftBsIcon: 'bookmark'
-                            },
-                            {
-                                label: 'Task',
-                                value: 'task',
-                                leftBsIcon: 'file-check'
-                            }
-                        ]}
+                        linkItems={issueTypes.filter(item => item.value !== (selectedIssue?.value || item.value))}
                         extraClasses='quote'
-                        handleClick={(item) => { setSelectedIssue(item); setDropdown(false); }}
+                        handleClick={(item) => { setSelectedIssue(item); setDropdown(false); props.handleSelection(item.value)}}
                     />
                 </div>
                 <div className='bg-white mt-1'>
@@ -74,7 +73,6 @@ const IssueTypeSelector: FC<IssueTypeSelectorProps> = (props) => {
                                 value: 'manage-issue-types'
                             }
                         ]}
-                        extraClasses='quote'
                         handleClick={()=> {}}
                     />
                 </div>

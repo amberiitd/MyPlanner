@@ -1,21 +1,31 @@
 import _, { isEmpty } from 'lodash';
-import { FC, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
+import { ProjectContext } from '../dropdowns/Projects/ProjectModal/ProjectModal';
 import './BreadCrumb.css';
 
-interface BreadCrumbItem{
+
+export type ModalViewType = 'template-list' | 'template-info';
+export interface BreadCrumbItem{
     label: string;
     value: string;
     children: BreadCrumbItem[];
+    viewType?: ModalViewType;
+    caption?: string;
+    leftBsIcon?: string;
+    info?: any;
+    descText?: string;
+    navigateTo?: string;
 }
 
 interface BreadCrumbProps{
     itemTree: BreadCrumbItem;
     handleClick: (event: any) => void;
-    selectedItem: BreadCrumbItem;
+    selectedItem?: BreadCrumbItem;
 }
 
 const BreadCrumb: FC<BreadCrumbProps> = (props) => {
     const [path, setPath] = useState<BreadCrumbItem[]>([]);
+    const context: any = useContext(ProjectContext);
     const getPathHelper: (itemNode: BreadCrumbItem, lastItem: BreadCrumbItem, path: BreadCrumbItem[]) => {path: BreadCrumbItem[], found: boolean} = (itemNode, lastItem, path) => {
         if (lastItem.value === itemNode.value){
             return {path, found: true};
@@ -36,9 +46,18 @@ const BreadCrumb: FC<BreadCrumbProps> = (props) => {
     }
 
     useEffect(()=>{
-        const {path, found} = getPathHelper(props.itemTree, props.selectedItem, []);
-        setPath(path);
+        if (props.selectedItem){
+            const {path, found} = getPathHelper(props.itemTree, props.selectedItem, []);
+            setPath(path);
+        }
     },[props])
+
+    useEffect(()=>{
+        const index = path.findIndex((item) => item.viewType === context.viewType.value);
+        if (index >= 0){
+            props.handleClick(path[index])
+        }
+    }, [context])
     
     return (
         <div className='d-flex flex-nowrap py-3 text-grey'>

@@ -1,13 +1,15 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
+import { Project } from '../../../../../model/types';
 import IssueCreator from '../IssueCreator/IssueCreator';
-import IssueRibbon from '../IssueRibbon/IssueRibbon';
+import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
 import './BacklogCard.css';
 import BacklogHeaderRibbon from './BacklogHeaderRibbon/BacklogHeaderRibbon';
 
 interface BacklogCardProps{
-    issueList: any[];
+    issueList: Issue[];
     handleDrop: (event: any) => void;
+    project: Project;
 }
 
 const BacklogCard: FC<BacklogCardProps> = (props) => {
@@ -15,44 +17,78 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
         drop: (item: any) => {
-            props.handleDrop({itemId: item.id, sprintId: '0'})
+            props.handleDrop({itemId: item.id, cardId: 'backlog'})
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver()
         })
-    }))
+    }), [props.handleDrop])
+
+    const [storyPoints, setStoryPoints] = useState<{
+        notStarted: number;
+        inProgress: number;
+        done: number;
+    }>({
+        notStarted: 0,
+        inProgress: 0,
+        done: 0
+    });
+
+    useEffect(()=>{
+        let notStarted = 0, inProgress =0, done =0; 
+        props.issueList.forEach(issue => {
+            switch(issue.stage){
+                case 'not-started':
+                    notStarted+= (issue.storyPoint || 0);
+                    break;
+                case 'in-progress':
+                    inProgress+= (issue.storyPoint || 0);
+                    break;
+                case 'done':
+                    done+= (issue.storyPoint || 0);
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        setStoryPoints({notStarted, inProgress, done})
+    }, [props.issueList])
+
     return (
         <div ref={drop} className='p-2 rounded-2 border'>
             <div>
                 <BacklogHeaderRibbon
-                    label={'Backlog'}
+                    label={`Backlog`}
                     metric={{
                         storyPoints: [
                             {
                                 stageLabel: 'Not started',
-                                value: 0,
+                                value: storyPoints.notStarted,
                                 color: 'light'
                             },
                             {
                                 stageLabel: 'In progress',
-                                value: 2,
+                                value: storyPoints.inProgress,
                                 color: 'thm'
                             },
                             {
                                 stageLabel: 'Done',
-                                value: 3,
+                                value: storyPoints.done,
                                 color: 'green'
                             }
-                        ]
+                        ],
+                        issueCount: props.issueList.length
                     }}
                     collapse={collapse}
                     handleClick={()=>{setCollapse(!collapse)}}
+                    project={props.project}
                 />
             </div>
             <div className='mt-2' hidden={collapse}>
                 {
                     props.issueList.map((issue, index)=> (
-                        <div className='mb-1' key={issue.id}>
+                        <div className='mb-1' key={`issue-${index}`}>
                             <IssueRibbon 
                                 issue={issue}    
                             />
@@ -63,7 +99,9 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
                     Your backlog is empty
                 </div>
                 <div className='mt-1'>
-                    <IssueCreator />
+                    <IssueCreator 
+                        project={props.project}
+                    />
                 </div>
             </div>
         </div>

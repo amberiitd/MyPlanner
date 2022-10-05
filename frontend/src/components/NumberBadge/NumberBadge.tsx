@@ -3,13 +3,13 @@ import Button from '../Button/Button';
 import './NumberBadge.css';
 
 interface NumberBadgeProps{
-    data: string | number;
+    data: string | number | undefined;
     extraClasses?: string;
     onValueChange: (value: number) => void;
 }
 
 const NumberBadge: FC<NumberBadgeProps> = (props) => {
-    const [value, setValue] = useState<number>(parseFloat(props.data.toString()));
+    const [value, setValue] = useState<number | undefined>(props.data? parseFloat(props.data.toString()): undefined);
     const [active, setActive] = useState(false);
     const handleSave = () => {
         if (value && props.data !== value){
@@ -38,7 +38,7 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
     return (
         <div ref={compRef} className=''>
             <div className={`px-2 rounded-pill ${props.extraClasses} cursor-pointer`} onClick={()=> {setActive(true)}} hidden={active}>
-                {value}
+                {value || '-'}
             </div>
             <div className='position-relative' hidden={!active}>
                 <div>
@@ -61,7 +61,9 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
                             hideLabel={true}
                             leftBsIcon='x-lg'
                             extraClasses='ps-2 btn-as-light'
-                            handleClick={()=>{setActive(false)}}
+                            handleClick={()=>{
+                                setValue(props.data? parseFloat(props.data.toString()): undefined); setActive(false)
+                            }}
                         />
                     </div>
                 </div>

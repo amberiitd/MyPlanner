@@ -1,11 +1,12 @@
 import { FC, useEffect, useRef, useState } from 'react'
+import { SimpleAction } from '../../model/types';
 import Button from '../Button/Button'
 import LinkCard from '../LinkCard/LinkCard';
 import './DropdownAction.css'
 
 interface DropdownActionProps{
-    actionCategory: {label: string; items: any[]; showLabel?: boolean;}[];
-    handleItemClick: (event: any) => void;
+    actionCategory: {label: string; value: string; items: SimpleAction[]; showLabel?: boolean;}[];
+    handleItemClick: (event: {category: string; item: SimpleAction}) => void;
     bsIcon?: string;
     dropdownClass?: string;
 }
@@ -49,7 +50,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
                             label={cat.label}
                             isLoading={false}
                             linkItems={cat.items}
-                            handleClick={props.handleItemClick} 
+                            handleClick={(item: any) => {props.handleItemClick({category: cat.value, item})}} 
                             showLabel={cat.showLabel?? false}                
                         />
                     </div>

@@ -1,17 +1,40 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { uniqueId } from 'lodash';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addIssue } from '../../../../../app/slices/issueSlice';
 import Button from '../../../../../components/Button/Button';
 import Select from '../../../../../components/input/Select/Select';
+import { Project } from '../../../../../model/types';
 import './IssueCreator.css';
 import IssueTypeSelector from './IssueTypeSelector/IssueTypeSelector';
 
 interface IssueCreatorProps{
-
+    project: Project;
 }
 
 const IssueCreator: FC<IssueCreatorProps>  = (props) => {
     const [active, setActive] = useState(false);
     const [newIssueLabel, setNewissueLabel] = useState('');
     const compRef = useRef<HTMLDivElement>(null);
+    const [issueType, setIssueType] = useState<any>('bug');
+
+    const dispatch = useDispatch();
+    const handleIssueCreation = useCallback((e: any) => {
+        if (e.key === 'Enter'){
+            if (newIssueLabel.length > 3){
+                dispatch(addIssue({
+                    id: uniqueId(),
+                    type: issueType,
+                    label: newIssueLabel,
+                    projectKey: props.project.key,
+                    sprintId: 'backlog',
+                    storyPoint: 0,
+                    stage: 'not-started'
+                }))
+                setNewissueLabel('')
+            }
+        }
+    }, [newIssueLabel, issueType]);
 
     useEffect(() => {
         const handleWindowClick = (e: any) => {
@@ -32,10 +55,13 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
             <div className=''  hidden={!active}>
                 <div className='d-flex flex-nowrap align-items-center'>
                     <div className='my-2 me-1 ms-2'>
-                        <IssueTypeSelector />
+                        <IssueTypeSelector 
+                            selectedIssueTypeValue={issueType} 
+                            handleSelection={(value: string) => setIssueType(value)}
+                        />
                     </div>
                     <div className='w-100'>
-                        <input className={`bg-transparent w-100`} type="text" value={newIssueLabel} placeholder='What needs to be done?' onChange={(e) => {setNewissueLabel(e.target.value)}} />
+                        <input className={`bg-transparent w-100`} type="text" value={newIssueLabel} placeholder='What needs to be done?' onChange={(e) => {setNewissueLabel(e.target.value)}} onKeyUp={handleIssueCreation}/>
                     </div>
                 </div>
             </div>

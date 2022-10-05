@@ -1,4 +1,6 @@
-export const projectTemplate: any = {
+import { BreadCrumbItem } from "../../../BreadCrumb/BreadCrumb";
+
+export const projectTemplate: BreadCrumbItem = {
     label: 'Project Template',
     value: 'project-template',
     children: [
@@ -17,7 +19,7 @@ export const projectTemplate: any = {
                         descText: 'Kanban (the Japanese word for "visual signal") is all about helping teams visualize their work, limit work currently in progress, and maximize efficiency. Use the Kanban template to increase planning flexibility, reduce bottlenecks and promote transparency throughout the development cycle.',
                         item: []
                     },
-                    viewType: 'templateInfo'
+                    viewType: 'template-info'
                 },
                 {
                     label: 'Scrum',
@@ -47,10 +49,10 @@ export const projectTemplate: any = {
                             }
                         ]
                     },
-                    viewType: 'templateInfo'
+                    viewType: 'template-info'
                 }
             ],
-            viewType: 'templateCard'
+            viewType: 'template-list'
         },
         {
             label: "Service management",
@@ -60,15 +62,16 @@ export const projectTemplate: any = {
                     label: 'IT Service Management',
                     value: 'it-service-management',
                     children: [],
-                    viewType: 'templateInfo'
+                    viewType: 'template-info'
                 }
             ],
-            viewType: 'templateCard'
+            viewType: 'template-list'
         },
         {
             label: "Work management",
             value: "work-management",
-            viewType: 'templateCard'
+            viewType: 'template-list',
+            children: []
         }
     ]
 }

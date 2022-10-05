@@ -9,7 +9,7 @@ interface StepCardProps{
     showLabel?: boolean;
     stepItems: {
         label: string;
-        handleRefClick: (event: any) => void;
+        handleRefClick: () => void;
         selectedItem: {
             label: string;
             descText: string;
@@ -33,7 +33,7 @@ const StepCard: FC<StepCardProps> = (props) => {
                                 <Button 
                                     label={`Change ${toLower(item.label)}`}
                                     extraClasses='btn-as-bg px-3 py-1'
-                                    handleClick={()=>{}}                                    
+                                    handleClick={()=>{item.handleRefClick()}}                                    
                                 />
                             </div>
                         </div>

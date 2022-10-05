@@ -1,3 +1,4 @@
+import { uniqueId } from 'lodash';
 import { FC } from 'react';
 import NavBarTool from '../NavBarTool/NavBarTool';
 import './NavBarToolList.css';
@@ -5,6 +6,8 @@ import './NavBarToolList.css';
 export interface NavBarToolItem{
     label: string;
     bsIcon: string;
+    isDropdown?: boolean; 
+    dropdownElement?: JSX.Element;
 }
 
 interface NavBarToolListProps{
@@ -17,9 +20,8 @@ const NavBarToolList: FC<NavBarToolListProps> = (props) => {
             {
                 props.items.map((item, index) => (
                     <NavBarTool 
-                        key={index}
-                        label={item.label}
-                        bsIcon={item.bsIcon}
+                        key={uniqueId()}
+                        item={item}
                     />
                 ))
             }

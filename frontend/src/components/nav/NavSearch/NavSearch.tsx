@@ -15,7 +15,10 @@ const NavSearch: FC<NavSearchProps> = (props) => {
         <div className='d-inline-flex w-100'>
             <div className='d-block d-lg-none ms-auto'>
                 <div className='' hidden={showCollapsedSearch} onClick={()=>{setShowCollapsedSearch(true)}}>
-                    <NavBarTool label='search' bsIcon='search'/>
+                    <NavBarTool item={{
+                        label: 'search',
+                        bsIcon: 'search'
+                    }}/>
                 </div>
             </div>
             
@@ -29,7 +32,10 @@ const NavSearch: FC<NavSearchProps> = (props) => {
                 <div className='d-inline-flex w-100'>
                     {navSearchInput}
                     <div className='' onClick={()=>{setShowCollapsedSearch(false)}}>
-                        <NavBarTool label='search' bsIcon='arrow-right'/>
+                        <NavBarTool item={{
+                            label: 'search',
+                            bsIcon: 'arrow-right'
+                        }}/>
                     </div>
                 </div>
             </div>

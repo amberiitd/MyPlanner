@@ -1,14 +1,21 @@
-import { FC, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
+import { useDispatch } from 'react-redux';
+import { updateIssueBulk } from '../../../../../app/slices/issueSlice';
+import { removeSprint } from '../../../../../app/slices/sprintSlice';
+import { Project, SprintStatus } from '../../../../../model/types';
 import IssueCreator from '../IssueCreator/IssueCreator';
-import IssueRibbon from '../IssueRibbon/IssueRibbon';
+import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
 import './SprintCard.css';
 import SprintHeaderRibbon from './SprintHeaderRibbon/SprintHeaderRibbon';
 
 interface SprintCardProps{
-    issueList: any[];
+    issueList: Issue[];
     sprintId: string;
+    sprintIndex: number;
+    sprintStatus: SprintStatus;
     handleDrop: (event: any) => void;
+    project: Project;
 }
 
 const SprintCard: FC<SprintCardProps> = (props) => {
@@ -16,39 +23,86 @@ const SprintCard: FC<SprintCardProps> = (props) => {
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
         drop: (item: any) => {
-            props.handleDrop({itemId: item.id, sprintId: props.sprintId})
+            props.handleDrop({itemId: item.id, cardId: props.sprintId})
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver()
         })
-    }))
+    }), [props.handleDrop])
+
+    const dispatch = useDispatch();
+
+    const [storyPoints, setStoryPoints] = useState<{
+        notStarted: number;
+        inProgress: number;
+        done: number;
+    }>({
+        notStarted: 0,
+        inProgress: 0,
+        done: 0
+    });
+
+    const handleDelete = useCallback(()=>{
+        dispatch(updateIssueBulk({
+            ids: props.issueList.map(issue => issue.id),
+            data: {
+                sprintId: 'backlog'
+            }
+        }));
+        dispatch(removeSprint({id: props.sprintId}));
+    }, [props.issueList, props.sprintId]);
+
+    useEffect(()=>{
+        let notStarted = 0, inProgress =0, done =0; 
+        props.issueList.forEach(issue => {
+            switch(issue.stage){
+                case 'not-started':
+                    notStarted+= (issue.storyPoint || 0);
+                    break;
+                case 'in-progress':
+                    inProgress+= (issue.storyPoint || 0);
+                    break;
+                case 'done':
+                    done+= (issue.storyPoint || 0);
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        setStoryPoints({notStarted, inProgress, done})
+    }, [props.issueList])
+
     return (
         <div ref={drop} className='p-2 rounded-2 bg-light'>
             <div>
                 <SprintHeaderRibbon
-                    label={`Project 1 Sprint ${props.sprintId}`}
+                    label={`${props.project.key} Sprint ${props.sprintIndex}`}
                     metric={{
                         storyPoints: [
                             {
                                 stageLabel: 'Not started',
-                                value: 0,
+                                value: storyPoints.notStarted,
                                 color: 'light'
                             },
                             {
                                 stageLabel: 'In progress',
-                                value: 2,
+                                value: storyPoints.inProgress,
                                 color: 'thm'
                             },
                             {
                                 stageLabel: 'Done',
-                                value: 3,
+                                value: storyPoints.done,
                                 color: 'green'
                             }
                         ],
-                        status: 'not-started'
+                        status: props.sprintStatus,
+                        issueCount: props.issueList.length
                     }}
+                    sprintId={props.sprintId}
                     collapse={collapse}
                     handleClick={()=>{setCollapse(!collapse)}}
+                    handleDelete={handleDelete}
                 />
             </div>
             <div className='mt-2' hidden={collapse}>
@@ -65,7 +119,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
                     Add an issue by dragging the issue here
                 </div>
                 <div className='mt-1'>
-                    <IssueCreator />
+                    <IssueCreator project={props.project}/>
                 </div>
             </div>
         </div>

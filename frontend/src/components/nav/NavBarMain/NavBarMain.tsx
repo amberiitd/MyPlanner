@@ -5,53 +5,63 @@ import NavBarToolList from '../NavBarToolList/NavBarToolList';
 import NavBrand from '../NavBrand/NavBrand';
 import './NavBarMain.css';
 import YourWork from '../../dropdowns/YourWork/YourWork';
-import Button from '../../Button/Button';
 import CreateNew from '../../form/CreateNew/CreateNew';
 import Projects from '../../dropdowns/Projects/Projects';
-import ProjectModal from '../../dropdowns/Projects/ProjectModal/ProjectModal';
-import projectModalService from '../../../modal.service';
+import Profile from '../NavBarToolList/Profile/Profile';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { navItem } from 'aws-amplify';
 
 interface NavBarMainProps{
 
 }
 const NavBarMain: FC<NavBarMainProps> = (props)=> {
+    const [searchParam, setSearchParam] = useSearchParams();
+    const location = useLocation()
     const [navLinks, setNavLinks] = useState([
             {   
                 id: 0,
                 label: 'Your Work',
+                value: 'your-work',
                 dropdownElement: <YourWork />
             },
             {
                 id: 1,
                 label: 'Projects',
+                value: 'projects',
                 dropdownElement: (<Projects />)
             },
             {
                 id: 2,
                 label: 'Filters',
+                value: 'filters',
                 dropdownElement: (<div></div>)
 
             },
             {
                 id: 3,
                 label: 'Dashboards',
+                value: 'dashboards',
                 dropdownElement: (<div></div>)
 
             },
             {
                 id: 4,
                 label: 'People',
+                value: 'people',
                 dropdownElement: (<div></div>)
 
             },
             {
                 id: 5,
                 label: 'Apps',
+                value: 'apps',
                 dropdownElement: (<div></div>)
 
             }
         ]
     )
+
+    const [selectedNav, setSelectedNav] = useState(navLinks[0]);
 
     const [toolItems, setToolItems] = useState([
         {
@@ -69,24 +79,27 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
         },
         {
             label: 'profile',
-            bsIcon: 'person-circle'
+            bsIcon: 'person-circle',
+            isDropdown: true,
+            dropdownElement: (<Profile />)
         }
-    ]) 
-
-    const [showProjectModal, setShowProjectModal] = useState(projectModalService.getShowModel());
+    ])
 
     useEffect(()=>{
-        projectModalService.subscribe(()=>{
-            setShowProjectModal(projectModalService.getShowModel());
-        })
-    }, [])
-
+        const subPaths = location.pathname.split('/');
+        if (subPaths.length > 0){
+            const navIndex = navLinks.findIndex(nav => nav.value === subPaths[2]);
+            if (navIndex >=0 ){
+                setSelectedNav(navLinks[navIndex])
+            }
+        }
+    }, [location])
     return (
         <div className='nav-simp d-inline-flex w-100 shadow-sm border  position-relative'>
             <NavBrand />
             <NavBarLinkList 
                 items={navLinks}
-                selectedItem={navLinks[0]}
+                selectedItem={selectedNav}
             />
             <CreateNew />
             <div className='ms-auto navSearchParent'>
@@ -95,11 +108,6 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             <div className='me-3 my-1'>
                 <NavBarToolList items={toolItems} />
             </div>
-            <ProjectModal 
-                showModal={showProjectModal}
-                handleCancel={()=>{projectModalService.setShowModel(false)}}
-            />
-
         </div>
     )
 }

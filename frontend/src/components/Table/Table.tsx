@@ -1,6 +1,7 @@
 import { isEmpty, startCase } from 'lodash';
 import { FC, useEffect, useState } from 'react';
 import { Type } from 'typescript';
+import { SimpleAction } from '../../model/types';
 import BinaryAction from '../BinaryAction/BinaryAction';
 import Button from '../Button/Button';
 import DropdownAction from '../DropdownAction/DropdownAction';
@@ -18,12 +19,8 @@ export interface ColDef{
     aslink?:{
         style?: string;
         to: string;
+        handleClick?: (e: any) => void;
     }
-}
-
-export interface SimpleAction{
-    label: string;
-    value: string;
 }
 
 export interface RowAction{
@@ -66,8 +63,13 @@ const Table: FC<TableProps> = (props) => {
             '';
 
         return isEmpty(col.aslink) ? value : (
-            <a href='#'>
-            {value}
+            <a href='#' 
+                onClick={(e) => {
+                    e.preventDefault(); 
+                    col.aslink?.handleClick? col.aslink.handleClick(rowdata.key): (()=>{})(); 
+                }}
+            >
+                {value}
             </a>
         );
     }
@@ -139,12 +141,13 @@ const Table: FC<TableProps> = (props) => {
                                                     actionCategory={[
                                                         {
                                                             label: 'Action',
+                                                            value: 'action',
                                                             items: props.actions?.items || []
                                                         }
                                                     ]}
                                                     bsIcon='three-dots'
                                                     dropdownClass='btn-as-bg p-1'
-                                                    handleItemClick={(event: any)=> {props.actions?.handleAction(rowdata, event)}}
+                                                    handleItemClick={(event: any)=> {props.actions?.handleAction(rowdata, event.item)}}
                                                 />
                                             </div>
                                         )

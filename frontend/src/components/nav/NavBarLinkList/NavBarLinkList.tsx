@@ -6,6 +6,7 @@ import './NavBarLinkList.css';
 interface NavBarLinkItem{
     id: string | number;
     label: string;
+    value: string;
     dropdownElement: JSX.Element;
 }
 interface NavBarLinkListProps{
@@ -13,7 +14,6 @@ interface NavBarLinkListProps{
     selectedItem: NavBarLinkItem;
 }
 const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
-    const [selectedLink, setSelectedLink] = useState(props.selectedItem);
     const [cuttOff, setCuttOff] = useState(0);
     const [moreLinks, setMoreLinks] = useState([]);
     const resize = () => {
@@ -38,7 +38,7 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
                 props.items.slice(0, props.items.length - cuttOff).map( (item, index) => (
                     <NavBarLink key={`navlink-${index}`} 
                         label={item.label}
-                        isActive={item.id === selectedLink.id}
+                        isActive={item.id === props.selectedItem.id}
                         dropdownElement={item.dropdownElement}
                     />
                 ))

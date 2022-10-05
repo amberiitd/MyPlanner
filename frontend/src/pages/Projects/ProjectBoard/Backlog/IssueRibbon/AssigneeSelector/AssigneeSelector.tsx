@@ -33,7 +33,7 @@ const AssigneeSelector: FC<AssigneeSelectorProps> = (props) => {
             <div className='mx-1'>
                 <Button
                     label='NA'
-                    extraClasses='rounded-circle circle-2 btn-as-thm'
+                    extraClasses='p-1 rounded-circle btn-as-thm'
                     handleClick={()=>{setDropdown(!dropdown)}}
                 />
             </div>

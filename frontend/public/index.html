@@ -9,6 +9,7 @@
       name="description"
       content="An app to plan tasks"
     />
+    <meta name="google-signin-client_id" content="502408217345-spodf96ae2nplj1sq4a7t802ssu8s7b8.apps.googleusercontent.com">
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo2.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -25,9 +26,14 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- <script src="https://apis.google.com/js/platform.js"></script> -->
     <title>MyPlanner</title>
   </head>
   <body style="height: 100%;">
+    <!-- <div id="g_id_onload"
+                    data-client_id="502408217345-spodf96ae2nplj1sq4a7t802ssu8s7b8.apps.googleusercontent.com"
+                    data-callback="signIn">
+                </div> -->
     <div id="root" style="height: 100%;"></div>
     <!--
       This HTML file is a template.

@@ -5,7 +5,7 @@ import './TemplateCard.css';
 
 interface TemplateCardProps{
     label: string;
-    description: string;
+    description?: string;
     items: any[];
     handleClick: (event: any)=> void;
 }
@@ -22,7 +22,7 @@ const TemplateCard: FC<TemplateCardProps> =(props) => {
             </div>
             <div className='d-flex justify-content-center'>
                 <div className='item-list'>
-                    {props.items.map((item, index) => (
+                    {(props.items || []).map((item, index) => (
                         <div className='mb-3' key={`template-item-${index}`} onClick={()=>{props.handleClick(item)}}>
                             <TemplateItem 
                                 {...item}

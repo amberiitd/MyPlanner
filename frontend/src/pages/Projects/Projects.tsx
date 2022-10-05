@@ -1,21 +1,33 @@
-import { FC } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { FC, useEffect, useState } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Button from '../../components/Button/Button';
 import MultiSelect from '../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../components/input/TextInput/TextInput';
-import Table, { ColDef, RowAction, SimpleAction } from '../../components/Table/Table';
-import { Project } from '../../data/types';
+import Table, { ColDef, RowAction } from '../../components/Table/Table';
+import { CrudPayload, Project, SimpleAction } from '../../model/types';
 import BinaryAction from '../../components/BinaryAction/BinaryAction'
 import './Projects.css';
 import projectModalService, { projectCreateModalService } from '../../modal.service';
-import { divide } from 'lodash';
 import ProjectBoard from './ProjectBoard/ProjectBoard';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../app/store';
+import { API, Auth } from 'aws-amplify';
+import { addProjectBulk, refreshProject, removeProject } from '../../app/slices/projectSlice';
+import { useDispatch } from 'react-redux';
+import { isEmpty } from 'lodash';
 
 interface ProjectsProps{
 
 }
 
 const Projects: FC<ProjectsProps> = (props) => {
+    const projects = useSelector((state: RootState) => state.projects);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects.values);
+    const [searchText, setSearchText] = useState<string>('');
+    const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
     const data = [
         {
@@ -23,7 +35,7 @@ const Projects: FC<ProjectsProps> = (props) => {
             items: [
                 {
                     label: 'MyPlanner Software',
-                    value: 'myplanner-software'
+                    value: 'software-development'
                 },
                 {
                     label: 'MyPlanner Work Management',
@@ -35,19 +47,33 @@ const Projects: FC<ProjectsProps> = (props) => {
 
     const projectList: Project[] = [
         {
+            id: "dnqwowed",
             name: "Test Project 1",
             key: "test-project-1",
             leadAssignee: "Nazish Amber",
-            type: 'MyPlanner Software'
+            templateType: 'MyPlanner Software',
+            managementType: 'team-managed',
+            template: 'scrum',
         },
         {
+            id: "liudhdwwed",
             name: "My Project 2",
             key: "my-project-2",
             leadAssignee: "Khalid safi Ibne Batuta",
-            type: 'MyPlanner Software',
+            templateType: 'MyPlanner Software',
+            managementType: 'team-managed',
+            template: 'scrum',
             isStarred: true
         }
     ];
+
+    useEffect(()=>{
+        if (isEmpty(searchText) && isEmpty(selectedTypes)){
+            setFilteredProjects(projects.values)
+        }else{
+            setFilteredProjects(projects.values.filter(p => (p.name.toLocaleLowerCase().startsWith(searchText.toLocaleLowerCase()) || p.key.toLocaleLowerCase().startsWith(searchText.toLocaleLowerCase())) && (isEmpty(selectedTypes) || selectedTypes.map((type: any) => type.value).includes(p.templateType))))
+        }
+    }, [searchText, selectedTypes, projects])
 
     const projectColDef: ColDef[] = [
         {
@@ -68,7 +94,10 @@ const Projects: FC<ProjectsProps> = (props) => {
             label: 'Name',
             value: 'name',
             aslink: {
-                to: '#'
+                to: '#',
+                handleClick: (key: string) => {
+                    navigate(`${key}/board`)
+                }
             },
             sortable: true,
         },
@@ -79,13 +108,43 @@ const Projects: FC<ProjectsProps> = (props) => {
         },
         {
             label: 'Type',
-            value: 'type'
+            value: 'templateType'
         },
         {
             label: 'Lead',
             value: 'leadAssignee'
         }
     ];
+
+    useEffect(() => {
+        const payload: CrudPayload = {
+            itemType: 'project',
+            action: 'RETRIEVE',
+            data: {}
+        }
+        Auth.currentSession()
+        .then(res => {
+            // console.log(res)
+            API.post('base_url', '/projects', {
+                body: payload,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': res.getIdToken().getJwtToken()
+                }
+            })
+            .then(res => {
+                const body = JSON.parse(res.body);
+                if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
+                    dispatch(refreshProject(body.data as Project[]))
+                }else{
+                    console.log(res)
+                }
+                
+            })
+            .catch(err => console.log(err))
+            ;
+        })
+    }, [])
 
     const actions: RowAction = {
         items: [
@@ -99,7 +158,40 @@ const Projects: FC<ProjectsProps> = (props) => {
             }
         ],
         layout: 'dropdown',
-        handleAction: (rowdata: any, event: SimpleAction) => {}
+        handleAction: (rowdata: any, event: SimpleAction) => {
+            if (event.value === 'move-to-trash'){
+                Auth.currentSession()
+                .then(res => {
+                    const payload: CrudPayload = {
+                        itemType: 'project',
+                        action: 'DELETE',
+                        data: {
+                            id: rowdata.id,
+                            key: rowdata.key
+                        }
+                    }
+    
+                    API.post('base_url', '/projects', {
+                        body: payload,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': res.getIdToken().getJwtToken()
+                        }
+                    })
+                    .then(res => {
+                        const body = JSON.parse(res.body);
+                        if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
+                            dispatch(removeProject({key: rowdata.key}))
+                        }else{
+                            console.log(res)
+                        } 
+                    })
+                    .catch(err => console.log(err))
+                    ;
+                })
+            }
+        }
+            
     }
 
     const projectRoot: JSX.Element = (
@@ -115,28 +207,32 @@ const Projects: FC<ProjectsProps> = (props) => {
                     />
                 </div>
             </div>
-            <div className='d-flex flex-nowrap border mb-3'>
+            <div className='d-flex flex-nowrap mb-3'>
                 <div className='me-3 param'>
                     <TextInput 
                     label='Search Projects'
                     hideLabel={true}
-                    value={''}
+                    value={searchText}
                     placeholder=''
                     rightBsIcon='search'
-                    handleChange={()=>{}} />
+                    handleChange={(searchText: string)=>{
+                        setSearchText(searchText)
+                    }} />
                 </div>
                 <div className='param'>
                     <MultiSelect 
                         label='Project Types'
                         hideLabel={true}
                         data={data}
-                        onSelectionChange={()=>{}}
+                        onSelectionChange={(types: string[])=>{
+                            setSelectedTypes(types)
+                        }}
                     />
                 </div>
             </div>
             <div>
                 <Table 
-                    data={projectList}
+                    data={filteredProjects}
                     colDef={projectColDef}
                     actions={actions}
                 />
@@ -147,7 +243,7 @@ const Projects: FC<ProjectsProps> = (props) => {
         <div className='h-100c'>
             <Routes>
                 
-                <Route path='/:projectKey/board' element={ <ProjectBoard /> } />
+                <Route path='/:projectKey/:view/*' element={ <ProjectBoard /> } />
                 <Route path='*' element={projectRoot} />
             </Routes>
         </div>

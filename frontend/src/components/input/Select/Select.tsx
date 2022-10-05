@@ -106,6 +106,7 @@ const Select: FC<SelectProps> = (props) => {
                                     showLabel={!!catg.showLabel}
                                     isLoading={false}
                                     linkItems={catg.items}
+                                    selectedLink={selectedItem}
                                     extraClasses='quote'
                                     handleClick={handleSelection}
                                 />
