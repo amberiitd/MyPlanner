@@ -1,32 +1,31 @@
-import { FC, useRef, useCallback,  useState } from 'react';
+import { FC, useRef, useCallback,  useState, useContext } from 'react';
+import { issueTypeMap } from '../../../pages/Projects/ProjectBoard/Backlog/IssueCreator/IssueTypeSelector/issueTypes';
+import { Issue } from '../../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon';
 import Badge from '../../Badge/Badge';
 import DropdownAction from '../../DropdownAction/DropdownAction';
+import { ScrumContext } from '../ScrumBoard';
 import './TicketCard.css';
 
 interface TicketCardProps{
-    projectInfo: {
-        label: string;
-        bsIcon: string;
-    };
-    ticketInfo: {
-        label: string;
-        storyPoint: number;
-    };
-    menuItems: any[];
-    handleMenuClick: (event: any, event2: any) => void;
+    issue: Issue;
+    handleMenuClick: (event: any) => void;
     onClick: (event1: any) => void;
 }
 
 const TicketCard: FC<TicketCardProps> = (props) => {
     const [hover, setHover] = useState(false);
-    return (
+    const {
+        dragTicket,
+    } = useContext(ScrumContext);
+    const [collapseHeight, setCollapseHeight] = useState('0px');
+    return (  
         <div className='p-2 shadow-sm ticket-card text-muted grabbable'
             onMouseEnter={()=> {setHover(true)}}
             onMouseLeave={()=> {setHover(false)}}
         >
             <div className='d-flex flex-nowrap mb-1'>
                 <div className='h5'>
-                    {props.ticketInfo.label}
+                    {props.issue.label}
                 </div>
                 <div className='ms-auto' hidden={!hover}>
                     <DropdownAction 
@@ -34,22 +33,22 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                             {
                                 label: 'Action',
                                 value: 'action',
-                                items: props.menuItems,
+                                items: [],
                             }
                         ]}
                         bsIcon='three-dots'
-                        handleItemClick={(menuevent: any)=>{props.handleMenuClick(props.ticketInfo, menuevent.item)}}
+                        handleItemClick={(menuevent: any)=>{}}
                     />
                 </div>
             </div>
             <div className='d-flex flex-nowrap'>
                 <div>
-                    <i className={`bi bi-${props.projectInfo.bsIcon} me-2`}></i>
-                    <span>{props.projectInfo.label}</span>
+                    <i className={`bi bi-${ issueTypeMap[props.issue.type].leftBsIcon} me-2`}></i>
+                    <span>{`${props.issue.projectKey}-${props.issue.id}`}</span>
                 </div>
-                <div className='ms-auto'>
+                <div className='ms-auto' title={`${props.issue.storyPoint} story points`}>
                     <Badge
-                        data={props.ticketInfo.storyPoint}
+                        data={props.issue.storyPoint || '-'}
                         extraClasses='bg-light'
                     />
                 </div>

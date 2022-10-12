@@ -1,9 +1,8 @@
 import { FC } from 'react';
+import { SimpleAction } from '../../model/types';
 import './LinkGroup.css';
 
-export interface SimpleLink{
-    label: string;
-    value: string;
+export interface SimpleLink extends SimpleAction{
     to?: string;
 }
 

@@ -146,7 +146,7 @@ const Table: FC<TableProps> = (props) => {
                                                         }
                                                     ]}
                                                     bsIcon='three-dots'
-                                                    dropdownClass='btn-as-bg p-1'
+                                                    buttonClass='btn-as-bg p-1'
                                                     handleItemClick={(event: any)=> {props.actions?.handleAction(rowdata, event.item)}}
                                                 />
                                             </div>

@@ -90,7 +90,7 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                 {props.label}{props.isRequired? '*': ''}
             </div>
             <div className='dropdown'>
-                <div ref={selectFormRef} className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 
+                <div ref={selectFormRef} className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100 cursor-pointer`}> 
                     {/* 
                     // NO SEARCH FEATURE HERE
                     <input ref={inputRef} 
@@ -122,8 +122,8 @@ const MultiSelect: FC<MultiSelectProps> = (props) => {
                         <Button 
                             label='Cancel'
                             hideLabel={true}
-                            rightBsIcon='x'
-                            extraClasses='btn-as-light rounded-circle'
+                            rightBsIcon='x-circle'
+                            extraClasses='btn-as-inherit'
                             handleClick={()=> {handleSelection('cancel-all')}}
                         />
                     </div>

@@ -5,7 +5,7 @@ import { removeSprint } from '../../../../../../app/slices/sprintSlice';
 import Badge from '../../../../../../components/Badge/Badge';
 import Button from '../../../../../../components/Button/Button';
 import DropdownAction from '../../../../../../components/DropdownAction/DropdownAction';
-import { sprintModalService } from '../../../../../../modal.service';
+import { completeSprintModalService, sprintModalService } from '../../../../../../modal.service';
 import { SprintStatus } from '../../../../../../model/types';
 import './SprintHeaderRibbon.css';
 
@@ -70,8 +70,22 @@ const SprintHeaderRibbon: FC<SprintHeaderRibbonProps> = (props) => {
                 <div className='mx-1'>
                     <Button
                         label={props.metric.status === 'active'? 'Complete sprint': 'Start sprint'}
-                        handleClick={()=>{}}
-                        disabled={props.metric.issueCount === 0}
+                        handleClick={()=>{
+                            if (props.metric.status == 'not-started'){
+                                sprintModalService.setProps({
+                                    mode: 'start',
+                                    sprintId: props.sprintId
+                                });
+                                sprintModalService.setShowModel(true);
+                            }else if (props.metric.status === 'active'){
+                                completeSprintModalService.setProps({
+                                    sprintId: props.sprintId
+                                });
+                                completeSprintModalService.setShowModel(true)
+                            }
+                            
+                        }}
+                        disabled={props.metric.issueCount === 0 && props.metric.status === 'not-started'}
                     />
                 </div>
                 <div className='mx-1'>

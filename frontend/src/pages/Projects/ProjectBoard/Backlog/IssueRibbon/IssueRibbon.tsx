@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -8,10 +8,11 @@ import Badge from '../../../../../components/Badge/Badge';
 import DropdownAction from '../../../../../components/DropdownAction/DropdownAction';
 import NumberBadge from '../../../../../components/NumberBadge/NumberBadge';
 import { EMPTY_PROJECT } from '../../../../../model/types';
+import { BacklogContext } from '../Backlog';
 import { issueTypeMap } from '../IssueCreator/IssueTypeSelector/issueTypes';
 import AssigneeSelector from './AssigneeSelector/AssigneeSelector';
 import './IssueRibbon.css';
-import { stageMap } from './StageSelector/stages';
+import { StageValue, stageMap } from './StageSelector/stages';
 import StageSelector from './StageSelector/StageSelector';
 
 export interface Issue{
@@ -22,7 +23,7 @@ export interface Issue{
     sprintId: string;
     storyPoint?: number;
     assignee?: any;
-    stage: 'not-started' | 'in-progress' | 'done';
+    stage: StageValue;
 }
 
 interface IssueRibbonProps{
@@ -33,6 +34,8 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     const projects = useSelector((state: RootState) => state.projects);
     const sprints = useSelector((state: RootState) => state.sprints);
     const dispatch = useDispatch();
+
+    const {openIssue, setOpenIssue} = useContext(BacklogContext);
 
     const[currentProject, setCurrentProject] = useState(EMPTY_PROJECT);
 
@@ -74,7 +77,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
             <div className='mx-1'>
                 {currentProject.key}-{props.issue.id}
             </div>
-            <div className='mx-1'>
+            <div className='mx-1 cursor-pointer' onClick={() => {setOpenIssue(props.issue)}}>
                 {props.issue.label}
             </div>
 
@@ -89,7 +92,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
             </div>
             <div className=' ms-2'>
                 <StageSelector
-                    selectedStage={stageMap[props.issue.stage]}
+                    selectedStage={stageMap[props.issue.stage as any]}
                     issueId={props.issue.id}
                 />
             </div>

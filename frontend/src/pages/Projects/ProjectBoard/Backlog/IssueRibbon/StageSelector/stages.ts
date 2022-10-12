@@ -1,7 +1,9 @@
 import { SimpleAction } from "../../../../../../model/types"
 
+export type StageValue = 'in-progress' | 'not-started' | 'done'
+
 export interface Stage extends SimpleAction{
-    value: 'in-progress' | 'not-started' | 'done'
+    value: StageValue;
 }
 
 export const IN_PROGRESS: Stage = {

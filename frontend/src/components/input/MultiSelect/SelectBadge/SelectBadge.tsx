@@ -11,8 +11,8 @@ interface SelectBadgeProps{
 const SelectBadge: FC<SelectBadgeProps> = (props) => {
 
     return (
-        <div className='d-flex flex-nowrap rounded-1 border'>
-            <div className='text-nowrap'>
+        <div className='d-flex flex-nowrap rounded-1 border py-0'>
+            <div className='text-nowrap px-1' style={{fontSize: 'small'}}>
                 {props.label}
             </div>
             <div>
@@ -20,7 +20,7 @@ const SelectBadge: FC<SelectBadgeProps> = (props) => {
                     label='Cancel'
                     hideLabel={true}
                     rightBsIcon='x'
-                    extraClasses='btn-as-bg'
+                    extraClasses='btn-as-bg p-0'
                     handleClick={()=>props.handleCancel(props.value)}
                 />
             </div>

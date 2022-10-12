@@ -40,7 +40,7 @@ Amplify.configure(awsConfig);
 
 function App() {
     return (
-        <div className='h-100'>
+        <div className='h-100 app'>
             <Provider store={store}>
                 <BrowserRouter>
                     <Routes>

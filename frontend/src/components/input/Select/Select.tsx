@@ -80,12 +80,12 @@ const Select: FC<SelectProps> = (props) => {
     }, [dropdown]);
 
     return (
-        <div >
+        <div className=''>
             <div className='mb-1'>
-                {props.label}{props.isRequired? '*': ''}
+                {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
             </div>
             <div ref={selectFormRef} className='dropdown'>
-                <div className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100`}> 
+                <div className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100 cursor-pointer`}> 
                     <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
 
                     <div hidden={searchText.length > 0}>
@@ -106,7 +106,7 @@ const Select: FC<SelectProps> = (props) => {
                                     showLabel={!!catg.showLabel}
                                     isLoading={false}
                                     linkItems={catg.items}
-                                    selectedLink={selectedItem}
+                                    selectedLinks={selectedItem?[selectedItem]: []}
                                     extraClasses='quote'
                                     handleClick={handleSelection}
                                 />

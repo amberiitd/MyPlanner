@@ -16,10 +16,10 @@ const SelectOption: FC<SelectOptionProps> = (props)=> {
         <div className={`bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
             <div className='ms-1 me-2'>
                 <input 
-                    className="form-check-input" 
+                    className="form-check-input cursor-pointer" 
                     type="checkbox" 
                     checked={props.selected}
-                    onChange={(e) => {e.preventDefault()}}
+                    onChange={(e) => {}}
                 />
             </div>
             <div className='pe-2' hidden={!props.leftBsIcon}>

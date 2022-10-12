@@ -39,3 +39,4 @@ export default projectModalService;
 export const projectCreateModalService = new ModalService();
 
 export const sprintModalService = new ModalService();
+export const completeSprintModalService = new ModalService();

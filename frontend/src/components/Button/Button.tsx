@@ -14,15 +14,22 @@ interface ButtonProps {
 }
 
 const Button: FC<ButtonProps> = (props) => (
-  <div className={`d-flex flex-nowrap button rounded-1 ${props.extraClasses?? 'btn-as-thm px-3 py-1'} ${props.disabled? 'btn-as-muted': ''}`} onClick={() => {props.handleClick()}}>
+    <button 
+        className={`d-flex flex-nowrap app-button hover-button w-100 rounded-1 ${props.extraClasses?? 'btn-as-thm px-3 py-1'} ${props.disabled? 'btn-as-muted': ''}`} 
+        unselectable='on' 
+        onMouseDown={(e) => {e.preventDefault(); if (!props.disabled)props.handleClick()}} 
+        tabIndex={-1} 
+        disabled={props.disabled}
+        style={{cursor: props.disabled? 'not-allowed': 'pointer'}}
+    >
     <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>
     </div>
     <div className='btn-label' hidden={!!props.hideLabel}>{props.label}</div>
-    <div className='mx-1' hidden={!!props.hideIcon || !props.rightBsIcon}>
+    <div className='me-1 ms-auto' hidden={!!props.hideIcon || !props.rightBsIcon}>
         <i className={`bi bi-${props.rightBsIcon}`}></i>
     </div>
-  </div>
+  </button>
 );
 
 export default Button;

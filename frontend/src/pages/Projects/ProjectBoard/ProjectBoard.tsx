@@ -1,12 +1,14 @@
-import { FC, useEffect, useState } from 'react';
+import { createContext, FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import Split from 'react-split';
 import { RootState } from '../../../app/store';
 import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
 import PageNotFound from '../../../components/PageNotFound/PageNotFound';
 import { EMPTY_PROJECT } from '../../../model/types';
 import Backlog from './Backlog/Backlog';
+import IssueView from './IssueView/IssueView';
 import './ProjectBoard.css';
 import Sprint from './Sprint/Sprint';
 
@@ -14,12 +16,17 @@ interface ProjectBoardProps{
 
 }
 
+export const ProjectBoardContext = createContext<{
+    windowSizes: number[]
+}>({windowSizes: []});
+
 const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const { projectKey, view } = useParams();
     const navigate = useNavigate();
-    const projects = useSelector((state: RootState) => state.projects.values)
+    const projects = useSelector((state: RootState) => state.projects.values);
+    const [windowSizes, setWindowSizes] = useState<number[]>([20, 80]);
 
-    const viewItems: BreadCrumbItem[] = [
+    const menuViews: BreadCrumbItem[] = [
         {
             label: 'Backlog',
             value: 'backlog',
@@ -28,6 +35,14 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
         {
             label: 'Board',
             value: 'board',
+            children: []
+        }
+    ];
+
+    const extraViews: BreadCrumbItem[] = [
+        {
+            label: 'Issue',
+            value: 'issue',
             children: []
         }
     ];
@@ -41,7 +56,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
             {
                 label: selectedProject.name,
                 value: selectedProject.key,
-                children: viewItems,
+                children: menuViews.concat(extraViews),
                 navigateTo: `/myp/projects/${projectKey}/board`
             }
         ],
@@ -55,48 +70,64 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const [boardView, setBoardView] = useState<BreadCrumbItem>(notFoundCrumb)
 
     useEffect(()=>{
-        setBoardView(viewItems.find(item => item.value === view) || notFoundCrumb)
+        setBoardView(menuViews.concat(extraViews).find(item => item.value === view) || notFoundCrumb)
     }, [view]);
 
     return (
-        <div className='h-100'>
-            <div className='d-flex flex-nowrap h-100'>
-                <div className='sidebar p-2'>
-                    <div>
-                        <MenuCard 
-                            label='PLANNING'
-                            menuItems={viewItems} 
-                            handleClick={(value)=>{
-                                navigate(`/myp/projects/${projectKey}/${value}`);
-                            }}
-                            collapsable={true}
-                            showLabel={true}
-                            itemClass='option-hover-thm'
-                            itemType='option-quote-sm'
-                            selectedItem={boardView}
-                        />
+        <ProjectBoardContext.Provider value={{windowSizes}}>
+            <div className='h-100'>
+                <Split className='d-flex flex-nowrap h-100'
+                    sizes={windowSizes}
+                    minSize={200}
+                    maxSize={[600, Infinity]}
+                    expandToMin={false}
+                    gutterSize={10}
+                    gutterAlign="center"
+                    snapOffset={30}
+                    dragInterval={1}
+                    direction="horizontal"
+                    cursor="col-resize"
+                    onDrag={(sizes) => {setWindowSizes(sizes)}}
+                >
+                    <div className=' p-2'>
+                        <div>
+                            <MenuCard 
+                                label='PLANNING'
+                                menuItems={menuViews} 
+                                handleClick={(value)=>{
+                                    navigate(`/myp/projects/${projectKey}/${value}`);
+                                }}
+                                collapsable={true}
+                                showLabel={true}
+                                itemClass='option-hover-thm'
+                                itemType='option-quote-sm'
+                                selectedItem={boardView}
+                            />
+                        </div>
                     </div>
-                </div>
-                <div className='px-5 py-3 board-body w-100 border h-100'>
-                    <div>
-                        <BreadCrumb 
-                            itemTree={breadCrumbLinks}
-                            selectedItem={boardView}
-                            handleClick={(item: BreadCrumbItem)=>{ item.navigateTo? navigate(item.navigateTo): (()=>{})()}}
-                        />
-                    </div>
-                    <div className='board-body'>
-                        {
-                            boardView.value === 'board'? <Sprint project={selectedProject}/> 
-                            : boardView.value === 'backlog'? <Backlog project={selectedProject}/>
-                            : <PageNotFound />
-                        } 
-                    </div>
+                    <div className='px-5 py-3 board-body h-100'>
+                        <div>
+                            <BreadCrumb 
+                                itemTree={breadCrumbLinks}
+                                selectedItem={boardView}
+                                handleClick={(item: BreadCrumbItem)=>{ item.navigateTo? navigate(item.navigateTo): (()=>{})()}}
+                            />
+                        </div>
+                        <div className='board-body'>
+                            
+                            {
+                                boardView.value === 'board'? <Sprint project={selectedProject}/> 
+                                : boardView.value === 'backlog'? <Backlog project={selectedProject}/>
+                                : boardView.value === 'issue'? <IssueView />
+                                : <PageNotFound />
+                            } 
+                        </div>
 
 
-                </div>
+                    </div>
+                </Split>
             </div>
-        </div>
+        </ProjectBoardContext.Provider>
     )
 }
 

@@ -1,4 +1,4 @@
-import { isEmpty, startCase } from 'lodash';
+import { isEmpty, max, min, startCase } from 'lodash';
 import moment from 'moment';
 import { FC, useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
@@ -16,7 +16,8 @@ import { Sprint } from '../../../../../model/types';
 import './SprintModal.css';
 
 export interface Duration{
-    unit: 'weeks' | 'days';
+    label: string;
+    unit: 'days';
     value: number;
 }
 
@@ -46,30 +47,31 @@ const SprintModal: FC = () => {
         }
     });
 
-    const durations= [
+    const durations = [
         {
             label: '1 week',
-            value: 1,
-            units: 'weeks'
+            value: 7,
+            unit: 'days'
         },
         {
             label: '2 weeks',
-            value: 2,
-            units: 'weeks'
+            value: 14,
+            unit: 'days'
         },
         {
             label: '3 weeks',
-            value: 3,
-            units: 'weeks'
+            value: 21,
+            unit: 'days'
         },
         {
             label: '4 weeks',
-            value: 4,
-            units: 'weeks'
+            value: 28,
+            unit: 'days'
         },
         {
             label: 'Custom',
-            value: 'custom'
+            value: 'custom',
+            unit: 'none'
         }
     ];
 
@@ -98,7 +100,7 @@ const SprintModal: FC = () => {
         >
             <Modal.Header className=''>
                 <div>
-                    <h4>{`${startCase(sprintModal.props.mode)} sprint: ${sprint?.projectKey} Sprint ${sprint?.index}`}</h4>
+                    <h4>{`${startCase(sprintModal.props.mode)} sprint: `}{ sprint?.name?? `${sprint?.projectKey} Sprint ${sprint?.index}`}</h4>
                 </div>
             </Modal.Header>
             <Modal.Body className='sprint-modal-body'>
@@ -114,11 +116,8 @@ const SprintModal: FC = () => {
                 <div className='w-50 mt-2'>
                     <Select 
                         label='Duration'
-                        isRequired={false}
-                        selectedItem={form.duration === 'custom' ? { label: 'Custom', value: 'custom' } : {
-                            ...form.duration, 
-                            label: `${form.duration.value} ${form.duration.unit}`
-                        }}
+                        isRequired={sprintModal.props.mode === 'start'}
+                        selectedItem={form.duration === 'custom' ? { label: 'Custom', value: 'custom' } : form.duration}
                         data={[
                             {
                                 label: 'Durations',
@@ -127,10 +126,9 @@ const SprintModal: FC = () => {
                         ]}
                         onSelectionChange={(item: any)=> {
                             if (item.value === 'custom'){
-
                                 setForm({...form, duration: 'custom'})
                             }else{
-                                setForm({...form, duration: item as Duration, endTimestamp: undefined})
+                                setForm({...form, duration: item as Duration, endTimestamp: form.startTimestamp? moment.unix(form.startTimestamp).add(item.value, item.unit).unix(): undefined})
                             }
                         }}
                     />
@@ -140,13 +138,27 @@ const SprintModal: FC = () => {
                         label='Start date'
                         value={form.startTimestamp}
                         clearButton={true}
-                        handleChange={(value: string) => {setForm({ ...form, startTimestamp: value? moment(value).unix(): undefined})}}
+                        isRequired={sprintModal.props.mode === 'start'}
+                        handleChange={(value: string) => {
+                            if (form.duration === 'custom' && value){
+                                setForm({ ...form, startTimestamp: moment(value).unix(), endTimestamp: max([moment(value).unix(), form.endTimestamp || 0])})
+                            }
+                            else if (!value){
+                                setForm({...form, startTimestamp: undefined, endTimestamp: undefined})
+                            }
+                            else if(form.duration !== 'custom'){
+                                const startTimestamp = moment(value).unix();
+                                const endTimestamp = moment(value).add(form.duration.value, form.duration.unit).unix();
+                                setForm({ ...form, startTimestamp, endTimestamp });
+                            } 
+                        }}
                     />
                 </div>
 
                 <div className='w-50 mt-2'>
                     <DateInput 
                         label='End date'
+                        isRequired={sprintModal.props.mode === 'start'}
                         value={form.endTimestamp}
                         minDate={form.startTimestamp}
                         clearButton={true}
@@ -172,13 +184,16 @@ const SprintModal: FC = () => {
                         handleClick={()=>{ sprintModalService.setShowModel(false) }}
                     />
                     <Button 
-                        label='Update'
+                        label={sprintModal.props.mode ==='start'? 'Start': 'Update'}
                         handleClick={()=>{ 
-                            if (!isEmpty(form.name)){
+                            if (!isEmpty(form.name)
+                                && (sprintModal.props.mode === 'edit' || (form.startTimestamp && form.endTimestamp))
+                            ){
                                 dispatch(updateSprint({
                                     id: sprint?.id || '', 
-                                    data: {...form}
+                                    data: {...form, status: sprintModal.props.mode === 'start'? 'active': sprint?.status}
                                 }))
+                                sprintModalService.setShowModel(false);
                             }
                         }}
                     />

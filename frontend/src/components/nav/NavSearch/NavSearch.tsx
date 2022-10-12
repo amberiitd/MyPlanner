@@ -12,7 +12,7 @@ const NavSearch: FC<NavSearchProps> = (props) => {
     );
     
     return(
-        <div className='d-inline-flex w-100'>
+        <div className='d-inline-flex w-100 font-thm'>
             <div className='d-block d-lg-none ms-auto'>
                 <div className='' hidden={showCollapsedSearch} onClick={()=>{setShowCollapsedSearch(true)}}>
                     <NavBarTool item={{

@@ -8,7 +8,7 @@ interface BadgeProps{
 
 const Badge: FC<BadgeProps> = (props) => {
     return (
-        <div className={`cursor-default px-1 rounded-pill ${props.extraClasses}`}>
+        <div className={`cursor-default px-2 rounded-pill ${props.extraClasses}`}>
             {props.data}
         </div>
     )

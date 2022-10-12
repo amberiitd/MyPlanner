@@ -13,6 +13,7 @@ interface SprintCardProps{
     issueList: Issue[];
     sprintId: string;
     sprintIndex: number;
+    sprintName: string | undefined;
     sprintStatus: SprintStatus;
     handleDrop: (event: any) => void;
     project: Project;
@@ -77,7 +78,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
         <div ref={drop} className='p-2 rounded-2 bg-light'>
             <div>
                 <SprintHeaderRibbon
-                    label={`${props.project.key} Sprint ${props.sprintIndex}`}
+                    label={props.sprintName?? `${props.project.key} Sprint ${props.sprintIndex}`}
                     metric={{
                         storyPoints: [
                             {
@@ -119,7 +120,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
                     Add an issue by dragging the issue here
                 </div>
                 <div className='mt-1'>
-                    <IssueCreator project={props.project}/>
+                    <IssueCreator project={props.project} cardId={props.sprintId}/>
                 </div>
             </div>
         </div>

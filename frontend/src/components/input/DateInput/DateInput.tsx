@@ -68,7 +68,7 @@ const DateInput: FC<DateInputProps> = (props) => {
                     disabled={props.disabled}
                 />
                 {
-                    props.clearButton && !isEmpty(parsedValue) &&
+                    props.clearButton && !isEmpty(parsedValue) && !props.disabled &&
                     <div className='py-auto ms-auto cursor-pointer' 
                         onClick={(e)=> {
                             props.handleChange(undefined)

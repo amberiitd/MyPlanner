@@ -1,5 +1,5 @@
-import { uniqueId } from 'lodash';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { isEmpty, uniqueId } from 'lodash';
+import { createContext, FC, useCallback, useContext, useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -11,23 +11,41 @@ import Button from '../../../../components/Button/Button';
 import DropdownAction from '../../../../components/DropdownAction/DropdownAction';
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
-import { sprintModalService } from '../../../../modal.service';
 import { Project, Sprint } from '../../../../model/types';
 import './Backlog.css';
 import BacklogCard from './BacklogCard/BacklogCard';
+import CompleteSprintModal from './CompleteSprintModal/CompleteSprintModal';
+import { issueTypes } from './IssueCreator/IssueTypeSelector/issueTypes';
 import { Issue } from './IssueRibbon/IssueRibbon';
 import SprintCard from './SprintCard/SprintCard';
 import SprintModal from './SprintModal/SprintModal';
+import Split from 'react-split';
 
 interface BacklogProps{
     project: Project;
 }
+
+export const BacklogContext = createContext<{
+    openIssue: Issue | undefined;
+    setOpenIssue: (issue: Issue | undefined) => void;
+}>({
+    openIssue: undefined,
+    setOpenIssue: () => {}
+})
 
 const Backlog: FC<BacklogProps>  = (props) => {
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
     const [projectIssues, setProjectIssues] = useState<Issue[]>([]); 
     const [projectSprints, setProjectSprints] = useState<Sprint[]>([]);
+    const [openIssue, setOpenIssue] = useState<Issue | undefined>();
+    const [filters, setFilters] = useState<{
+        searchText: string;
+        issueTypes: string[];
+    }>({
+        searchText: '',
+        issueTypes: []
+    })
     const dispatch = useDispatch();
     const members = [
         {
@@ -50,9 +68,36 @@ const Backlog: FC<BacklogProps>  = (props) => {
         setProjectSprints(sprints.values.filter(sprint => sprint.projectKey === props.project.key));
     }, [issues, sprints, props])
 
+    const backlogBody = (
+        <div className='overflow-auto backlog-body pe-2' >
+            { 
+                projectSprints.map(sprint => (
+                    <div key={uniqueId()} className='my-3'>
+                        <SprintCard 
+                            issueList={projectIssues.filter(issue => issue.sprintId === sprint.id && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                            sprintId={sprint.id}
+                            sprintIndex={sprint.index}
+                            sprintStatus={sprint.status}
+                            handleDrop={handleDrop}
+                            project={props.project}
+                            sprintName={sprint.name}
+                        />
+                    </div>
+                ))
+            }
+            <div className='my-3'>
+                <BacklogCard 
+                    issueList={projectIssues.filter(issue => issue.sprintId === 'backlog' && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                    handleDrop={handleDrop}
+                    project={props.project}
+                />
+            </div>
+        </div>
+    );
+
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className='h-100'>
+            <div className='h-100' style={{paddingTop: '30px'}}>
                 <div className='d-flex flex-nowrap align-items-center mb-3'>
                     <div className='h3'>
                         {'Backlog'}
@@ -73,15 +118,15 @@ const Backlog: FC<BacklogProps>  = (props) => {
                         />
                     </div>
                 </div>
-                <div className='d-flex flex-nowrap align-items-center mb-3'>
+                <div className='d-flex flex-nowrap align-items-center mb-3' style={{height: '50px'}}>
                     <div className='me-2'>
                         <TextInput 
                             label='Search Project' 
                             hideLabel={true}
-                            value={''}
+                            value={filters.searchText}
                             rightBsIcon='search'
                             placeholder='Search backlog'
-                            handleChange={()=>{}}
+                            handleChange={(searchText: string)=>{setFilters({...filters, searchText})}}
                         />
                     </div>
                     <div className='d-flex flex-nowrap'>
@@ -105,56 +150,57 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 handleClick={()=>{}}
                             />
                         </div>
+                    </div>
+                    <div className='d-flex flex-nowrap'>
                         <div className='filter mx-2'>
                             <MultiSelect 
                                 label='Issue Type'
                                 data={[
                                     {
                                         label: 'Type',
-                                        items: [
-                                            {
-                                                label: 'Bug',
-                                                value: 'bug'
-                                            },
-                                            {
-                                                label: 'Story',
-                                                value: 'story'
-                                            }
-                                        ],
+                                        items: issueTypes,
                                         showLabel: false
                                     }
                                 ]} 
                                 hideLabel={true}
-                                onSelectionChange={()=>{}}
+                                onSelectionChange={(items)=>{
+                                    setFilters({
+                                        ...filters, 
+                                        issueTypes: items.map(item => item.value)
+                                    })
+                                }}
                             />
 
                         </div>
                     </div>
                 </div>
-                <div className='overflow-auto backlog-body' >
+                <BacklogContext.Provider value={{openIssue, setOpenIssue}}>
                     {
-                        projectSprints.map(sprint => (
-                            <div key={uniqueId()} className='my-3'>
-                                <SprintCard 
-                                    issueList={projectIssues.filter(issue => issue.sprintId === sprint.id)}
-                                    sprintId={sprint.id}
-                                    sprintIndex={sprint.index}
-                                    sprintStatus={sprint.status}
-                                    handleDrop={handleDrop}
-                                    project={props.project}
-                                />
-                            </div>
-                        ))
+                        openIssue ? (
+                            <Split 
+                                sizes={openIssue ? [50, 50]: [100]}
+                                minSize={300}
+                                expandToMin={false}
+                                gutterSize={10}
+                                gutterAlign="center"
+                                snapOffset={30}
+                                dragInterval={1}
+                                direction="horizontal"
+                                cursor="col-resize"
+                                className='h-100 d-flex flex-nowrap'
+                            >
+                                {backlogBody}
+                                <div className=''>
+                                    hello
+                                </div>
+                            </Split>
+                        ):
+                        backlogBody
                     }
-                    <div className='my-3'>
-                        <BacklogCard 
-                            issueList={issues.values.filter(item => item.sprintId === 'backlog')}
-                            handleDrop={handleDrop}
-                            project={props.project}
-                        />
-                    </div>
-                </div>
+                    
+                </BacklogContext.Provider>
                 <SprintModal />
+                <CompleteSprintModal />
             </div>
         </DndProvider>
     )

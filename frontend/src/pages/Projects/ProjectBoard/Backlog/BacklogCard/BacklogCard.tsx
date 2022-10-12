@@ -56,7 +56,7 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
     }, [props.issueList])
 
     return (
-        <div ref={drop} className='p-2 rounded-2 border'>
+        <div ref={drop} className='backlog-card p-2 rounded-2 border'>
             <div>
                 <BacklogHeaderRibbon
                     label={`Backlog`}
@@ -101,6 +101,7 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
                 <div className='mt-1'>
                     <IssueCreator 
                         project={props.project}
+                        cardId={'backlog'}
                     />
                 </div>
             </div>

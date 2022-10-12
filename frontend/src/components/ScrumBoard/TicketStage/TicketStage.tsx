@@ -1,17 +1,22 @@
 import { clone, startCase, toString, toUpper } from 'lodash';
 import { FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { updateIssue } from '../../../app/slices/issueSlice';
+import { StageValue } from '../../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/StageSelector/stages';
 import DropdownAction from '../../DropdownAction/DropdownAction';
+import WindowSlider from '../../WindowSlider/WindowSlider';
 import { ScrumContext } from '../ScrumBoard';
 import TicketCard from '../TicketCard/TicketCard';
 import './TicketStage.css';
 
 interface TicketStageProps{
-    stage: string;
+    stage: StageValue;
 }
 
 const TicketStage: FC<TicketStageProps> = (props) => {
     // const [ticketBucket, setTicketBucket] = useState<any[]>(props.tickets);
     const stageRef = useRef<HTMLDivElement>(null);
+    const dispatch = useDispatch();
 
     const {
         ticketList, 
@@ -27,10 +32,20 @@ const TicketStage: FC<TicketStageProps> = (props) => {
     const [hover, setHover] = useState(false);
 
     const handleDragStart = useCallback( (event: any, item: any) => {
-        const ticket = ticketList.find(ticket => ticket.issueId === item.issueId);
+        const ticket = ticketList.find(ticket => ticket.id === item.id);
         setDragTicket(ticket) ;
         setDragSource(props.stage);
-    }, [ stageRef, ticketList])
+        
+        const img = document.createElement("div");
+        img.id = 'drag-img'
+        img.innerHTML = event.target.innerHTML;
+        document.body.appendChild(img);
+
+        var rect = event.target.getBoundingClientRect();
+        var x = event.clientX - rect.left; //x position within the element.
+        var y = event.clientY - rect.top; 
+        event.dataTransfer.setDragImage(img, 2*x, 2*y);
+    }, [ ticketList])
 
     const handleDrop = useCallback((event: any) => {
         if (dragTicket){
@@ -39,11 +54,22 @@ const TicketStage: FC<TicketStageProps> = (props) => {
     }, [dragTicket])
 
     const handleDragEnd = useCallback((event: any) => {
+
+        var img = document.getElementById("drag-img");
+        if (img?.parentNode) {
+            img.parentNode.removeChild(img);
+        }
+
         if (dragTicket && dragSource && dropTarget && dragSource !== dropTarget){
-            const index = ticketList.findIndex(t => t.issueId === dragTicket.issueId);
-            dragTicket.stage = dropTarget;
-            const newTicketList  = ticketList.filter((t, i) => index !==i );
-            setTicketList([...newTicketList, dragTicket]);
+            const ticket = ticketList.find(t => t.id === dragTicket.id);
+            if (ticket){
+                dispatch(updateIssue({id: ticket.id, data: {stage: dropTarget}}))
+            }
+            setDragSource(undefined);
+            setDropTarget(undefined);
+            setDragTicket(undefined);
+        }
+        else{
             setDragSource(undefined);
             setDropTarget(undefined);
             setDragTicket(undefined);
@@ -55,12 +81,11 @@ const TicketStage: FC<TicketStageProps> = (props) => {
         setMetric({ticketCount});
     }, [ticketList]);
     return (
-        <div ref={stageRef} id="target" className='p-2 pb-3 bg-light rounded-3 ticket-stage'
+        <div ref={stageRef} id="target" className='p-2 pb-3 bg-light rounded-3 ticket-stage overflow-auto'
             onDragOver = {(e) => {
-                e.stopPropagation();
+                // e.stopPropagation();
                 e.preventDefault();
-                e.dataTransfer.dropEffect = "move";
-                }}
+            }}
             onDrop={(e)=> {handleDrop(e);}}
             onDragEnd = {(e) => {handleDragEnd(e)}}
         >
@@ -69,7 +94,7 @@ const TicketStage: FC<TicketStageProps> = (props) => {
                 onMouseLeave={()=> {setHover(false)}}
             >
                 <div className='h6'>
-                    {`${toUpper(startCase(props.stage))} ${metric.ticketCount} ${metric.ticketCount > 1 ? 'ISSUES': 'ISSUE'}`}
+                    {`${toUpper(startCase(props.stage as any))} ${metric.ticketCount} ${metric.ticketCount > 1 ? 'ISSUES': 'ISSUE'}`}
                 </div>
 
                 <div className='ms-auto' hidden={!hover}>
@@ -97,17 +122,24 @@ const TicketStage: FC<TicketStageProps> = (props) => {
             {
                 
                 ticketList.filter(t=> t.stage === props.stage).map((item, index)=> (
-                    <div id={`ticket-${props.stage}-${item.issueId}`} key={`item-${index}`} className='mb-2 border' 
+                    <div id={`ticket-${props.stage}-${item.id}`} key={`item-${index}`} className='mb-2' 
                         draggable={true} 
                         onDragStart={(e)=> handleDragStart(e, item)}
-                        
+                        style={{ opacity: dragTicket && item.id === dragTicket.id ? 0: 1}}
                     >
-                        <TicketCard 
-                            {...item}
-                            handleMenuClick={(event: any, event2: any)=> {} } 
-                            onClick={(event1: any)=> {} }                            
-                        />
+                        <TicketCard
+                                issue={item}
+                                handleMenuClick={(event: any)=> {} }                           
+                                onClick={(event1: any)=> {} }                            
+                            />
                     </div>
+                        // <WindowSlider 
+                        //     key={`item-${index}`} 
+                        //     dragStartCallBack={(e)=> handleDragStart(e, item)}
+                        //     children={
+                                
+                        //     }
+                        // />
                 ))
             }
             
