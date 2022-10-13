@@ -18,7 +18,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
     const [showMenu, setShowMenu] = useState(false);
     const toggleRef = useRef<HTMLDivElement>(null);
     const handleCLick = useCallback((event: any) =>{
-        if (props.disabled){
+        if (!!props.disabled){
             return;
         }
         if (toggleRef.current && toggleRef.current.contains(event.target)){
@@ -26,7 +26,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
         }else{
             setShowMenu(false);
         }
-    }, [props, toggleRef]);
+    }, [props, toggleRef, showMenu]);
     
     useEffect(()=>{
         document.addEventListener('click', handleCLick, true);

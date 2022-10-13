@@ -41,6 +41,7 @@ const TextColors: FC<TextColorsProps> = (props) => {
                     rightBsIcon={'caret-down'}
                     extraClasses={'btn-as-light p-1 ps-2'}
                     handleClick={()=>{}}
+                    tooltip={'Text Color'}
                 />
                 <div style={{height: '2px', backgroundColor: props.selectedColor.value}}></div>
             </div>
@@ -52,6 +53,7 @@ const TextColors: FC<TextColorsProps> = (props) => {
                                 style={{backgroundColor: color.value, color: 'white', width: '30px', height: '30px', paddingTop: '3px'}}
                                 onMouseDown={(e)=>{e.preventDefault(); props.onChange(color)}}
                                 key={uniqueId()}
+                                title={color.label}
                             >
                                 { props.selectedColor.value === color.value && <i className='bi bi-check'></i>}
                             </div>

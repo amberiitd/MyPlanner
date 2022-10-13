@@ -9,6 +9,7 @@ interface ButtonProps {
   hideIcon?: boolean;
   disabled?: boolean;
   aslink?: boolean;
+  tooltip?: string;
   extraClasses?: string;
   handleClick: () => void;
 }
@@ -21,6 +22,7 @@ const Button: FC<ButtonProps> = (props) => (
         tabIndex={-1} 
         disabled={props.disabled}
         style={{cursor: props.disabled? 'not-allowed': 'pointer'}}
+        title={props.tooltip}
     >
     <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>

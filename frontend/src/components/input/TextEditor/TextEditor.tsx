@@ -1,5 +1,5 @@
-import { ContentBlock, Editor, EditorState, RichUtils } from 'draft-js';
-import { createContext, FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils } from 'draft-js';
+import React, { createContext, FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SimpleAction } from '../../../model/types';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import './TextEditor.css';
@@ -10,6 +10,11 @@ import ListStyles, { ListStyle } from './ListStyles/ListStyles';
 import { Provider } from 'react-redux';
 import { ProjectBoardContext } from '../../../pages/Projects/ProjectBoard/ProjectBoard';
 import { IssueViewContext } from '../../../pages/Projects/ProjectBoard/IssueView/IssueView';
+import { isEmpty, max } from 'lodash';
+import Mention from './Entities/Mention/Mention';
+import Entities, { Insert } from './Entities/Entities';
+import Link from './Entities/Link/Link';
+import LinkSpan from './Entities/Link/LinkSpan/LinkSpan';
 
 interface TextEditorProps{
 
@@ -25,8 +30,23 @@ export const TextEditorContext = createContext<{
 
 const TextEditor: FC<TextEditorProps> = (props) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const linkPopupRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number | undefined>();
-    const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
+    const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0]});
+    const [linkPopup, setLinkPopup] = useState({show: false, position: [0, 0]});
+    const [lastSelection, setLastSelection] = useState<Selection | null>();
+
+    const decorator = new CompositeDecorator([
+        {
+            strategy: findMentionEntity,
+            component: MentionSpan,
+        },
+        {
+            strategy: getInsertStrategy('LINK'),
+            component: LinkSpan,
+        },
+      ]);
+    const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty(decorator));
     const [currentStyles, setCurrentStyles] = useState<string[]>([]);
     const [currentBlockType, setCurrentBlockType] = useState<BlockType | undefined>();
     const [currentTextColor, setCurrentTextColor] = useState<TextColor | undefined>();
@@ -47,7 +67,14 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     }, [boardSizes, innerPanelSizes]);
 
     useEffect(() => {
-        window.addEventListener('resize', handleResize)
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('click', (e: any)=>{
+            if (linkPopupRef.current && linkPopupRef.current.contains(e.target)){
+
+            }else{
+                setLinkPopup({show: false, position: [0, 0]})
+            }
+        })
         return () => {window.removeEventListener('resize', handleResize)}
     }, [])
 
@@ -160,20 +187,20 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     // });
     const contentRef = useRef<Editor>(null);
 
-    const handleFormatToggle = (format: Format) => {
+    const handleFormatToggle = useCallback((format: Format) => {
         setEditorState(RichUtils.toggleInlineStyle(editorState, format.style));
-    }
+    }, [editorState])
 
-    const handleBlockToggle = (block: BlockType) => {
+    const handleBlockToggle = useCallback((block: BlockType) => {
         if (block.value === currentBlockType?.value){
             setEditorState(RichUtils.toggleBlockType(editorState, textblockStyles[0].value));
         }
         else{
             setEditorState(RichUtils.toggleBlockType(editorState, block.value)); 
         }
-    }
+    }, [editorState])
 
-    const handleTextColorToggle = (color: TextColor) => {
+    const handleTextColorToggle = useCallback((color: TextColor) => {
         if (currentTextColor && currentTextColor.style !== 'TEXT_NORMAL'){
             setEditorState(RichUtils.toggleInlineStyle(editorState, currentTextColor.style));
         }
@@ -181,7 +208,84 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         if (color.style !== 'TEXT_NORMAL'){
             setEditorState(RichUtils.toggleInlineStyle(editorState, color.style));
         }
-    }
+    }, [editorState]);
+
+    const getPopupPosition =  useCallback(() => {
+        containerRef.current?.focus();
+        var position = [0, 0];
+        const selRect = lastSelection?.rangeCount &&  lastSelection?.rangeCount > 0 ? lastSelection?.getRangeAt(0).getBoundingClientRect(): undefined;
+        const editorRect =  containerRef.current?.getBoundingClientRect();
+        if (selRect && editorRect && editorRect.bottom > selRect.bottom && selRect.top > editorRect.top 
+            && editorRect.left < selRect.left && selRect.right < editorRect.right
+        ){
+            const endmargin = max([0, selRect.right+ 200 - editorRect.right]) || 0;
+            position = [selRect.top+ 20, selRect.left - endmargin]
+        }else if (editorRect){
+            position = [editorRect.bottom - 50, editorRect.left+ 100]
+        }
+        containerRef.current?.focus();
+        return position;
+    }, [containerRef, lastSelection]);
+
+    const handleEntityToggle = useCallback((insert: Insert)=>{
+        switch(insert.value){
+            case 'link':
+                setLinkPopup({show: true, position: getPopupPosition()});
+                break;
+        }
+    }, [editorState])
+
+    // TO DO: use draft-js-plugin/mention instead 
+    const handleMentionEntity = useCallback((entity: any) => {
+        if (!entity){
+            setMentionPopup({show: false, position: [0, 0]})
+            return;
+        }
+        const contentState = editorState.getCurrentContent();
+        const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
+        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+        const sel = editorState.getSelection();
+        // const contentStateWithLink = Modifier.applyEntity(
+        //     contentStateWithEntity,
+        //     editorState.getSelection(),
+        //     entityKey,
+        // );
+        const blockText = contentState.getBlockForKey(sel.getStartKey()).getText();
+        const beforeSelectionText = blockText.slice(0, sel.getStartOffset()) ;
+        const words = beforeSelectionText.split(" ");
+        const lastWord = words[words.length-1]
+        let newSelection = sel.merge({
+            anchorOffset: sel.getStartOffset() -lastWord.length,
+            focusOffset: sel.getStartOffset()
+        });
+
+        let newContent = Modifier.replaceText(contentState, newSelection, entity.data.label, undefined, entityKey);
+        let newState = EditorState.push(editorState, newContent, 'insert-characters');
+
+        newSelection = newState.getSelection();
+        newContent = Modifier.insertText(newState.getCurrentContent(), newSelection, " ");
+ 
+        // const newEditorState = EditorState.set(editorState, {
+        //     currentContent: contentStateWithLink,
+        // });
+        setEditorState(EditorState.push(newState, newContent, 'insert-characters'));
+        setMentionPopup({show: false, position: [0, 0]})
+    }, [editorState])
+
+    const handleLinkEntity = useCallback((entity: any) => {
+        if (!entity){
+            setLinkPopup({show: false, position: [0, 0]})
+            return;
+        }
+        const contentState = editorState.getCurrentContent();
+        const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
+        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+        const sel = editorState.getSelection();
+
+        let newContent = Modifier.insertText(contentState, sel, entity.data.label || entity.data.url, undefined, entityKey);
+        setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
+        setLinkPopup({show: false, position: [0, 0]})
+    }, [editorState])
 
     const textColorMap = {
         'TEXT_RED': {
@@ -201,20 +305,48 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     // }
 
     useEffect(() => {
+        const sel = editorState.getSelection();
+        if (window.getSelection()){
+            setLastSelection(window.getSelection());
+        }
+        // inline text format
         setCurrentStyles(editorState.getCurrentInlineStyle().toArray());
 
-        const blockType = editorState.getCurrentContent().getBlockForKey(editorState.getSelection().getAnchorKey()).getType();
+        // block list styling
+        const blockType = editorState.getCurrentContent().getBlockForKey(sel.getAnchorKey()).getType();
         setCurrentBlockType(textblockStyles.find(item => item.value == blockType) || listStyles.find(item => item.value == blockType));
 
+        // inline color styling
         const textColor = editorState.getCurrentInlineStyle().toArray().find(color => color.startsWith('TEXT_'));
         setCurrentTextColor(textColorStyles.find(color => color.style === textColor));
+
+        // handle @mention popup
+        const blockText = editorState.getCurrentContent().getBlockForKey(sel.getStartKey()).getText()
+        const beforeSelectionText = blockText.slice(0, sel.getStartOffset()) ;
+        const words = beforeSelectionText.split(" ");
+        const lastWord = words[words.length-1]
+        const afterSelectionChar = blockText[sel.getStartOffset()];
+        const beforeSelectionChar = beforeSelectionText[beforeSelectionText.length -1];
+        if (beforeSelectionChar !== " "
+            && lastWord.startsWith('@')
+            && (isEmpty(afterSelectionChar) || afterSelectionChar == " ")
+        ){
+            if (!mentionPopup.show){
+                
+                setMentionPopup({show: true, position: getPopupPosition()});
+            }
+        }
+        else {
+            setMentionPopup({show: false, position: [0, 0]});
+        }
+        
     }, [editorState])
     
     return (
         <TextEditorContext.Provider value={{containerWidth}}>
             <div ref={containerRef} className='border rounded'>
                 <div className='p-2 border border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
-                    <div className='border-end'>
+                    <div className='border-end' title='Text Styles'>
                         <DropdownAction 
                             actionCategory={[
                                 {
@@ -252,6 +384,12 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                             onChange={handleBlockToggle}
                         />
                     </div>
+                    <div className='border-end'>
+                        <Entities 
+                            linkPopup={linkPopup.show} 
+                            onSelect={handleEntityToggle}                         
+                        />
+                    </div>
                 </div>
                 <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus()}}>
                     <Editor
@@ -262,10 +400,70 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                         placeholder={'Write a description for for this issue...'}
                     />
                 </div>
-                
+                {
+                    mentionPopup.show &&
+                    <div 
+                        className='position-absolute' 
+                        style={{top: mentionPopup.position[0], left: mentionPopup.position[1], zIndex: 101}}
+                    >
+                            <Mention 
+                                onSelect={handleMentionEntity}
+                            />
+                    </div>
+                }
+                {
+                    linkPopup.show && 
+                    <div
+                        ref={linkPopupRef}
+                        className='position-absolute' 
+                        style={{top: linkPopup.position[0], left: linkPopup.position[1], zIndex: 100}}
+                    >
+                        <Link 
+                            onInput={handleLinkEntity}
+                        />
+                    </div>
+                }
             </div>
         </TextEditorContext.Provider>
     )
+}
+
+const MentionSpan: FC<any> = (props)=>{
+    const contentState: ContentState = props.contentState;
+    const entity = contentState.getEntity(props.entityKey)
+    return (
+        <span {...entity.getData()} unselectable='on' className='rounded-pill bg-primary p-1 text-white'>
+            {props.children}
+        </span>
+    )
+}
+
+function getInsertStrategy(type: 'MENTION' | 'LINK'){
+    return (contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState) => {
+        contentBlock.findEntityRanges(
+            (character) => {
+            const entityKey = character.getEntity();
+            return (
+                entityKey !== null &&
+                contentState.getEntity(entityKey).getType() === type
+            );
+            },
+            callback
+        );
+    }
+}
+
+function findMentionEntity(contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState){
+    contentBlock.findEntityRanges(
+        (character) => {
+        const entityKey = character.getEntity();
+        return (
+            entityKey !== null &&
+            contentState.getEntity(entityKey).getType() === "MENTION"
+        );
+        },
+        callback
+    );
 }
 
 export default TextEditor;

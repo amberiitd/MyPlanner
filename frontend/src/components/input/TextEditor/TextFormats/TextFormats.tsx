@@ -31,7 +31,7 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
             setOffset(0)
         }
     }, [textContainerWidth])
-    
+
     return (
         <div className='d-flex flex-nowrap'>
             
@@ -43,6 +43,7 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                             hideLabel={true}
                             leftBsIcon={format.bsIcon}
                             handleClick={() =>{props.onToggle(format)}}
+                            tooltip={format.label}
                             extraClasses={`ps-2 py-1 ${props.currentStyles.includes(format.style)? "btn-as-thm":"btn-as-bg"}`}
                         />
                         {/* <button type="button" id="paste" value="" unselectable="on" onClick={() =>{props.onChange(format)}}> Paste HTML</button> */}
@@ -50,7 +51,7 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                     
                 ))
             }
-            <div className='ms-1 me-2' unselectable="on">
+            <div className='ms-1 me-2' unselectable="on" title={'Formats'}>
                 <DropdownAction 
                     actionCategory={[{
                         label: 'Formats',
