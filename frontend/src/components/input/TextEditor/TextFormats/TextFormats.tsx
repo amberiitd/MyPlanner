@@ -21,7 +21,7 @@ export interface Format extends SimpleAction{
 }
 
 const TextFormats: FC<TextFormatsProps> = (props) => {
-    const [offset, setOffset] = useState(0);
+    const [offset, setOffset] = useState(2);
     const textContainerWidth = useContext(TextEditorContext).containerWidth;
 
     useEffect(() => {
@@ -57,9 +57,9 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                         label: 'Formats',
                         value: 'formats',
                         items: props.formatList.slice(offset),
-                        selectedItems: props.formatList.slice(2).filter(item => props.currentStyles.includes(item.style))
+                        selectedItems: props.formatList.slice(offset).filter(item => props.currentStyles.includes(item.style))
                     }]} 
-                    buttonClass={props.formatList.slice(2).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm  p-1 ps-2': undefined}
+                    buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm  p-1 ps-2': undefined}
                     handleItemClick={(event) => {props.onToggle(event.item as Format)}}
                 />
             </div>

@@ -7,3 +7,7 @@ button{
 	font: inherit;
 	outline: inherit;
 }
+
+.bg-thm-2{
+    background-color: rgb(201, 56, 3);;
+}

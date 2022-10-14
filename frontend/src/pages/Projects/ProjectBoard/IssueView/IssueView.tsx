@@ -4,6 +4,8 @@ import Split from 'react-split';
 import DropdownAction from '../../../../components/DropdownAction/DropdownAction';
 import TextEditor from '../../../../components/input/TextEditor/TextEditor';
 import { ProjectBoardContext } from '../ProjectBoard';
+import Activity from './Activity/Activity';
+import SideView from './SideView/SideView';
 
 interface IssueViewProps{
 
@@ -65,9 +67,15 @@ const IssueView: FC<IssueViewProps> = (props) => {
             </div>
             
             <div className='my-2 w-100'>
-                <p>Description</p>
-                <div className=''>
-                    <TextEditor />
+                <h6>Description</h6>
+                <div className='mb-5'>
+                    <TextEditor 
+                        resizeProps={[boardSizes, containerRef]}
+                    />
+                </div>
+
+                <div className='my-5'>
+                    <Activity />
                 </div>
             </div>
         </div>
@@ -94,8 +102,8 @@ const IssueView: FC<IssueViewProps> = (props) => {
                         <div>
                             {mainView}
                         </div>
-                        <div>
-
+                        <div className='px-2'>
+                            <SideView />
                         </div>
                     </Split>
                     : 

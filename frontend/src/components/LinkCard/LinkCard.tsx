@@ -22,7 +22,7 @@ const LinkCard: FC<LinkCardProps> = (props) => {
             <div className='p-1 ps-3 label-card' hidden={!props.showLabel}>{props.label}</div>
             {
                 props.linkItems.map((item, index) => (
-                    <div key ={`custom-link-${index}`} onMouseDown={(e) => {e.preventDefault(); props.handleClick(item)}}>
+                    <div id={item.htmlId || ''} key ={`custom-link-${index}`} onMouseDown={(e) => {e.preventDefault(); props.handleClick(item)}}>
                         <CustomOption {...item} 
                             extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')
                             }

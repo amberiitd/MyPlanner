@@ -15,9 +15,11 @@ import Mention from './Entities/Mention/Mention';
 import Entities, { Insert } from './Entities/Entities';
 import Link from './Entities/Link/Link';
 import LinkSpan from './Entities/Link/LinkSpan/LinkSpan';
+import Button from '../../Button/Button';
 
 interface TextEditorProps{
-
+    resizeProps?: any[];
+    placeholder?: string;
 }
 
 export interface BlockType extends SimpleAction {
@@ -30,6 +32,7 @@ export const TextEditorContext = createContext<{
 
 const TextEditor: FC<TextEditorProps> = (props) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [active, setActive] = useState(false);
     const linkPopupRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number | undefined>();
     const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0]});
@@ -64,18 +67,27 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
     useEffect(() => {
         handleResize();
-    }, [boardSizes, innerPanelSizes]);
+    }, [...(props.resizeProps || [])]);
 
     useEffect(() => {
         window.addEventListener('resize', handleResize);
-        window.addEventListener('click', (e: any)=>{
+        const handleClick = (e: any)=>{
             if (linkPopupRef.current && linkPopupRef.current.contains(e.target)){
 
-            }else{
+            }
+            else if (e.target.parentNode.id === 'editor-link-toggler'){
+                // setLinkPopup({show: !linkPopup.show, position: [0, 0]})
+            }
+            else{
                 setLinkPopup({show: false, position: [0, 0]})
             }
-        })
-        return () => {window.removeEventListener('resize', handleResize)}
+        };
+
+        window.addEventListener('click', handleClick)
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('click', handleClick);
+        }
     }, [])
 
     const formatList: Format[] = [
@@ -287,6 +299,19 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         setLinkPopup({show: false, position: [0, 0]})
     }, [editorState])
 
+    const handleEmojiEntity = useCallback((entity: any) => {
+        if (!entity){
+            return;
+        }
+        const contentState = editorState.getCurrentContent();
+        const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
+        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+        const sel = editorState.getSelection();
+
+        let newContent = Modifier.insertText(contentState, sel, entity.data.label, undefined, entityKey);
+        setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
+    }, [editorState])
+
     const textColorMap = {
         'TEXT_RED': {
             color: 'red'
@@ -344,86 +369,124 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     
     return (
         <TextEditorContext.Provider value={{containerWidth}}>
-            <div ref={containerRef} className='border rounded'>
-                <div className='p-2 border border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
-                    <div className='border-end' title='Text Styles'>
-                        <DropdownAction 
-                            actionCategory={[
-                                {
-                                    label: 'Text Styles',
-                                    value: 'text-styles',
-                                    items: textblockStyles,
-                                    selectedItems: currentBlockType? [currentBlockType]: []
-                                }
-                            ]}
-                            bsIcon={'caret-down'}
-                            buttonText={(currentBlockType && currentBlockType.category === 'text') ? currentBlockType.label: 'Normal'}
-                            extraClasses='toggle-md mx-2'
-                            disabled={currentBlockType?.category === 'list'}
-                            handleItemClick={(event)=> handleBlockToggle(event.item as BlockType)} 
-                        />
-                    </div>
-                    <div className='border-end'>
-                        <TextFormats 
-                            formatList={formatList}
-                            currentStyles={currentStyles}
-                            onToggle={handleFormatToggle}
-                        />
-                    </div>
-                    <div className='border-end'>
-                        <TextColors 
-                            textColorList={textColorStyles} 
-                            selectedColor={currentTextColor || textColorStyles[0]}
-                            onChange={handleTextColorToggle}
-                        />
-                    </div>
-                    <div className='border-end'>
-                        <ListStyles 
-                            styleList={listStyles} 
-                            selectedStyle={(currentBlockType || textblockStyles[0]) as ListStyle}
-                            onChange={handleBlockToggle}
-                        />
-                    </div>
-                    <div className='border-end'>
-                        <Entities 
-                            linkPopup={linkPopup.show} 
-                            onSelect={handleEntityToggle}                         
-                        />
-                    </div>
-                </div>
-                <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus()}}>
-                    <Editor
-                        ref={contentRef}
-                        editorState={editorState}
-                        onChange={setEditorState}
-                        customStyleMap={{...textColorMap}}
-                        placeholder={'Write a description for for this issue...'}
-                    />
-                </div>
-                {
-                    mentionPopup.show &&
-                    <div 
-                        className='position-absolute' 
-                        style={{top: mentionPopup.position[0], left: mentionPopup.position[1], zIndex: 101}}
+            <div>
+               { 
+                    !active &&
+                    <div className='rounded border text-muted' 
+                        onClick={()=>{
+                            setActive(true);
+                            containerRef.current?.focus();
+                        }}
                     >
-                            <Mention 
-                                onSelect={handleMentionEntity}
-                            />
+                        <input className='p-2 w-100' type='text' disabled={true} placeholder={props.placeholder??'Enter some text...'}/>
+                    
                     </div>
                 }
                 {
-                    linkPopup.show && 
-                    <div
-                        ref={linkPopupRef}
-                        className='position-absolute' 
-                        style={{top: linkPopup.position[0], left: linkPopup.position[1], zIndex: 100}}
-                    >
-                        <Link 
-                            onInput={handleLinkEntity}
-                        />
+                    active &&
+                    <div>
+                        <div ref={containerRef} className='border rounded'>
+                            <div className='p-2 border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
+                                <div className='border-end' title='Text Styles'>
+                                    <DropdownAction 
+                                        actionCategory={[
+                                            {
+                                                label: 'Text Styles',
+                                                value: 'text-styles',
+                                                items: textblockStyles,
+                                                selectedItems: currentBlockType? [currentBlockType]: []
+                                            }
+                                        ]}
+                                        bsIcon={'caret-down'}
+                                        buttonText={(currentBlockType && currentBlockType.category === 'text') ? currentBlockType.label: 'Normal'}
+                                        extraClasses='toggle-md mx-2'
+                                        dropdownClass='start-0'
+                                        disabled={currentBlockType?.category === 'list'}
+                                        handleItemClick={(event)=> handleBlockToggle(event.item as BlockType)} 
+                                    />
+                                </div>
+                                <div className='border-end'>
+                                    <TextFormats 
+                                        formatList={formatList}
+                                        currentStyles={currentStyles}
+                                        onToggle={handleFormatToggle}
+                                    />
+                                </div>
+                                <div className='border-end'>
+                                    <TextColors 
+                                        textColorList={textColorStyles} 
+                                        selectedColor={currentTextColor || textColorStyles[0]}
+                                        onChange={handleTextColorToggle}
+                                    />
+                                </div>
+                                <div className='border-end'>
+                                    <ListStyles 
+                                        styleList={listStyles} 
+                                        selectedStyle={(currentBlockType || textblockStyles[0]) as ListStyle}
+                                        onChange={handleBlockToggle}
+                                    />
+                                </div>
+                                <div className='border-end'>
+                                    <Entities 
+                                        linkPopup={linkPopup.show} 
+                                        onSelect={handleEntityToggle} 
+                                        onEmojiInput={handleEmojiEntity}                        
+                                    />
+                                </div>
+                            </div>
+                            <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus()}}>
+                                <Editor
+                                    ref={contentRef}
+                                    editorState={editorState}
+                                    onChange={setEditorState}
+                                    customStyleMap={{...textColorMap}}
+                                    placeholder={'Write a description for for this issue...'}
+                                />
+                            </div>
+                            {
+                                mentionPopup.show &&
+                                <div 
+                                    className='position-absolute' 
+                                    style={{top: mentionPopup.position[0], left: mentionPopup.position[1], zIndex: 101}}
+                                >
+                                        <Mention 
+                                            onSelect={handleMentionEntity}
+                                        />
+                                </div>
+                            }
+                            {
+                                linkPopup.show && 
+                                <div
+                                    ref={linkPopupRef}
+                                    className='position-absolute' 
+                                    style={{top: linkPopup.position[0], left: linkPopup.position[1], zIndex: 100}}
+                                >
+                                    <Link 
+                                        onInput={handleLinkEntity}
+                                    />
+                                </div>
+                            }
+                        </div>
+                        <div className='d-flex flex-nowrap mt-2'>
+                            <div>
+                                <Button 
+                                    label={'Save'} 
+                                    extraClasses="btn-as-thm p-1 px-2"
+                                    handleClick={()=>{}}
+                                />
+                            </div>
+                            <div className='ms-2'>
+                                <Button 
+                                    label={'Cancel'} 
+                                    extraClasses="btn-as-light p-1 px-2"
+                                    handleClick={()=>{setActive(false)}}
+                                />
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
+            
         </TextEditorContext.Provider>
     )
 }

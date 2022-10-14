@@ -42,6 +42,7 @@ export const EMPTY_SPRINT: Sprint = {
 }
 
 export interface SimpleAction{
+    htmlId?: string;
     label: string;
     value: string;
 }

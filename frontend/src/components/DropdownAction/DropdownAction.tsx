@@ -12,6 +12,7 @@ interface DropdownActionProps{
     buttonText?: string; 
     buttonClass?: string;
     extraClasses?: string;
+    dropdownClass?: string;
 }
 
 const DropdownAction: FC<DropdownActionProps> = (props) => {
@@ -47,7 +48,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
             </div>
             
 
-            <div className={`dropdown-menu bg-light ${showMenu? 'show': ''} shadow-sm`} style={{right: 0}}>
+            <div className={`dropdown-menu bg-light ${showMenu? 'show': ''} shadow-sm ${props.dropdownClass?? ' end-0'}`}>
                 {
                    props.actionCategory.map((cat, index) => (
                     <div className='bg-white mt-1' key={`action-cat-${cat.label}`}>

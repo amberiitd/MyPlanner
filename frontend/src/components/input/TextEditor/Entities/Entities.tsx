@@ -1,5 +1,5 @@
 import { CompositeDecorator } from 'draft-js';
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 import { uniqueId } from 'lodash';
 import { FC, useContext, useEffect, useRef, useState } from 'react';
 import { SimpleAction } from '../../../../model/types';
@@ -16,6 +16,7 @@ export interface Insert extends SimpleAction{
 interface EntitiesProps{
     linkPopup: boolean;
     onSelect: (insert: Insert) => void;
+    onEmojiInput: (entity: any) => void;
 }
 const Entities: FC<EntitiesProps> = (props) => {
     const [offset, setOffset] = useState(0);
@@ -26,12 +27,14 @@ const Entities: FC<EntitiesProps> = (props) => {
         {
             label: 'Link',
             value: 'link',
-            bsIcon: 'link-45deg'
+            bsIcon: 'link-45deg',
+            htmlId: 'editor-link-toggler'
         },
         {
             label: 'Emoji',
             value: 'emoji',
-            bsIcon: 'emoji-smile'
+            bsIcon: 'emoji-smile',
+            htmlId: 'editor-emoji-toggler'
         }
     ]
     useEffect(() => {
@@ -47,13 +50,15 @@ const Entities: FC<EntitiesProps> = (props) => {
     }, [textContainerWidth])
 
     useEffect(() => {
-        window.addEventListener('click', (e: any)=>{
+        const handleClick = (e: any)=>{
             if (emojiRef.current && emojiRef.current.contains(e.target)){
 
-            }else{
+            }else if (e.target.parentNode.id !== 'editor-emoji-toggler'){
                 setEmojiDropdown(false);
             }
-        })
+        };
+        window.addEventListener('click', handleClick);
+        return () => { window.removeEventListener('click', handleClick)};
     }, [])
 
     const interceptInsert = (insert: Insert) => {
@@ -67,6 +72,19 @@ const Entities: FC<EntitiesProps> = (props) => {
             default:
                 break
         }
+    }
+
+    const onInsertEmoji = (emoji: EmojiClickData) => {
+        const entity = {
+            type: 'EMOJI',
+            mutability: 'IMMUTABLE',
+            data: {
+                ...emoji,
+                label: emoji.emoji,
+                imgUrl: emoji.getImageUrl(EmojiStyle.APPLE)
+            }
+        }
+        props.onEmojiInput(entity);
     }
 
     return (
@@ -86,22 +104,26 @@ const Entities: FC<EntitiesProps> = (props) => {
                     </div>
                 ))
             }
-            <div className='ms-1 me-2' unselectable="on" title={'Formats'}>
+            <div className='ms-1 me-2' unselectable="on" title={'Inserts'}>
                 <DropdownAction 
                     actionCategory={[{
                         label: 'Inserts',
                         value: 'inserts',
                         items: insertList.slice(offset)
                     }]} 
+                    
                     handleItemClick={(event) => {interceptInsert(event.item as Insert)}}
                 />
             </div>
                 
-            <div ref={emojiRef} className={`dropdown-menu rounded-3 p-0 end-0 top-100 ${emojiDropdown? 'show': ''}`}>
-                <EmojiPicker 
-                    onEmojiClick={(emoji) => console.log(emoji)}
-                />
-            </div>
+            {
+                emojiDropdown &&
+                <div ref={emojiRef} className={`position-absolute rounded-3 p-0 end-0 top-100 show`}>
+                    <EmojiPicker 
+                        onEmojiClick={onInsertEmoji}
+                    />
+                </div>
+            }
         </div>
     )
 }
