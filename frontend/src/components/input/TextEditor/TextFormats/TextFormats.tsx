@@ -1,8 +1,6 @@
 import { uniqueId } from 'lodash';
 import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { SimpleAction } from '../../../../model/types';
-import { IssueViewContext } from '../../../../pages/Projects/ProjectBoard/IssueView/IssueView';
-import ProjectBoard, { ProjectBoardContext } from '../../../../pages/Projects/ProjectBoard/ProjectBoard';
 import Button from '../../../Button/Button';
 import DropdownAction from '../../../DropdownAction/DropdownAction';
 import { TextEditorContext } from '../TextEditor';

@@ -54,9 +54,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     const [currentBlockType, setCurrentBlockType] = useState<BlockType | undefined>();
     const [currentTextColor, setCurrentTextColor] = useState<TextColor | undefined>();
 
-    const boardSizes = useContext(ProjectBoardContext).windowSizes;
-    const innerPanelSizes = useContext(IssueViewContext).windowSizes;
-
     const handleResize = useCallback(() => {
         if (
             containerRef && containerRef.current 

@@ -6,8 +6,10 @@ import { stat } from 'fs';
 
 const initialState:  {
     values: Project[];
+    loaded: boolean;
 }= {
-    values: []
+    values: [],
+    loaded: false
 };
 
 const projectSlice = createSlice({
@@ -28,6 +30,7 @@ const projectSlice = createSlice({
         },
         resfresh: (state, action: PayloadAction<Project[]> ) =>{
             state.values = action.payload;
+            state.loaded = true;
         },
     }
 })

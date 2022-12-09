@@ -2,17 +2,23 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "aws serverless backend for MyPlanner",
-  "scripts": {},
+  "scripts": {
+    "deploy": "tsc; sls deploy --aws-profile personal" 
+  },
   "author": "amberiitd",
   "license": "ISC",
   "dependencies": {
+  },
+  "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/lodash": "^4.14.184",
+    "@types/logger": "^0.0.1",
+    "@types/moment": "^2.13.0",
     "@types/node": "^18.7.14",
     "aws-sdk": "^2.1227.0",
     "lodash": "^4.17.21",
+    "logger": "^0.0.1",
+    "moment": "^2.29.4",
     "typescript": "^4.8.2"
-  },
-  "devDependencies": {
-    "@types/aws-sdk": "^2.7.0"
   }
 }

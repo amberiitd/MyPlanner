@@ -1,4 +1,11 @@
 .input-focus{
     border: 2px solid coral;
-    width: 4em;
+}
+
+.input-sm{
+    width: 5em;
+}
+
+.input-form-control{
+    
 }

@@ -5,7 +5,10 @@ import { useDispatch } from 'react-redux';
 import { addIssue } from '../../../../../app/slices/issueSlice';
 import Button from '../../../../../components/Button/Button';
 import Select from '../../../../../components/input/Select/Select';
-import { Project } from '../../../../../model/types';
+import { useQuery } from '../../../../../hooks/useQuery';
+import { CrudPayload, Project } from '../../../../../model/types';
+import { commonCrud } from '../../../../../services/api';
+import { Issue } from '../IssueRibbon/IssueRibbon';
 import './IssueCreator.css';
 import IssueTypeSelector from './IssueTypeSelector/IssueTypeSelector';
 
@@ -20,12 +23,13 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
     const compRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [issueType, setIssueType] = useState<any>('bug');
+    const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
 
     const dispatch = useDispatch();
     const handleIssueCreation = useCallback((e: any) => {
         if (e.key === 'Enter'){
             if (newIssueLabel.length > 3){
-                dispatch(addIssue({
+                const newIssue: Issue = {
                     id: uniqueId(),
                     type: issueType,
                     label: newIssueLabel,
@@ -33,8 +37,16 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
                     sprintId: props.cardId,
                     storyPoint: 0,
                     stage: 'not-started'
-                }))
-                setNewissueLabel('')
+                };
+                issueQuery.trigger({
+                    action: 'CREATE',
+                    data: newIssue,
+                    itemType: 'issue'
+                } as CrudPayload)
+                .then(()=>{
+                    dispatch(addIssue(newIssue));
+                    setNewissueLabel('')
+                });
             }
         }
     }, [newIssueLabel, issueType]);

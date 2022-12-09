@@ -1,9 +1,10 @@
-import { FC, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 import LinkCard from '../../LinkCard/LinkCard';
 import ProjectModal from './ProjectModal/ProjectModal';
 import projectModalService from '../../../modal.service';
 import './Projects.css';
 import { useNavigate } from 'react-router-dom';
+import { NavDropDownContext } from '../../nav/NavBarLink/NavBarLink';
 
 
 interface ProjectsProps{
@@ -13,14 +14,13 @@ interface ProjectsProps{
 const Projects: FC<ProjectsProps> = () => {
     // const [showCreateModal, setShowCreateModal] = useState(defaultModalService.showModel);
     const navigate = useNavigate();
+    const {setDropdown} = useContext(NavDropDownContext);
 
     const handleClickOption = (item: any) => {
         if (item.value === 'create-new'){
             projectModalService.setShowModel(true);
         }
-        if (item.value === 'view-all'){
-            navigate('/myp/projects')
-        }
+        setDropdown(false);
     }
     return (
         <div className='projects'>
@@ -41,7 +41,8 @@ const Projects: FC<ProjectsProps> = () => {
                     linkItems={[
                         {
                             label: 'View all projects',
-                            value: 'view-all'
+                            value: 'view-all',
+                            href: '/myp/projects'
                         },
                         {
                             label: 'Create project',

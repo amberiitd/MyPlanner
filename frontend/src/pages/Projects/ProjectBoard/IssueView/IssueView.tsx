@@ -1,4 +1,4 @@
-import { createContext, FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import './IssueView.css';
 import Split from 'react-split';
 import DropdownAction from '../../../../components/DropdownAction/DropdownAction';
@@ -6,6 +6,15 @@ import TextEditor from '../../../../components/input/TextEditor/TextEditor';
 import { ProjectBoardContext } from '../ProjectBoard';
 import Activity from './Activity/Activity';
 import SideView from './SideView/SideView';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../../app/store';
+import { useQuery } from '../../../../hooks/useQuery';
+import { CrudPayload } from '../../../../model/types';
+import { commonCrud } from '../../../../services/api';
+import { useDispatch } from 'react-redux';
+import { refreshIssue } from '../../../../app/slices/issueSlice';
+import { Issue } from '../Backlog/IssueRibbon/IssueRibbon';
 
 interface IssueViewProps{
 
@@ -21,8 +30,14 @@ const IssueView: FC<IssueViewProps> = (props) => {
     const [windowSizes, setWindowSizes] = useState<number[]>([60, 40]);
     const boardSizes = useContext(ProjectBoardContext).windowSizes;
     const containerRef = useRef<HTMLDivElement>(null);
-
     const [viewType, setViewType] = useState<1 | 2>(2);
+    const [searchParam , setSearchParam] = useSearchParams();
+    const issues = useSelector((state: RootState) => state.issues);
+    const openIssue = useMemo(() => {
+        return issues.values.find(issue => issue.id === searchParam.get('issueId'));
+    }, [issues]);
+    const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const dispatch = useDispatch();
     const handleResize = useCallback(() => {
         if (
             containerRef && containerRef.current 
@@ -40,14 +55,25 @@ const IssueView: FC<IssueViewProps> = (props) => {
 
     useEffect(() => {
         window.addEventListener('resize', handleResize)
+        if (!issues.loaded){
+            issueQuery.trigger({
+                action: 'RETRIEVE',
+                data: {},
+                itemType: 'issue'
+            } as CrudPayload)
+            .then((res)=>{
+                dispatch(refreshIssue(res as Issue[]));
+            })
+        }
         return () => {window.removeEventListener('resize', handleResize)}
     }, []);
+
 
     const mainView = (
         <div className='mb-3'>
             <div className='d-flex flex-nowrap align-items-center '>
                 <div className='h3'>
-                    {'Test Issue Label'}
+                    {openIssue?.label}
                 </div>
                 <div className='ms-auto'>
                     <DropdownAction 
@@ -102,7 +128,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
                         <div>
                             {mainView}
                         </div>
-                        <div className='px-2'>
+                        <div className='ps-3'>
                             <SideView />
                         </div>
                     </Split>

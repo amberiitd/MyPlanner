@@ -15,6 +15,7 @@ import { RootState } from '../../../../app/store';
 import { API, Auth } from 'aws-amplify';
 import { CrudPayload, Project } from '../../../../model/types';
 import { useNavigate } from 'react-router-dom';
+import { projectsCrud } from '../../../../services/api';
 
 export interface StepItem{
     label: 'Template' | 'Template type',
@@ -65,31 +66,19 @@ const ProjectCreateModal: FC<ProjectCreateModalProps> = (props) => {
             action: 'CREATE',
             data: newProject
         }
-        Auth.currentSession()
+        projectsCrud(payload)
         .then(res => {
-            console.log(res)
-            API.post('base_url', '/projects', {
-                body: payload,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': res.getIdToken().getJwtToken()
-                }
-            })
-            .then(res => {
-                const body = JSON.parse(res.body);
-                if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
-                    dispatch(addProject(newProject))
-                    cancelProcess();
-                    navigate(`/myp/projects/${projectKey}/board`)
-                }else{
-                    console.log(res)
-                }
-            })
-            .catch(err => console.log(err))
-            ;
+            const body = JSON.parse(res.body);
+            if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
+                dispatch(addProject(newProject))
+                cancelProcess();
+                navigate(`/myp/projects/${projectKey}/board`)
+            }else{
+                console.log(res)
+            }
         })
+        .catch(err => console.log(err));
         
-
     }, [projectName, projectKey, props.selectedStepItems]);
     
     return (

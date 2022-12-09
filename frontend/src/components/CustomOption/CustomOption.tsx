@@ -28,7 +28,7 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
             <div className='pe-2' hidden={!props.leftBsIcon}>
                 <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
             </div>
-            <div className=''>
+            <div className='f-90'>
                 {props.label}
                 <div className='caption text-cut text-muted'>
                     {props.caption}

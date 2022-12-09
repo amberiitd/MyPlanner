@@ -5,6 +5,7 @@ import './NumberBadge.css';
 interface NumberBadgeProps{
     data: string | number | undefined;
     extraClasses?: string;
+    inputClasses?: string;
     onValueChange: (value: number) => void;
 }
 
@@ -36,13 +37,13 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
         }
     }, [])
     return (
-        <div ref={compRef} className=''>
-            <div className={`px-2 rounded-pill ${props.extraClasses} cursor-pointer`} onClick={()=> {setActive(true)}} hidden={active}>
+        <div ref={compRef} className='w-100'>
+            <div className={`px-2 rounded-pill ${props.extraClasses} cursor-pointer w-inherit`} onClick={()=> {setActive(true)}} hidden={active}>
                 {value || '-'}
             </div>
             <div className='position-relative' hidden={!active}>
                 <div>
-                    <input className='rounded input-focus' type="number" value={value} onChange={(e)=> {setValue(parseFloat(e.target.value))}}/>
+                    <input className={`rounded input-focus ${props.inputClasses?? 'w-100'}`} type="number" value={value} onChange={(e)=> {setValue(parseFloat(e.target.value))}}/>
                 </div>
                 
                 <div className='d-flex flex-nowrap position-absolute w-100 mt-1'>

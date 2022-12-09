@@ -1,4 +1,6 @@
-import { FC, useState } from 'react'
+import { ConsoleLogger } from '@aws-amplify/core';
+import { createContext, FC, useEffect, useRef, useState } from 'react'
+import { Dropdown } from 'react-bootstrap';
 import './NavBarLink.css'
 
 interface NavBarLinkProps{
@@ -6,19 +8,60 @@ interface NavBarLinkProps{
     isActive: boolean;
     dropdownElement: JSX.Element | undefined;
 }
+
+export const NavDropDownContext = createContext<{
+    dropdown: boolean;
+    setDropdown: (val: boolean) => void; 
+}>({
+    dropdown: false,
+    setDropdown: (val: boolean) => {}
+});
+
 const NavBarLink: FC<NavBarLinkProps> = (props) => {
+    const [dropdown, setDropdown] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    useEffect(()=>{
+        const handleClick = (e: any)=>{
+            if (containerRef.current && containerRef.current.contains(e.target)){
+
+            }
+            else{
+                setDropdown(false);
+            }
+        };
+
+        window.addEventListener('click', handleClick)
+        return () => {
+            window.removeEventListener('click', handleClick);
+        }
+    }, [containerRef])
 
     return (
-        <div className={`dropdown ms-2 pt-2 ${props.isActive? 'border-bottom border-4 border-themed': ''}`}>
-            <div className='navlinkbtn d-inline-flex p-1 px-2 rounded-1' id={`nav-link-${props.label}`} data-bs-toggle="dropdown" aria-expanded="false">
-                <div className='text-nowrap'>{props.label}</div>
-                <i className="bi bi-chevron-down ms-1 mt-1 icon-font" style={{fontSize: "70%"}}></i>
-            </div>
-            <div className='dropdown-menu nav-dropdown shadow-sm' aria-labelledby={`nav-link-${props.label}`} onClick={(e)=>{e.stopPropagation()}}>
-                {props.dropdownElement}
-            </div>
+        <NavDropDownContext.Provider value={{dropdown, setDropdown}}>
+            <div
+                ref={containerRef}
+                className={`dropdown ms-2 ${props.isActive? 'border-bottom border-4 border-themed': ''}`}
+            >
+                <div 
+                    className='navlinkbtn d-inline-flex p-1 px-2 rounded-1' id={`nav-link-${props.label}`}
+                    onClick={()=> {
+                        setDropdown(true)
+                    }}
+                >
+                    <div className='text-nowrap'>{props.label}</div>
+                    <div className='ms-auto'>
+                        <i className="bi bi-chevron-down ms-1 mt-1 icon-font" style={{fontSize: "70%"}}></i>
+                    </div>
+                </div>
 
-        </div>
+                <div
+                    className={`dropdown-menu nav-dropdown shadow-sm ${dropdown? 'show': ''}`}
+                    onClick={(e)=>{e.stopPropagation()}}
+                >
+                   {props.dropdownElement}
+                </div>
+            </div>
+        </NavDropDownContext.Provider>
     )
 }
 

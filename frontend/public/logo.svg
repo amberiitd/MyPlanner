@@ -1,0 +1,24 @@
+<svg height="25" width="25" xmlns="http://www.w3.org/2000/svg"
+    style="transform: rotate(-45deg); transform-origin: center;"
+>
+    <rect 
+        height="62%" 
+        width="62%" 
+        stroke="black" 
+        stroke-width="8%" 
+        fill="white" 
+        x="19%"
+        y="19%"
+    />
+    <rect 
+        height="31%" 
+        width="31%" 
+        stroke="black" 
+        stroke-width="8%" 
+        fill="red" 
+        x="19%"
+        y="19%"
+    />
+</svg>
+
+

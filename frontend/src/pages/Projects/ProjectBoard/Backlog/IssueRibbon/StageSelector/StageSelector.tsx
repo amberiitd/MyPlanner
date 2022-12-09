@@ -3,6 +3,9 @@ import { useDispatch } from 'react-redux';
 import { updateIssue } from '../../../../../../app/slices/issueSlice';
 import Button from '../../../../../../components/Button/Button';
 import LinkCard from '../../../../../../components/LinkCard/LinkCard';
+import { useQuery } from '../../../../../../hooks/useQuery';
+import { CrudPayload } from '../../../../../../model/types';
+import { commonCrud } from '../../../../../../services/api';
 import { Stage, stages } from './stages';
 import './StageSelector.css';
 
@@ -15,7 +18,7 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
     const [dropdown, setDropdown] = useState(false);
     const compRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
-
+    const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
     const dispatch = useDispatch();
 
     useEffect(()=> {
@@ -54,7 +57,14 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                         linkItems={stages}
                         extraClasses='quote'
                         handleClick={(item: Stage) => { 
-                            dispatch(updateIssue({id: props.issueId, data: {stage: item.value}})); 
+                            issueQuery.trigger({
+                                action: 'UPDATE',
+                                data: {id: props.issueId, stage: item.value},
+                                itemType: 'issue'
+                            } as CrudPayload)
+                            .then(()=>{
+                                dispatch(updateIssue({id: props.issueId, data: {stage: item.value}})); 
+                            })
                             setDropdown(false); 
                         }}
                     />

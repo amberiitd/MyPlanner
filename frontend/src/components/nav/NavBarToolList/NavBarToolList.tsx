@@ -16,13 +16,15 @@ interface NavBarToolListProps{
 const NavBarToolList: FC<NavBarToolListProps> = (props) => {
 
     return (
-        <div className='d-inline-flex py-2'>
+        <div className='h-100 d-inline-flex align-items-center'>
             {
                 props.items.map((item, index) => (
-                    <NavBarTool 
-                        key={uniqueId()}
-                        item={item}
-                    />
+                    <div key={uniqueId()} className='me-2'>
+                        <NavBarTool 
+                            item={item}
+                        />
+                    </div>
+                    
                 ))
             }
         </div>

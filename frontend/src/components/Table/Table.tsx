@@ -18,7 +18,8 @@ export interface ColDef{
     bsIcon?:boolean;
     aslink?:{
         style?: string;
-        to: string;
+        to?: string;
+        hrefGetter?: (key: string) => string;
         handleClick?: (e: any) => void;
     }
 }
@@ -61,17 +62,35 @@ const Table: FC<TableProps> = (props) => {
             col.valueGetter? col.valueGetter(rowdata):
             col.cellRenderer? col.cellRenderer(rowdata):
             '';
-
-        return isEmpty(col.aslink) ? value : (
-            <a href='#' 
-                onClick={(e) => {
-                    e.preventDefault(); 
-                    col.aslink?.handleClick? col.aslink.handleClick(rowdata.key): (()=>{})(); 
-                }}
-            >
-                {value}
-            </a>
-        );
+        if (isEmpty(col.aslink)){
+            return value;
+        }else if (isEmpty(col.aslink?.to)){
+            return (
+                <a className='text-decor-none' href={col.aslink?.to}
+                >
+                    {value}
+                </a>
+            );
+        }else if(isEmpty(col.aslink?.hrefGetter)){
+            return (
+                <a className='text-decor-none' href={(col.aslink?.hrefGetter || ((k)=> k))(rowdata.key || '')}
+                >
+                    {value}
+                </a>
+            );
+        }else if (isEmpty(col.aslink?.handleClick)){
+            return (
+                <a className='text-decor-none' href='#' 
+                    onClick={(e) => {
+                        e.preventDefault(); 
+                        col.aslink?.handleClick? col.aslink.handleClick(rowdata.key): (()=>{})(); 
+                    }}
+                >
+                    {value}
+                </a>
+            );
+        }
+        return value;
     }
     useEffect(()=>{
         if (isEmpty(props.colDef))

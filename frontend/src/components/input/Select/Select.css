@@ -11,6 +11,32 @@ input{
     width: 5px;
 }
 
+.form-control-custom{
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-clip: padding-box;
+}
+
 .focus-outline{
     outline: 2px solid coral;
+    background-color: white !important;
+}
+
+.bg-as-light{
+    background-color: whitesmoke ;
+}
+
+.bg-as-light:focus{
+    background-color: white;
+}
+
+.bg-as-light-hover{
+    background-color: inherit;
+}
+
+.bg-as-light-hover:hover{
+    background-color: whitesmoke;
 }

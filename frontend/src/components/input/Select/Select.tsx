@@ -1,5 +1,5 @@
 import { isEmpty, toLower } from 'lodash';
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import LinkCard from '../../LinkCard/LinkCard';
 import './Select.css';
 
@@ -10,12 +10,14 @@ export interface SelectCategory{
 }
 interface SelectProps{
     label: string;
+    hideLabel?: boolean;
     caption?: string;
     isRequired?: boolean;
     disabled?: boolean;
     readonly?: boolean;
     selectedItem?: any;
     hideToggleIcon?: boolean;
+    extraClasses?: string;
     data: SelectCategory[];
     onSelectionChange: (event: any) => void;
 }
@@ -57,35 +59,44 @@ const Select: FC<SelectProps> = (props) => {
         )));
     }
     
-    useEffect(()=>{
-        const handleCLick = (event: any)=>{
-            if (!!props.disabled){
-                return;
-            }
-            if(selectFormRef.current && selectFormRef.current.contains(event.target)){
-                if(!(dropDownRef.current && dropDownRef.current.contains(event.target))){
-                    inputRef.current?.focus();
-                    setActive(true);
-                    setDropdown(!dropdown);
-                }
-            }else{
-                setActive(false);
-                setDropdown(false);
-                setSearchText('');
-                setFilteredData(props.data);
-            } 
+    const handleCLick = useCallback((event: any)=>{
+        if (!!props.disabled){
+            return;
         }
+        if(selectFormRef.current && selectFormRef.current.contains(event.target)){
+            if(!(dropDownRef.current && dropDownRef.current.contains(event.target))){
+                inputRef.current?.focus();
+                setActive(true);
+                setDropdown(!dropdown);
+            }
+        }else{
+            setActive(false);
+            setDropdown(false);
+            setSearchText('');
+            setFilteredData(props.data);
+        } 
+    }, [dropdown]);
+    useEffect(()=>{
+        
         document.addEventListener('click', handleCLick, true);
         return () => {document.removeEventListener('click', handleCLick, true)};
-    }, [dropdown]);
+    }, []);
+
+    useEffect(()=>{
+        
+        setSelectedItem(props.selectedItem);
+    }, [props]);
 
     return (
         <div className=''>
-            <div className='mb-1'>
-                {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
-            </div>
+            {
+                !props.hideLabel &&
+                <div className='mb-1'>
+                    {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
+                </div>
+            }
             <div ref={selectFormRef} className='dropdown'>
-                <div className={`d-flex flex-nowrap form-control rounded-1 border ${isActive? 'focus-outline': 'bg-light'} w-100 cursor-pointer`}> 
+                <div className={`d-flex flex-nowrap form-control-custom rounded-1 ${props.extraClasses?? 'border bg-as-light'} ${isActive? 'focus-outline': ''} w-100 cursor-pointer`}> 
                     <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
 
                     <div hidden={searchText.length > 0}>

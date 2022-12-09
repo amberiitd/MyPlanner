@@ -15,6 +15,9 @@ import { API, Auth } from 'aws-amplify';
 import { addProjectBulk, refreshProject, removeProject } from '../../app/slices/projectSlice';
 import { useDispatch } from 'react-redux';
 import { isEmpty } from 'lodash';
+import { projectsCrud } from '../../services/api';
+import { useQuery } from '../../hooks/useQuery';
+import CircleRotate from '../../components/Loaders/CircleRotate';
 
 interface ProjectsProps{
 
@@ -24,7 +27,7 @@ const Projects: FC<ProjectsProps> = (props) => {
     const projects = useSelector((state: RootState) => state.projects);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
+    const projectsQuery = useQuery((payload: CrudPayload)=> projectsCrud(payload));
     const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects.values);
     const [searchText, setSearchText] = useState<string>('');
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -95,9 +98,7 @@ const Projects: FC<ProjectsProps> = (props) => {
             value: 'name',
             aslink: {
                 to: '#',
-                handleClick: (key: string) => {
-                    navigate(`${key}/board`)
-                }
+                hrefGetter: (key: string) => `projects/${key}/board`
             },
             sortable: true,
         },
@@ -116,34 +117,22 @@ const Projects: FC<ProjectsProps> = (props) => {
         }
     ];
 
-    useEffect(() => {
+    const onRefresh = ()=> {
         const payload: CrudPayload = {
             itemType: 'project',
             action: 'RETRIEVE',
             data: {}
         }
-        Auth.currentSession()
+        projectsQuery.trigger(payload)
         .then(res => {
-            // console.log(res)
-            API.post('base_url', '/projects', {
-                body: payload,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': res.getIdToken().getJwtToken()
-                }
-            })
-            .then(res => {
-                const body = JSON.parse(res.body);
-                if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
-                    dispatch(refreshProject(body.data as Project[]))
-                }else{
-                    console.log(res)
-                }
-                
-            })
-            .catch(err => console.log(err))
-            ;
-        })
+            dispatch(refreshProject(res as Project[]))
+        });
+    }
+
+    useEffect(() => {
+        if (!projects.loaded){
+            onRefresh();
+        }
     }, [])
 
     const actions: RowAction = {
@@ -160,35 +149,25 @@ const Projects: FC<ProjectsProps> = (props) => {
         layout: 'dropdown',
         handleAction: (rowdata: any, event: SimpleAction) => {
             if (event.value === 'move-to-trash'){
-                Auth.currentSession()
-                .then(res => {
-                    const payload: CrudPayload = {
-                        itemType: 'project',
-                        action: 'DELETE',
-                        data: {
-                            id: rowdata.id,
-                            key: rowdata.key
-                        }
+                const payload: CrudPayload = {
+                    itemType: 'project',
+                    action: 'DELETE',
+                    data: {
+                        id: rowdata.id,
+                        key: rowdata.key
                     }
-    
-                    API.post('base_url', '/projects', {
-                        body: payload,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': res.getIdToken().getJwtToken()
-                        }
-                    })
-                    .then(res => {
-                        const body = JSON.parse(res.body);
-                        if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
-                            dispatch(removeProject({key: rowdata.key}))
-                        }else{
-                            console.log(res)
-                        } 
-                    })
-                    .catch(err => console.log(err))
-                    ;
+                }
+                projectsCrud(payload)
+                .then(res => {
+                    const body = JSON.parse(res.body);
+                    if (isEmpty(res.errorMessage) && isEmpty(body.errorMessage)){
+                        dispatch(removeProject({key: rowdata.key}))
+                    }else{
+                        console.log(res)
+                    } 
                 })
+                .catch(err => console.log(err))
+                ;
             }
         }
             
@@ -199,6 +178,11 @@ const Projects: FC<ProjectsProps> = (props) => {
             <div className='d-flex flex-nowrap border align-items-center mb-3'>
                 <div className='h2'>
                     {'Projects'}
+                </div>
+                <div className='mx-2'>
+                    <CircleRotate loading={projectsQuery.loading}
+                        onReload={onRefresh}
+                    />
                 </div>
                 <div className='ms-auto'>
                     <Button 
@@ -242,9 +226,9 @@ const Projects: FC<ProjectsProps> = (props) => {
     return (
         <div className='h-100c'>
             <Routes>
-                
+                <Route path='/' element={projectRoot} />
                 <Route path='/:projectKey/:view/*' element={ <ProjectBoard /> } />
-                <Route path='*' element={projectRoot} />
+                <Route path='*' element={<Navigate to='/'/>} />
             </Routes>
         </div>
     )

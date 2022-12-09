@@ -95,17 +95,17 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
         }
     }, [location])
     return (
-        <div className='nav-simp d-inline-flex w-100 shadow-sm border  position-relative'>
+        <div className='nav-simp d-inline-flex w-100 shadow-sm border'>
             <NavBrand />
             <NavBarLinkList 
                 items={navLinks}
                 selectedItem={selectedNav}
             />
             <CreateNew />
-            <div className='ms-auto navSearchParent'>
+            <div className='ms-auto w-25 me-2'>
                 <NavSearch/>
             </div>
-            <div className='me-3 my-1'>
+            <div className=''>
                 <NavBarToolList items={toolItems} />
             </div>
         </div>

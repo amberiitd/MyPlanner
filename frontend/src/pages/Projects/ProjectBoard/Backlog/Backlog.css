@@ -1,5 +1,6 @@
 .backlog-body{
     height: calc(100% - 7em);
+    min-width: 30em;
 }
 
 .gutter {

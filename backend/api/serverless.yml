@@ -5,7 +5,66 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs14.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  profile: personal
+  role: arn:aws:iam::343547439778:role/myplanner-lambda-role
+  environment:
+    REGION: ${self:provider.region}
+    STAGE: ${self:provider.stage}
 
 functions:
-  hello:
-    handler: compiled/test.handler
+  issue:
+    handler: src/compiled/issues.handler
+    events:
+      - http:
+          path: /issues
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  
+  project:
+    handler: src/compiled/projects.handler
+    events:
+      - http:
+          path: /projects
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  
+  commonItem:
+    handler: src/compiled/commonItems.handler
+    events:
+      - http:
+          path: /common
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  

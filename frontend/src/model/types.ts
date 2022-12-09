@@ -46,9 +46,9 @@ export interface SimpleAction{
     label: string;
     value: string;
 }
-
+export type ISSUE_ACTION = 'ASSIGN_SPRINT';
 export interface CrudPayload{
-    itemType: 'project';
-    action: 'CREATE' | 'RETRIEVE' | 'UPDATE' | 'DELETE';
+    itemType: 'project' | 'sprint' | 'issue';
+    action: 'CREATE' | 'RETRIEVE' | 'UPDATE' | 'DELETE' | ISSUE_ACTION;
     data: any;
 }

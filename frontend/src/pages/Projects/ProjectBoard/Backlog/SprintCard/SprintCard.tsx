@@ -1,9 +1,12 @@
+import { isEmpty } from 'lodash';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useDispatch } from 'react-redux';
 import { updateIssueBulk } from '../../../../../app/slices/issueSlice';
 import { removeSprint } from '../../../../../app/slices/sprintSlice';
-import { Project, SprintStatus } from '../../../../../model/types';
+import { useQuery } from '../../../../../hooks/useQuery';
+import { CrudPayload, Project, SprintStatus } from '../../../../../model/types';
+import { commonCrud, IssuesCrud } from '../../../../../services/api';
 import IssueCreator from '../IssueCreator/IssueCreator';
 import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
 import './SprintCard.css';
@@ -21,6 +24,8 @@ interface SprintCardProps{
 
 const SprintCard: FC<SprintCardProps> = (props) => {
     const [collapse, setCollapse] = useState(false);
+    const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload))
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
         drop: (item: any) => {
@@ -44,13 +49,41 @@ const SprintCard: FC<SprintCardProps> = (props) => {
     });
 
     const handleDelete = useCallback(()=>{
-        dispatch(updateIssueBulk({
-            ids: props.issueList.map(issue => issue.id),
-            data: {
-                sprintId: 'backlog'
-            }
-        }));
-        dispatch(removeSprint({id: props.sprintId}));
+        const deleteSprint = () => {
+            commonQuery.trigger({
+                action: 'DELETE',
+                data: {
+                    id: props.sprintId,
+                },
+                itemType: 'sprint'
+            } as CrudPayload)
+            .then(()=> {
+                dispatch(removeSprint({id: props.sprintId}));
+            })
+        };
+
+        const ids = props.issueList.map(issue => issue.id);
+        if (isEmpty(ids)){
+            deleteSprint();
+        }else{
+            issueQuery.trigger({
+                action: 'ASSIGN_SPRINT',
+                data: {
+                    ids,
+                    sprintId: 'backlog'
+                }
+            } as CrudPayload)
+            .then(()=>{
+                dispatch(updateIssueBulk({
+                    ids,
+                    data: {
+                        sprintId: 'backlog'
+                    }
+                }));
+                deleteSprint();
+            });
+        }
+        
     }, [props.issueList, props.sprintId]);
 
     useEffect(()=>{

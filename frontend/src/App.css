@@ -11,3 +11,8 @@ button{
 .bg-thm-2{
     background-color: rgb(201, 56, 3);;
 }
+
+.text-decor-none{
+    text-decoration: none;
+    color: black;
+}

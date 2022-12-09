@@ -33,7 +33,7 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
         window.addEventListener('resize', resize)
     }, [])
     return (
-        <div className='d-inline-flex h-100 pt-1'>
+        <div className='d-inline-flex h-100 align-items-center'>
             { 
                 props.items.slice(0, props.items.length - cuttOff).map( (item, index) => (
                     <NavBarLink key={`navlink-${index}`} 

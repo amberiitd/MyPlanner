@@ -6,7 +6,9 @@ import { addSprint } from '../../../../../../app/slices/sprintSlice';
 import { RootState } from '../../../../../../app/store';
 import Badge from '../../../../../../components/Badge/Badge';
 import Button from '../../../../../../components/Button/Button';
-import { EMPTY_PROJECT, EMPTY_SPRINT, Project } from '../../../../../../model/types';
+import { useQuery } from '../../../../../../hooks/useQuery';
+import { CrudPayload, EMPTY_PROJECT, EMPTY_SPRINT, Project } from '../../../../../../model/types';
+import { commonCrud } from '../../../../../../services/api';
 import './BacklogHeaderRibbon.css';
 
 interface BacklogHeaderRibbonProps{
@@ -20,6 +22,7 @@ interface BacklogHeaderRibbonProps{
 const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
     const dispatch = useDispatch();
     const sprints = useSelector((state: RootState) => state.sprints);
+    const sprintQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const createSprint = useCallback(() => {
         const index = sprints.values
             .filter(sprint => sprint.projectKey === props.project.key)
@@ -33,8 +36,15 @@ const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
             name: `Sprint ${index}`,
             projectKey: props.project.key
         }
-
-        dispatch(addSprint(newSprint));
+        const payload: CrudPayload ={
+            action: 'CREATE',
+            data: newSprint,
+            itemType: 'sprint'
+        }
+        sprintQuery.trigger(payload)
+        .then(res => {
+            dispatch(addSprint(newSprint));
+        });
     }, [sprints, props]);
     return (
         <div className='d-flex flex-nowrap align-items-center w-100 px-1'>

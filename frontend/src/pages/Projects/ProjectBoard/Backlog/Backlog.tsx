@@ -1,17 +1,16 @@
 import { isEmpty, uniqueId } from 'lodash';
-import { createContext, FC, useCallback, useContext, useEffect, useState } from 'react';
-import { Modal } from 'react-bootstrap';
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
-import { updateIssue } from '../../../../app/slices/issueSlice';
+import { refreshIssue, updateIssue } from '../../../../app/slices/issueSlice';
 import { RootState } from '../../../../app/store';
 import Button from '../../../../components/Button/Button';
 import DropdownAction from '../../../../components/DropdownAction/DropdownAction';
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
-import { Project, Sprint } from '../../../../model/types';
+import { CrudPayload, Project, Sprint } from '../../../../model/types';
 import './Backlog.css';
 import BacklogCard from './BacklogCard/BacklogCard';
 import CompleteSprintModal from './CompleteSprintModal/CompleteSprintModal';
@@ -20,6 +19,10 @@ import { Issue } from './IssueRibbon/IssueRibbon';
 import SprintCard from './SprintCard/SprintCard';
 import SprintModal from './SprintModal/SprintModal';
 import Split from 'react-split';
+import { commonCrud } from '../../../../services/api';
+import { useQuery } from '../../../../hooks/useQuery';
+import { refreshSprint } from '../../../../app/slices/sprintSlice';
+import CircleRotate from '../../../../components/Loaders/CircleRotate';
 
 interface BacklogProps{
     project: Project;
@@ -36,8 +39,6 @@ export const BacklogContext = createContext<{
 const Backlog: FC<BacklogProps>  = (props) => {
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
-    const [projectIssues, setProjectIssues] = useState<Issue[]>([]); 
-    const [projectSprints, setProjectSprints] = useState<Sprint[]>([]);
     const [openIssue, setOpenIssue] = useState<Issue | undefined>();
     const [filters, setFilters] = useState<{
         searchText: string;
@@ -45,7 +46,10 @@ const Backlog: FC<BacklogProps>  = (props) => {
     }>({
         searchText: '',
         issueTypes: []
-    })
+    });
+    const projectSprints = useMemo(()=> sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props]);
+    const projectIssues = useMemo(()=> issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
+    const fetchCommon = useQuery((payload: CrudPayload) => commonCrud(payload));
     const dispatch = useDispatch();
     const members = [
         {
@@ -59,14 +63,41 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const handleDrop = useCallback((event: {itemId: string; cardId: string})=>{
         const index = projectIssues.findIndex(item => item.id === event.itemId);
         if (index >= 0){
-            dispatch(updateIssue({id: event.itemId, data: {sprintId: event.cardId}}))
+            fetchCommon.trigger({
+                action: 'UPDATE',
+                data: {sprintId: event.cardId, id: event.itemId},
+                itemType: 'issue'
+            } as CrudPayload)
+            .then((res)=> {
+                dispatch(updateIssue({id: event.itemId, data: {sprintId: event.cardId}}))
+            })
         }
     }, [projectIssues])
 
-    useEffect(() => {
-        setProjectIssues(issues.values.filter(issue => issue.projectKey === props.project.key));
-        setProjectSprints(sprints.values.filter(sprint => sprint.projectKey === props.project.key));
-    }, [issues, sprints, props])
+    const onRefresh = () =>{
+        fetchCommon.trigger({
+            action: 'RETRIEVE',
+            data: {},
+            itemType: 'sprint'
+        } as CrudPayload)
+        .then((res) => {
+            dispatch(refreshSprint(res as Sprint[]));
+
+            fetchCommon.trigger({
+                action: 'RETRIEVE',
+                data: {},
+                itemType: 'issue'
+            } as CrudPayload)
+            .then((res) => {
+                dispatch(refreshIssue(res as Issue[]))
+            });
+        });
+    }
+    useEffect(()=>{
+        if (!sprints.loaded || !issues.loaded){
+            onRefresh();
+        }
+    }, [])
 
     const backlogBody = (
         <div className='overflow-auto backlog-body pe-2' >
@@ -102,6 +133,12 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     <div className='h3'>
                         {'Backlog'}
                     </div>
+                    <div className='mx-2'>
+                        <CircleRotate
+                            loading={fetchCommon.loading}
+                            onReload={onRefresh}
+                        />
+                    </div>
                     <div className='ms-auto'>
                         <DropdownAction 
                             actionCategory={[
@@ -135,7 +172,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 <div key={uniqueId()} className='mx-1'>
                                     <Button
                                         label={item.name.split(' ').map(w => w[0]).join('')}
-                                        extraClasses='rounded-circle circle-1 btn-as-thm'
+                                        extraClasses='p-1 rounded-circle btn-as-thm'
                                         handleClick={()=>{}}
                                     />
                                 </div>
@@ -146,7 +183,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 label='Add member'
                                 hideLabel={true}
                                 rightBsIcon='person-plus-fill'
-                                extraClasses='rounded-circle circle-1 btn-as-light'
+                                extraClasses='btn-as-light p-1 rounded-circle'
                                 handleClick={()=>{}}
                             />
                         </div>
@@ -189,9 +226,12 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 cursor="col-resize"
                                 className='h-100 d-flex flex-nowrap'
                             >
-                                {backlogBody}
+                                <div className='overflow-auto'>
+                                    {backlogBody}
+                                </div>
+                                
                                 <div className=''>
-                                    hello
+                                    <a href={`issue?issueId=${openIssue.id}`}>Issue View</a>
                                 </div>
                             </Split>
                         ):

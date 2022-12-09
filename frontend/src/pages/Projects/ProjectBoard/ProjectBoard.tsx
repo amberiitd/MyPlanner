@@ -1,6 +1,6 @@
 import { createContext, FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Split from 'react-split';
 import { RootState } from '../../../app/store';
 import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
@@ -105,7 +105,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                             />
                         </div>
                     </div>
-                    <div className='px-5 py-3 board-body h-100'>
+                    <div className='px-3 py-3 board-body h-100'>
                         <div>
                             <BreadCrumb 
                                 itemTree={breadCrumbLinks}
@@ -114,9 +114,14 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                             />
                         </div>
                         <div className='board-body'>
-                            
+                            {/* <Routes>
+                                <Route path ='/board' element={<Sprint project={selectedProject}/>}/>
+                                <Route path ='/backlog' element={<Backlog project={selectedProject}/>}/>
+                                <Route path ='/issue/:viewParam1' element={<IssueView />}/>
+                                <Route path ='*' element={<PageNotFound />}/>
+                            </Routes> */}
                             {
-                                boardView.value === 'board'? <Sprint project={selectedProject}/> 
+                                boardView.value === 'board'?  <Sprint project={selectedProject}/>
                                 : boardView.value === 'backlog'? <Backlog project={selectedProject}/>
                                 : boardView.value === 'issue'? <IssueView />
                                 : <PageNotFound />
