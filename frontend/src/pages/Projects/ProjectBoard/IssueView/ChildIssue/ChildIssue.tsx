@@ -1,58 +1,78 @@
-import { FC, useCallback, useContext, useEffect, useState } from 'react';
-import { useDrag } from 'react-dnd';
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { uniqueId } from 'lodash';
+import { FC, useCallback, useContext, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { removeIssue, updateIssue } from '../../../../../app/slices/issueSlice';
 import { RootState } from '../../../../../app/store';
-import Badge from '../../../../../components/Badge/Badge';
+import Button from '../../../../../components/Button/Button';
 import DropdownAction from '../../../../../components/DropdownAction/DropdownAction';
 import NumberBadge from '../../../../../components/NumberBadge/NumberBadge';
 import { useQuery } from '../../../../../hooks/useQuery';
-import { CrudPayload, EMPTY_PROJECT } from '../../../../../model/types';
+import { CrudPayload } from '../../../../../model/types';
 import { commonCrud } from '../../../../../services/api';
+import { CHILD, issueTypeMap } from '../../Backlog/IssueCreator/IssueTypeSelector/issueTypes';
+import AssigneeSelector from '../../Backlog/IssueRibbon/AssigneeSelector/AssigneeSelector';
+import { Issue } from '../../Backlog/IssueRibbon/IssueRibbon';
+import { stageMap } from '../../Backlog/IssueRibbon/StageSelector/stages';
+import StageSelector from '../../Backlog/IssueRibbon/StageSelector/StageSelector';
 import { ProjectBoardContext } from '../../ProjectBoard';
-import { BacklogContext } from '../Backlog';
-import { issueTypeMap, IssueTypeValue } from '../IssueCreator/IssueTypeSelector/issueTypes';
-import AssigneeSelector from './AssigneeSelector/AssigneeSelector';
-import './IssueRibbon.css';
-import { StageValue, stageMap } from './StageSelector/stages';
-import StageSelector from './StageSelector/StageSelector';
+import { IssueViewContext } from '../IssueView';
+import './ChildIssue.css';
+import ChildIssueCreator from './ChildIssueCreator/ChildIssueCreator';
 
-export interface Issue{
-    id: string;
-    type: IssueTypeValue;
-    label: string;
-    projectKey: any;
-    sprintId: string;
-    storyPoint?: number;
-    assignee?: any;
-    description?: string;
-    stage: StageValue;
-    comments?: any[];
-    parentIssueId?: string;
+interface ChildIssueProps{
+
 }
 
-interface IssueRibbonProps{
-    issue: Issue;
+const ChildIssue: FC<ChildIssueProps> = (props) => {
+    const [creator, setCreator] = useState(false);
+    const {openIssue} = useContext(IssueViewContext);
+    const childIssues = useSelector((state: RootState) => state.issues.values.filter(issue => issue.parentIssueId && (issue.parentIssueId === openIssue?.id)));
+    return (
+        <div>
+            <div className='d-flex flex-nowrap'>
+                <div className='h6'>
+                    Child issue
+                </div>
+                <div className='ms-auto' >
+                    <Button 
+                        label='Create'
+                        hideLabel={true}
+                        rightBsIcon='plus-lg'
+                        extraClasses='btn-as-light p-1 ps-2'
+                        handleClick={()=>{ setCreator(true); }}
+                    />
+                </div>
+            </div>
+            <div className='mt-2'>
+                {
+                    childIssues.map(issue => (
+                        <div key={uniqueId()}>
+                            <ChildIssueRibbon 
+                                issue={issue}
+                            />
+                        </div>
+                    ))
+                }
+            </div>
+            {
+                creator &&
+                <div className='mt-2'>
+                    <ChildIssueCreator 
+                        onCancel={() => {setCreator(false);}}
+                    />
+                </div>
+            }
+            
+        </div>
+    )
 }
 
-const IssueRibbon: FC<IssueRibbonProps> = (props) => {
+const ChildIssueRibbon: FC<{issue: Issue}> = (props) => {
     const projects = useSelector((state: RootState) => state.projects);
     const sprints = useSelector((state: RootState) => state.sprints);
     const dispatch = useDispatch();
-
-    const {openIssue, setOpenIssue} = useContext(BacklogContext);
-
-    const{openProject}= useContext(ProjectBoardContext);
+    const {openProject} = useContext(ProjectBoardContext);
     const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
-    const [{isDragging, didDrop}, drag] = useDrag(()=>({
-        type: "issue",
-        item: props.issue,
-        collect: (monitor) => ({
-            isDragging: !!monitor.isDragging(),
-            didDrop: !!monitor.didDrop()
-        })
-    }))
 
     const handleAction = useCallback((event: any) => {
         switch(event.category){
@@ -91,16 +111,16 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     }, [props]);
 
     return (
-        <div ref={drag} className='d-flex flex-nowrap align-items-center border rounded bg-white w-100 p-2 ribbon' style={isDragging? {opacity: 0.5}: {}}>
+        <div className='d-flex flex-nowrap align-items-center border rounded bg-white w-100 p-2 ribbon'>
             <div className='mx-1'>
-                <i className={`bi bi-${issueTypeMap[props.issue.type].leftBsIcon}`}></i>
+                <i className={`bi bi-${CHILD.leftBsIcon}`}></i>
             </div>
             <div className='mx-1 text-cut'>
                 {openProject?.key}-{props.issue.id}
             </div>
-            <div className='mx-1 cursor-pointer text-cut' onClick={() => {setOpenIssue(props.issue)}}>
+            <a className='mx-1 cursor-pointer text-cut' href={`issue?issueId=${props.issue.id}`}>
                 {props.issue.label}
-            </div>
+            </a>
 
             <div className='ms-auto '>
                 <NumberBadge
@@ -129,7 +149,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                 <AssigneeSelector
                 />
             </div>
-            <div>
+            {/* <div>
                 <DropdownAction 
                     actionCategory={[
                         {
@@ -171,10 +191,11 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                     bsIcon='three-dots'
                     handleItemClick={handleAction}
                 />
-            </div>
+            </div> */}
 
         </div>
     )
 }
 
-export default IssueRibbon;
+export default ChildIssue;
+

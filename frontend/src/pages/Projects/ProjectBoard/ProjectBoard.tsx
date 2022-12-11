@@ -1,30 +1,39 @@
 import { createContext, FC, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
-import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Split from 'react-split';
+import { refreshProject } from '../../../app/slices/projectSlice';
+import { refreshSprint } from '../../../app/slices/sprintSlice';
 import { RootState } from '../../../app/store';
 import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
 import PageNotFound from '../../../components/PageNotFound/PageNotFound';
-import { EMPTY_PROJECT } from '../../../model/types';
+import { useQuery } from '../../../hooks/useQuery';
+import { CrudPayload, EMPTY_PROJECT, Project, Sprint } from '../../../model/types';
+import { commonCrud } from '../../../services/api';
 import Backlog from './Backlog/Backlog';
 import IssueView from './IssueView/IssueView';
 import './ProjectBoard.css';
-import Sprint from './Sprint/Sprint';
+import SprintComponent from './Sprint/Sprint';
 
 interface ProjectBoardProps{
 
 }
 
 export const ProjectBoardContext = createContext<{
-    windowSizes: number[]
-}>({windowSizes: []});
+    openProject: Project | undefined;
+}>({openProject: undefined});
 
 const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const { projectKey, view } = useParams();
     const navigate = useNavigate();
-    const projects = useSelector((state: RootState) => state.projects.values);
+    const projects = useSelector((state: RootState) => state.projects);
+    const sprints = useSelector((state: RootState) => state.sprints);
+    const issues = useSelector((state: RootState) => state.issues);
+    const dispatch = useDispatch();
     const [windowSizes, setWindowSizes] = useState<number[]>([20, 80]);
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
 
     const menuViews: BreadCrumbItem[] = [
         {
@@ -48,7 +57,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     ];
 
     // since projectBoard is a route component, you can keep selected project as non-state const.
-    const selectedProject = projects.find(p => p.key === projectKey) || EMPTY_PROJECT;
+    const selectedProject = projects.values.find(p => p.key === projectKey) || EMPTY_PROJECT;
     const breadCrumbLinks: BreadCrumbItem = {
         label: 'Projects',
         value: 'projects',
@@ -73,8 +82,31 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
         setBoardView(menuViews.concat(extraViews).find(item => item.value === view) || notFoundCrumb)
     }, [view]);
 
+    useEffect(()=>{
+        if (!projects.loaded){
+            commonQuery.trigger({
+                'action': 'RETRIEVE',
+                data: {},
+                'itemType': 'project'
+            } as CrudPayload)
+            .then((res)=>{
+                dispatch(refreshProject(res as Project[]));
+                if (!sprints.loaded){
+                    commonQuery.trigger({
+                        'action': 'RETRIEVE',
+                        data: {},
+                        'itemType': 'sprint'
+                    } as CrudPayload)
+                    .then((res)=>{
+                        dispatch(refreshSprint(res as Sprint[]));
+                    })
+                }
+            })
+        }
+    }, [])
+
     return (
-        <ProjectBoardContext.Provider value={{windowSizes}}>
+        <ProjectBoardContext.Provider value={{openProject: selectedProject}}>
             <div className='h-100'>
                 <Split className='d-flex flex-nowrap h-100'
                     sizes={windowSizes}
@@ -83,11 +115,11 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                     expandToMin={false}
                     gutterSize={10}
                     gutterAlign="center"
-                    snapOffset={30}
+                    snapOffset={0}
                     dragInterval={1}
                     direction="horizontal"
                     cursor="col-resize"
-                    onDrag={(sizes) => {setWindowSizes(sizes)}}
+                    // onDrag={(sizes) => {setWindowSizes(sizes)}}
                 >
                     <div className=' p-2'>
                         <div>
@@ -121,14 +153,12 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                                 <Route path ='*' element={<PageNotFound />}/>
                             </Routes> */}
                             {
-                                boardView.value === 'board'?  <Sprint project={selectedProject}/>
+                                boardView.value === 'board'?  <SprintComponent project={selectedProject}/>
                                 : boardView.value === 'backlog'? <Backlog project={selectedProject}/>
                                 : boardView.value === 'issue'? <IssueView />
                                 : <PageNotFound />
                             } 
                         </div>
-
-
                     </div>
                 </Split>
             </div>

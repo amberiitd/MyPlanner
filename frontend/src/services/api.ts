@@ -56,3 +56,17 @@ export const commonCrud = (payload: CrudPayload) => {
             })
         })
 }
+
+export const commonChildCrud = (payload: CrudPayload) => {
+    return Auth
+        .currentSession()
+        .then(res => {
+            return API.post('base_url', '/commonChild', {
+                body: payload,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': res.getIdToken().getJwtToken()
+                }
+            })
+        })
+}

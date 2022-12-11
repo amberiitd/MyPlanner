@@ -41,14 +41,20 @@ export const EMPTY_SPRINT: Sprint = {
     status: 'not-started'
 }
 
+export interface IssueComment{
+    id: string;
+    description: string;
+}
+
 export interface SimpleAction{
     htmlId?: string;
     label: string;
     value: string;
 }
 export type ISSUE_ACTION = 'ASSIGN_SPRINT';
+export type ItemType  = 'project' | 'sprint' | 'issue';
 export interface CrudPayload{
-    itemType: 'project' | 'sprint' | 'issue';
+    itemType: ItemType;
     action: 'CREATE' | 'RETRIEVE' | 'UPDATE' | 'DELETE' | ISSUE_ACTION;
     data: any;
 }

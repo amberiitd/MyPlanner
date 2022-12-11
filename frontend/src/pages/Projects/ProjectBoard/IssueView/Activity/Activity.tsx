@@ -1,9 +1,12 @@
+import { uniqueId } from 'lodash';
 import { FC, useContext, useState } from 'react';
-import Button from '../../../../../components/Button/Button';
+import { useDispatch } from 'react-redux';
+import { addIssueComment, deleteIssueComment, updateIssueComment } from '../../../../../app/slices/issueSlice';
 import ButtonSelect from '../../../../../components/input/ButtonSelect/ButtonSelect';
 import TextEditor from '../../../../../components/input/TextEditor/TextEditor';
-import { SimpleAction } from '../../../../../model/types';
-import { ProjectBoardContext } from '../../ProjectBoard';
+import { useQuery } from '../../../../../hooks/useQuery';
+import { CrudPayload, IssueComment, ItemType, SimpleAction } from '../../../../../model/types';
+import { commonChildCrud } from '../../../../../services/api';
 import { IssueViewContext } from '../IssueView';
 import './Activity.css';
 
@@ -12,8 +15,6 @@ interface ActivityProps{
 }
 
 const Activity: FC<ActivityProps> = (props) => {
-    const boardSizes = useContext(ProjectBoardContext).windowSizes;
-    const issueViewSizes = useContext(IssueViewContext).windowSizes;
     const activityOptions: SimpleAction[] = [
         {
             label: 'All',
@@ -41,7 +42,7 @@ const Activity: FC<ActivityProps> = (props) => {
                     <ButtonSelect 
                         items={activityOptions} 
                         currentSelection={selectedActivity}
-                        resizeProps={[boardSizes, issueViewSizes]}
+                        // resizeProps={[boardSizes, issueViewSizes]}
                         onToggle={(item) => {setSelectedActivity(item)}}
                     />
                 </div>
@@ -50,7 +51,7 @@ const Activity: FC<ActivityProps> = (props) => {
                 {
                     (selectedActivity.value === 'comments' || selectedActivity.value)  && 
                     <div className='mt-3'>
-                        <Comment />
+                        <CommentSection />
                     </div>
                 }
             </div>
@@ -58,25 +59,155 @@ const Activity: FC<ActivityProps> = (props) => {
     )
 }
 
-const Comment: FC = () => {
-    const boardSizes = useContext(ProjectBoardContext).windowSizes;
-    const issueViewSizes = useContext(IssueViewContext).windowSizes;
+const CommentSection: FC = () => {
+    const {newCommentEditor, setNewCommentEditor, openIssue} = useContext(IssueViewContext);
+    const commonChildQuery = useQuery((payload: CrudPayload) => commonChildCrud(payload));
+    const dispatch = useDispatch();
+    const [newCommentValue, setNewCommentValue] = useState<string | undefined>(undefined);
+    const handleEdit =(idx: number, value: string) => {
+        if (!openIssue) return;
+        commonChildQuery.trigger({
+            action: 'UPDATE',
+            data: {
+                parentId: openIssue?.id,
+                childCurrentIndex: idx,
+                description: value,
+                itemType: 'comments'
+            },
+            itemType: 'issue'
+        } as CrudPayload)
+        .then(()=>{
+            dispatch(updateIssueComment({
+                id: openIssue.id , 
+                data: {
+                    currentIndex: idx,
+                    updateData: {
+                        description: value
+                    }
+                }
+            }))
+        })
+    }
+
+    const handleDelete = (idx: number) => {
+        if (!openIssue) return;
+        commonChildQuery.trigger({
+            action: 'DELETE',
+            data: {
+                parentId: openIssue?.id,
+                childCurrentIndex: idx,
+                itemType: 'comments'
+            },
+            itemType: 'issue'
+        } as CrudPayload)
+        .then(()=>{
+            dispatch(deleteIssueComment({
+                id: openIssue.id , 
+                data: {
+                    currentIndex: idx
+                }
+            }))
+        })
+    }
+    
     return (
         <div className=''>
-            <div className='d-flex flex-nowrap '>
-                <div className='' style={{width: '3em'}}>
-                    <button className='p-2 rounded-circle bg-thm-2 text-white' style={{width: '2.5em', height: '2.5em'}}>
-                        NA
-                    </button>
-                </div>
-                <div className='w-100'>
+            <UserTagged 
+                element={(
                     <TextEditor 
-                        resizeProps={[boardSizes, issueViewSizes]}
+                        open={newCommentEditor}
+                        value={newCommentValue}
+                        onToggle={(open: boolean)=> setNewCommentEditor(open)}
+                        onSave={(value: string) => {
+                            if (!openIssue) return;
+                            const newComment: IssueComment= {
+                                id: uniqueId(),
+                                description: value
+                            }
+                            const parentItemType: ItemType = 'issue';
+                            commonChildQuery.trigger({
+                                action: 'CREATE',
+                                data:{
+                                    parentId: openIssue.id,
+                                    parentItemType,
+                                    itemType: 'comments',
+                                    ...newComment
+                                },
+                                itemType: 'issue'
+                            } as CrudPayload)
+                            .then(()=>{
+                                dispatch(addIssueComment({id: openIssue.id, data: newComment}));
+                                setNewCommentValue(undefined)
+                            })
+                        }}
                     />
-                </div>
-            </div>
+                )}
+            />
+            {
+                (openIssue?.comments || []).map((comm , idx)=> (
+                    <div key={uniqueId()} className='my-3'>
+                        <UserTagged
+                            element={(
+                                <Comment 
+                                    currentIndex={idx}
+                                    comment={comm}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
+                            )}
+                        />
+                    </div>
+                    
+                ))
+            }
+        </div>
+    )
+}
+
+const Comment: FC<{
+    comment: IssueComment, 
+    currentIndex: number;
+    onEdit: (idx: number, value: string)=> void;
+    onDelete: (id: number)=> void;
+}> = (props) => {
+    const {commentOnEdit, setCommentOnEdit} = useContext(IssueViewContext);
+    return (
+        <div>
             <div>
 
+            </div>
+            <div>
+                <TextEditor 
+                    open={commentOnEdit === props.comment.id}
+                    bannerClassName='bg-light px-2'
+                    value={props.comment.description}
+                    onToggle={(open: boolean)=> setCommentOnEdit(open? props.comment.id: undefined)}
+                    onSave={(value: string)=> props.onEdit(props.currentIndex, value)}
+                />
+            </div>
+            <div className='d-flex px-2 pt-3'>
+                <div className='cursor-pointer text-muted hover-underline'
+                    onClick={()=>{
+                        props.onDelete(props.currentIndex)
+                    }}
+                >
+                    Delete
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const UserTagged: FC<{element: JSX.Element}> = (props) => {
+    return (
+        <div className='d-flex flex-nowrap '>
+            <div className='px-2'>
+                <button className='p-2 rounded-circle bg-thm-2 text-white' style={{width: '2.5em', height: '2.5em'}}>
+                    NA
+                </button>
+            </div>
+            <div className='w-100'>
+                {props.element}
             </div>
         </div>
     )

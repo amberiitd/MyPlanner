@@ -13,3 +13,7 @@ code {
 .f-90{
     font-size: 90%;
 }
+
+.hover-underline:hover{
+    text-decoration: underline;
+}

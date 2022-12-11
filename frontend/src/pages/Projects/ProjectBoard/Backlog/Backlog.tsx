@@ -61,8 +61,8 @@ const Backlog: FC<BacklogProps>  = (props) => {
     ];
 
     const handleDrop = useCallback((event: {itemId: string; cardId: string})=>{
-        const index = projectIssues.findIndex(item => item.id === event.itemId);
-        if (index >= 0){
+        const issue = projectIssues.find(item => item.id === event.itemId);
+        if (issue && issue.sprintId !== event.cardId){
             fetchCommon.trigger({
                 action: 'UPDATE',
                 data: {sprintId: event.cardId, id: event.itemId},

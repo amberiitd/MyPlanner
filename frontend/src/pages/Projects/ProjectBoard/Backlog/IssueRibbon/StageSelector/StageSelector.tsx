@@ -10,8 +10,9 @@ import { Stage, stages } from './stages';
 import './StageSelector.css';
 
 interface StageSelectorProps{
-    selectedStage: Stage,
+    selectedStage: Stage | undefined,
     issueId: string;
+    drop?: 'right' | 'left';
 }
 
 const StageSelector: FC<StageSelectorProps> = (props) => {
@@ -20,7 +21,10 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
     const dispatch = useDispatch();
-
+    const NONE: Stage ={
+        label: 'None',
+        value: 'none'
+    }
     useEffect(()=> {
         const handleWindowClick = (e: any) => {
             if(compRef && compRef.current && compRef.current.contains(e.target)){
@@ -42,13 +46,13 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
         <div ref={compRef} className={`dropdown`}>
             <div>
                 <Button
-                    label={props.selectedStage.label}
+                    label={(props.selectedStage || NONE).label}
                     rightBsIcon={dropdown? 'chevron-up': 'chevron-down'}
                     extraClasses='ps-2 btn-as-light rounded'
                     handleClick={()=>{setDropdown(!dropdown)}}
                 />
             </div>
-            <div ref={dropdownRef} className={`dropdown-menu dropdown-menu-start shadow-sm bg-light ${dropdown? 'show': ''}`} style={{right: 0}}>
+            <div ref={dropdownRef} className={`dropdown-menu dropdown-menu-start shadow-sm bg-light ${dropdown? 'show': ''}`} style={(props.drop || 'right') === 'left'? {left: 0}:{right: 0}}>
                 <div className='bg-white'>
                     <LinkCard 
                         label='Issue Type'

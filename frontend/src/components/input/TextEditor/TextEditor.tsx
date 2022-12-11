@@ -1,15 +1,11 @@
-import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils } from 'draft-js';
-import React, { createContext, FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw } from 'draft-js';
+import React, { createContext, FC, useCallback, useEffect, useRef, useState } from 'react';
 import { SimpleAction } from '../../../model/types';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import './TextEditor.css';
 import TextFormats, { Format } from './TextFormats/TextFormats';
-import Immutable from 'immutable';
 import TextColors, { TextColor } from './TextColors/TextColors';
 import ListStyles, { ListStyle } from './ListStyles/ListStyles';
-import { Provider } from 'react-redux';
-import { ProjectBoardContext } from '../../../pages/Projects/ProjectBoard/ProjectBoard';
-import { IssueViewContext } from '../../../pages/Projects/ProjectBoard/IssueView/IssueView';
 import { isEmpty, max } from 'lodash';
 import Mention from './Entities/Mention/Mention';
 import Entities, { Insert } from './Entities/Entities';
@@ -18,8 +14,12 @@ import LinkSpan from './Entities/Link/LinkSpan/LinkSpan';
 import Button from '../../Button/Button';
 
 interface TextEditorProps{
-    resizeProps?: any[];
+    bannerClassName?: string;
     placeholder?: string;
+    open?: boolean;
+    value?: string;
+    onToggle?: (open: boolean) => void;
+    onSave?: (state: string) => void;
 }
 
 export interface BlockType extends SimpleAction {
@@ -31,8 +31,9 @@ export const TextEditorContext = createContext<{
 }>({containerWidth: undefined});
 
 const TextEditor: FC<TextEditorProps> = (props) => {
+    const observer = useRef<any>();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [active, setActive] = useState(false);
+    const [active, setActive] = useState(!!props.open);
     const linkPopupRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number | undefined>();
     const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0]});
@@ -48,8 +49,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             strategy: getInsertStrategy('LINK'),
             component: LinkSpan,
         },
-      ]);
-    const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty(decorator));
+    ]);
+    const state = EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value): {blocks: [], entityMap: {}}), decorator);
+
+    const [editorState, setEditorState] = useState<EditorState>(state);
+    
     const [currentStyles, setCurrentStyles] = useState<string[]>([]);
     const [currentBlockType, setCurrentBlockType] = useState<BlockType | undefined>();
     const [currentTextColor, setCurrentTextColor] = useState<TextColor | undefined>();
@@ -62,12 +66,20 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         }
     }, [containerRef]); 
 
-    useEffect(() => {
-        handleResize();
-    }, [...(props.resizeProps || [])]);
+    const onContainerObserve = (node: any)=>{
+        if (observer.current) observer.current.disconnect();
+        observer.current = new ResizeObserver((entries) => {
+            handleResize();
+        });
+        if (node) observer.current.observe(node);
+    };
+
+    useEffect(()=>{
+        const state = EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value): {blocks: [], entityMap: {}}), decorator);
+        setEditorState(state);
+    }, [props.value])
 
     useEffect(() => {
-        window.addEventListener('resize', handleResize);
         const handleClick = (e: any)=>{
             if (linkPopupRef.current && linkPopupRef.current.contains(e.target)){
 
@@ -82,7 +94,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
         window.addEventListener('click', handleClick)
         return () => {
-            window.removeEventListener('resize', handleResize);
             window.removeEventListener('click', handleClick);
         }
     }, [])
@@ -369,19 +380,30 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             <div>
                { 
                     !active &&
-                    <div className='rounded border text-muted' 
+                    <div className={`${props.bannerClassName?? 'rounded border text-muted p-2 bg-light'}`}
                         onClick={()=>{
-                            setActive(true);
+                            setActive(()=>{
+                                (props.onToggle||(()=>{}))(true);
+                                return true;
+                            });
                             containerRef.current?.focus();
                         }}
                     >
-                        <input className='p-2 w-100' type='text' disabled={true} placeholder={props.placeholder??'Enter some text...'}/>
-                    
+                        {/* <input className='p-2 w-100' type='text' disabled={true} placeholder={props.placeholder??'Help others understand about this isse.'}/> */}
+                        {
+                            <Editor
+                                editorState={editorState}
+                                onChange={(newState)=>{}}
+                                customStyleMap={{...textColorMap}}
+                                placeholder={props.placeholder??'Help others understand about this isse.'}
+                                readOnly
+                            />
+                        }
                     </div>
                 }
                 {
                     active &&
-                    <div>
+                    <div ref={onContainerObserve}>
                         <div ref={containerRef} className='border rounded'>
                             <div className='p-2 border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
                                 <div className='border-end' title='Text Styles'>
@@ -435,7 +457,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                 <Editor
                                     ref={contentRef}
                                     editorState={editorState}
-                                    onChange={setEditorState}
+                                    onChange={(newState)=>{
+                                        setEditorState(()=>{
+                                            return newState;
+                                        })
+                                    }}
                                     customStyleMap={{...textColorMap}}
                                     placeholder={'Write a description for for this issue...'}
                                 />
@@ -465,20 +491,39 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                             }
                         </div>
                         <div className='d-flex flex-nowrap mt-2'>
-                            <div>
-                                <Button 
-                                    label={'Save'} 
-                                    extraClasses="btn-as-thm p-1 px-2"
-                                    handleClick={()=>{}}
-                                />
-                            </div>
-                            <div className='ms-2'>
-                                <Button 
-                                    label={'Cancel'} 
-                                    extraClasses="btn-as-light p-1 px-2"
-                                    handleClick={()=>{setActive(false)}}
-                                />
-                            </div>
+                            {
+                                props.onSave &&
+                                <div  className='me-2'>
+                                    <Button 
+                                        label={'Save'} 
+                                        extraClasses="btn-as-thm p-1 px-2"
+                                        handleClick={()=>{
+                                            (props.onSave || (()=>{}))(JSON.stringify(convertToRaw(editorState.getCurrentContent())));
+                                            setActive(()=>{
+                                                (props.onToggle||(()=>{}))(false);
+                                                return false;
+                                            });
+                                            setEditorState(EditorState.createEmpty(decorator));
+                                            // EditorState.create
+                                        }}
+                                    />
+                                </div>
+                            }
+                            {
+                                props.onToggle &&
+                                <div>
+                                    <Button 
+                                        label={'Cancel'} 
+                                        extraClasses="btn-as-light p-1 px-2"
+                                        handleClick={()=>{
+                                            setActive(()=>{
+                                                (props.onToggle||(()=>{}))(false);
+                                                return false;
+                                            });
+                                        }}
+                                    />
+                                </div>
+                            }
                         </div>
                     </div>
                 }

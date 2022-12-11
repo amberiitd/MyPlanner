@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { useDispatch } from 'react-redux';
 import { updateIssueBulk } from '../../../../../app/slices/issueSlice';
@@ -38,15 +38,30 @@ const SprintCard: FC<SprintCardProps> = (props) => {
 
     const dispatch = useDispatch();
 
-    const [storyPoints, setStoryPoints] = useState<{
-        notStarted: number;
-        inProgress: number;
-        done: number;
-    }>({
-        notStarted: 0,
-        inProgress: 0,
-        done: 0
-    });
+    const storyPoints = useMemo<{
+            notStarted: number;
+            inProgress: number;
+            done: number;
+        }>(()=>{
+        let notStarted = 0, inProgress =0, done =0; 
+        props.issueList.forEach(issue => {
+            switch(issue.stage){
+                case 'not-started':
+                    notStarted+= (issue.storyPoint || 0);
+                    break;
+                case 'in-progress':
+                    inProgress+= (issue.storyPoint || 0);
+                    break;
+                case 'done':
+                    done+= (issue.storyPoint || 0);
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        return {notStarted, inProgress, done};
+    }, [props.issueList, props.sprintId]);
 
     const handleDelete = useCallback(()=>{
         const deleteSprint = () => {
@@ -85,27 +100,6 @@ const SprintCard: FC<SprintCardProps> = (props) => {
         }
         
     }, [props.issueList, props.sprintId]);
-
-    useEffect(()=>{
-        let notStarted = 0, inProgress =0, done =0; 
-        props.issueList.forEach(issue => {
-            switch(issue.stage){
-                case 'not-started':
-                    notStarted+= (issue.storyPoint || 0);
-                    break;
-                case 'in-progress':
-                    inProgress+= (issue.storyPoint || 0);
-                    break;
-                case 'done':
-                    done+= (issue.storyPoint || 0);
-                    break;
-                default:
-                    break;
-            }
-        })
-
-        setStoryPoints({notStarted, inProgress, done})
-    }, [props.issueList])
 
     return (
         <div ref={drop} className='p-2 rounded-2 bg-light'>

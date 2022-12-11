@@ -23,6 +23,7 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
     const textContainerWidth = useContext(TextEditorContext).containerWidth;
 
     useEffect(() => {
+        // console.log('textContainerwidth changed')
         if (textContainerWidth && textContainerWidth > 400){
             setOffset(2)
         }else{

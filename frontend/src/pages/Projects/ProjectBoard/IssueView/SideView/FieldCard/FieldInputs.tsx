@@ -2,26 +2,36 @@ import { FC, useState } from "react"
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { updateIssue } from "../../../../../../app/slices/issueSlice";
 import { updateFields } from "../../../../../../app/slices/userPrefSlice";
 import { RootState } from "../../../../../../app/store";
 import NumberInput from "../../../../../../components/input/NumberInput/NumberInput";
 import Select from "../../../../../../components/input/Select/Select";
 import NumberBadge from "../../../../../../components/NumberBadge/NumberBadge";
+import { useQuery } from "../../../../../../hooks/useQuery";
+import { CrudPayload } from "../../../../../../model/types";
+import { commonCrud } from "../../../../../../services/api";
 import { FieldInputProps } from "./FieldCard"
 
 
 export const SprintField: FC<FieldInputProps> = (props) => {
+
+    const NONE = {
+        label: 'None',
+        value: 'none',
+    }
+    const sprints = useSelector((state: RootState) => state.sprints);
+
     const data= [
         {
             label: '',
             items: [
-                {
-                    label: 'Project2 Sprint 1',
-                    value: 'project2-sprint-1',
-                }
+                ...(sprints.values.map(sprint => ({label: sprint.name, value: sprint.id}))),
+                NONE
             ]
-        }
+        },
     ];
+
     const dispatch = useDispatch();
     const [showAction, setShowAction] = useState(false);
     return (
@@ -51,10 +61,12 @@ export const SprintField: FC<FieldInputProps> = (props) => {
                     label='Sprint'
                     hideLabel={true}
                     data={data}
-                    selectedItem={data[0].items.find(item => item.value === props.value)}
+                    selectedItem={data[0].items.find(item => item.value === props.value) || NONE}
                     hideToggleIcon={true}
                     extraClasses='bg-as-light-hover'
-                    onSelectionChange={()=>{}}
+                    onSelectionChange={(item: any)=>{
+                        (props.onEdit || (()=>{}))(item)
+                    }}
                 />
             </div>
         </div>
@@ -65,6 +77,7 @@ export const StoryPointField: FC<FieldInputProps> = (props) => {
 
     const dispatch = useDispatch();
     const [showAction, setShowAction] = useState(false);
+    const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
     return (
         <div className="d-flex justify border w-100 align-items-center">
             <div className="" style={{width: '33%'}}
@@ -98,7 +111,9 @@ export const StoryPointField: FC<FieldInputProps> = (props) => {
                 <NumberBadge
                     data={props.value as number}
                     extraClasses='bg-light'
-                    onValueChange={() => {}}
+                    onValueChange={(value) => {
+                        (props.onEdit || (()=>{}))(value)
+                    }}
                 />
             </div>
         </div>

@@ -46,6 +46,11 @@ export interface CrudRequest{
     data:  Sprint & Project & {
         ids?: string[], 
         sprintId?: string;
+        parentId: string;
+        parentItemType?: string;
+        itemType?: string;
+        childCurrentIndex?: string;
+        parentIssueId?: string;
     };
     itemType: string;
 }

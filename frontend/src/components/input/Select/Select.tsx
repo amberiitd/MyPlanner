@@ -19,6 +19,7 @@ interface SelectProps{
     hideToggleIcon?: boolean;
     extraClasses?: string;
     data: SelectCategory[];
+    focus?: boolean;
     onSelectionChange: (event: any) => void;
 }
 
@@ -31,6 +32,14 @@ const Select: FC<SelectProps> = (props) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const selectFormRef = useRef<HTMLDivElement>(null);
     const dropDownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(()=>{
+        if(inputRef.current && props.focus){
+            inputRef.current?.focus();
+            setActive(true);
+            setDropdown(!dropdown);
+        }
+    }, [])
 
     const handleSelection = (item: any) => {
         for (let i = 0; i< props.data.length; i++){
@@ -88,7 +97,7 @@ const Select: FC<SelectProps> = (props) => {
     }, [props]);
 
     return (
-        <div className=''>
+        <div className='px-1'>
             {
                 !props.hideLabel &&
                 <div className='mb-1'>
@@ -97,7 +106,22 @@ const Select: FC<SelectProps> = (props) => {
             }
             <div ref={selectFormRef} className='dropdown'>
                 <div className={`d-flex flex-nowrap form-control-custom rounded-1 ${props.extraClasses?? 'border bg-as-light'} ${isActive? 'focus-outline': ''} w-100 cursor-pointer`}> 
-                    <input ref={inputRef} className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" value={searchText} onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} hidden={!!props.disabled}/>
+                    <input ref={inputRef} 
+                        className={`${searchText.length ==0 ? 'input-cursor': 'w-100'} bg-transparent`} type="text" 
+                        value={searchText} 
+                        onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} 
+                        hidden={!!props.disabled}
+                        // onFocus={()=>{
+                        //     setActive(true);
+                        //     setDropdown(!dropdown);
+                        // }}
+                        // onBlur={()=>{
+                        //     // setActive(false);
+                        //     // setDropdown(false);
+                        //     // setSearchText('');
+                        //     // setFilteredData(props.data);
+                        // }}
+                    />
 
                     <div hidden={searchText.length > 0}>
                         {selectedItem?.label}

@@ -1,3 +1,13 @@
 .editor-container{
     font-size: medium !important;
 }
+
+.public-DraftEditorPlaceholder-root {
+    position: absolute;
+    left: 0;
+    top: 0
+}
+
+.DraftEditor-root{
+    position: relative;
+}
