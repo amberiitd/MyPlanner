@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateIssue } from '../../../../../../app/slices/issueSlice';
 import Button from '../../../../../../components/Button/Button';
@@ -6,6 +6,7 @@ import LinkCard from '../../../../../../components/LinkCard/LinkCard';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../../../model/types';
 import { commonCrud } from '../../../../../../services/api';
+import { ProjectBoardContext } from '../../../ProjectBoard';
 import { Stage, stages } from './stages';
 import './StageSelector.css';
 
@@ -16,6 +17,7 @@ interface StageSelectorProps{
 }
 
 const StageSelector: FC<StageSelectorProps> = (props) => {
+    const {openProject} = useContext(ProjectBoardContext);
     const [dropdown, setDropdown] = useState(false);
     const compRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,7 +60,7 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                         label='Issue Type'
                         showLabel={false}
                         isLoading={false}
-                        linkItems={stages}
+                        linkItems={openProject?.scrumBoard.stages || []}
                         extraClasses='quote'
                         handleClick={(item: Stage) => { 
                             issueQuery.trigger({

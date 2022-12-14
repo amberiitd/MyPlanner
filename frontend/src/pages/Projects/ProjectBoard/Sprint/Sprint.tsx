@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
 import BinaryAction from '../../../../components/BinaryAction/BinaryAction';
@@ -14,6 +14,8 @@ import './Sprint.css';
 import { updateIssue } from '../../../../app/slices/issueSlice';
 import { useDispatch } from 'react-redux';
 import { isEmpty } from 'lodash';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 interface SprintProps{
     project: Project;
@@ -22,8 +24,6 @@ interface SprintProps{
 const Sprint: FC<SprintProps> = (props) => {
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
-    const [projectIssues, setProjectIssues] = useState<Issue[]>([]); 
-    const [projectSprints, setProjectSprints] = useState<SprintData[]>([]);
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
@@ -42,126 +42,127 @@ const Sprint: FC<SprintProps> = (props) => {
         }
     ];
 
-    useEffect(() => {
-        setProjectIssues(issues.values.filter(issue => issue.projectKey === props.project.key));
-        setProjectSprints(sprints.values.filter(sprint => sprint.projectKey === props.project.key));
-    }, [issues, sprints, props])
+    const projectIssues = useMemo(() => issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
+    // const projectSprints = useMemo(() => sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props])
+
     return (
-        <div className='h-100' >
-            <div className='d-flex flex-nowrap align-items-center mb-3'>
-                <div className='h3 text-cut'>
-                    {`${props.project.name} ${'Sprint 1'}`}
-                </div>
-                <div className='ms-auto me-2'>
-                    <BinaryAction 
-                        label='Star' 
-                        bsIcon0='star'
-                        bsIcon1='star-fill' 
-                        extraClasses='icon-lg'
-                        handleClick={()=>{}} 
-                    />
-                </div>
-                <div className='me-2'>
-                    <Button 
-                        label='Complete sprint' 
-                        extraClasses='btn-as-thm px-3 py-1'
-                        handleClick={()=>{}}
-                    />
-                </div>
-                <div>
-                    <DropdownAction 
-                        actionCategory={[
-                            {
-                                label: 'Action',
-                                value: 'action',
-                                items: [
-                                    {
-                                        label: 'Edit Sprint',
-                                        value: 'edit-sprint'
-                                    },
-                                    {
-                                        label: 'Manage custom filters',
-                                        value: 'manage-filters'
-                                    }
-                                ]
-                            }
-                        ]}
-                        bsIcon='three-dots'
-                        handleItemClick={()=>{}}
-                    />
-                </div>
-            </div>
-            <div className='d-flex flex-nowrap align-items-center mb-3' style={{height: '50px'}}>
-                <div className='me-2'>
-                    <TextInput 
-                        label='Search Project' 
-                        hideLabel={true}
-                        value={filters.searchText}
-                        rightBsIcon='search'
-                        placeholder='Search this board'
-                        handleChange={(searchText: string)=>{setFilters({...filters, searchText})}}
-                    />
-                </div>
-                <div className='d-flex flex-nowrap'>
-                    {
-                        members.map((item, index)=>(
-                            <div key={`members-${index}`} className='mx-1'>
-                                <Button
-                                    label={item.name.split(' ').map(w => w[0]).join('')}
-                                    extraClasses='rounded-circle circle-1 btn-as-thm'
-                                    handleClick={()=>{}}
-                                />
-                            </div>
-                        ))
-                    }
-                    <div className='mx-2'>
-                        <Button
-                            label='Add member'
-                            hideLabel={true}
-                            rightBsIcon='person-plus-fill'
-                            extraClasses='rounded-circle circle-1 btn-as-light'
+        <DndProvider backend={HTML5Backend}>
+            <div className='h-100' >
+                <div className='d-flex flex-nowrap align-items-center mb-3'>
+                    <div className='h3 text-cut'>
+                        {`${props.project.name} ${'Sprint 1'}`}
+                    </div>
+                    <div className='ms-auto me-2'>
+                        <BinaryAction 
+                            label='Star' 
+                            bsIcon0='star'
+                            bsIcon1='star-fill' 
+                            extraClasses='icon-lg'
+                            handleClick={()=>{}} 
+                        />
+                    </div>
+                    <div className='me-2'>
+                        <Button 
+                            label='Complete sprint' 
+                            extraClasses='btn-as-thm px-3 py-1'
                             handleClick={()=>{}}
                         />
                     </div>
-                </div>
-                <div className='d-flex flex-nowrap'>
-                    <div className='filter mx-2'>
-                        <MultiSelect 
-                            label='Issue Type'
-                            data={[
+                    <div>
+                        <DropdownAction 
+                            actionCategory={[
                                 {
-                                    label: 'Type',
+                                    label: 'Action',
+                                    value: 'action',
                                     items: [
                                         {
-                                            label: 'Bug',
-                                            value: 'bug'
+                                            label: 'Edit Sprint',
+                                            value: 'edit-sprint'
                                         },
                                         {
-                                            label: 'Story',
-                                            value: 'story'
+                                            label: 'Manage custom filters',
+                                            value: 'manage-filters'
                                         }
-                                    ],
-                                    showLabel: false
+                                    ]
                                 }
-                            ]} 
-                            hideLabel={true}
-                            onSelectionChange={(items)=>{
-                                setFilters({
-                                    ...filters, 
-                                    issueTypes: items.map(item => item.value)
-                                })
-                            }}
+                            ]}
+                            bsIcon='three-dots'
+                            handleItemClick={()=>{}}
                         />
-
                     </div>
                 </div>
+                <div className='d-flex flex-nowrap align-items-center mb-3' style={{height: '50px'}}>
+                    <div className='me-2'>
+                        <TextInput 
+                            label='Search Project' 
+                            hideLabel={true}
+                            value={filters.searchText}
+                            rightBsIcon='search'
+                            placeholder='Search this board'
+                            handleChange={(searchText: string)=>{setFilters({...filters, searchText})}}
+                        />
+                    </div>
+                    <div className='d-flex flex-nowrap'>
+                        {
+                            members.map((item, index)=>(
+                                <div key={`members-${index}`} className='mx-1'>
+                                    <Button
+                                        label={item.name.split(' ').map(w => w[0]).join('')}
+                                        extraClasses='rounded-circle circle-1 btn-as-thm'
+                                        handleClick={()=>{}}
+                                    />
+                                </div>
+                            ))
+                        }
+                        <div className='mx-2'>
+                            <Button
+                                label='Add member'
+                                hideLabel={true}
+                                rightBsIcon='person-plus-fill'
+                                extraClasses='rounded-circle circle-1 btn-as-light'
+                                handleClick={()=>{}}
+                            />
+                        </div>
+                    </div>
+                    <div className='d-flex flex-nowrap'>
+                        <div className='filter mx-2'>
+                            <MultiSelect 
+                                label='Issue Type'
+                                data={[
+                                    {
+                                        label: 'Type',
+                                        items: [
+                                            {
+                                                label: 'Bug',
+                                                value: 'bug'
+                                            },
+                                            {
+                                                label: 'Story',
+                                                value: 'story'
+                                            }
+                                        ],
+                                        showLabel: false
+                                    }
+                                ]} 
+                                hideLabel={true}
+                                onSelectionChange={(items)=>{
+                                    setFilters({
+                                        ...filters, 
+                                        issueTypes: items.map(item => item.value)
+                                    })
+                                }}
+                            />
+
+                        </div>
+                    </div>
+                </div>
+                <div className='d-flex scrum-board w-100'>
+                    <ScrumBoard
+                        issues={projectIssues.filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                    />
+                </div>
             </div>
-            <div className='d-flex scrum-board w-100'>
-                <ScrumBoard
-                    tickets={projectIssues.filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
-                />
-            </div>
-        </div>
+        </DndProvider>
     )
 }
 

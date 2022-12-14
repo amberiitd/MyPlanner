@@ -1,8 +1,9 @@
-import { createContext, FC, useEffect, useState } from 'react';
+import { createContext, FC, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import Split from 'react-split';
+import { refreshIssue } from '../../../app/slices/issueSlice';
 import { refreshProject } from '../../../app/slices/projectSlice';
 import { refreshSprint } from '../../../app/slices/sprintSlice';
 import { RootState } from '../../../app/store';
@@ -13,6 +14,7 @@ import { useQuery } from '../../../hooks/useQuery';
 import { CrudPayload, EMPTY_PROJECT, Project, Sprint } from '../../../model/types';
 import { commonCrud } from '../../../services/api';
 import Backlog from './Backlog/Backlog';
+import { Issue } from './Backlog/IssueRibbon/IssueRibbon';
 import IssueView from './IssueView/IssueView';
 import './ProjectBoard.css';
 import SprintComponent from './Sprint/Sprint';
@@ -57,7 +59,9 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     ];
 
     // since projectBoard is a route component, you can keep selected project as non-state const.
-    const selectedProject = projects.values.find(p => p.key === projectKey) || EMPTY_PROJECT;
+    const selectedProject = useMemo(()=> {
+        return projects.values.find(p => p.key === projectKey) || EMPTY_PROJECT
+    }, [projects]);
     const breadCrumbLinks: BreadCrumbItem = {
         label: 'Projects',
         value: 'projects',
@@ -91,16 +95,27 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
             } as CrudPayload)
             .then((res)=>{
                 dispatch(refreshProject(res as Project[]));
-                if (!sprints.loaded){
-                    commonQuery.trigger({
-                        'action': 'RETRIEVE',
-                        data: {},
-                        'itemType': 'sprint'
-                    } as CrudPayload)
-                    .then((res)=>{
-                        dispatch(refreshSprint(res as Sprint[]));
-                    })
-                }
+            })
+        }
+        if (!sprints.loaded){
+            commonQuery.trigger({
+                'action': 'RETRIEVE',
+                data: {},
+                'itemType': 'sprint'
+            } as CrudPayload)
+            .then((res)=>{
+                dispatch(refreshSprint(res as Sprint[]));
+            })
+        }
+
+        if (!issues.loaded){
+            commonQuery.trigger({
+                'action': 'RETRIEVE',
+                data: {},
+                'itemType': 'issue'
+            } as CrudPayload)
+            .then((res)=>{
+                dispatch(refreshIssue(res as Issue[]));
             })
         }
     }, [])

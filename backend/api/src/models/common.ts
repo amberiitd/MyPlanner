@@ -51,6 +51,8 @@ export interface CrudRequest{
         itemType?: string;
         childCurrentIndex?: string;
         parentIssueId?: string;
+        subPath?: string;
+        deepData?: any;
     };
     itemType: string;
 }

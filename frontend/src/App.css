@@ -16,3 +16,7 @@ button{
     text-decoration: none;
     color: black;
 }
+
+.bg-thm{
+    background-color: rgb(253, 218, 206);
+}

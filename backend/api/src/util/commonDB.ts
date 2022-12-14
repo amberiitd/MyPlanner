@@ -64,23 +64,26 @@ export const deleteItem = async (pk: string, sk: string, table?: string) => {
     }
 }
 
-const parseParams = (data: any) => {
+const parseParams = (data: any, deepPrefix = '' ) => {
     let expr = ''
     let values: any = {};
+    if (deepPrefix.length > 0){
+        deepPrefix+='.';
+    }
     Object.entries(data).forEach(([key, val]) => {
-        expr+= `, ${key} = :${key}`;
+        expr+= `, ${deepPrefix}${key} = :${key}`;
         values[`:${key}`] = val;
     })
 
     return [expr, values];
 }
 
-export const updateItem = async (pk: string, sk: string, updateData: any, table?: string) => {
+export const updateItem = async (pk: string, sk: string, updateData: any, prefix?: string, table?: string) => {
     if (isEmpty(pk) || isEmpty(sk)){
         return
     }
     const unix = moment().unix();
-    const [updateExpSuffix, attributeValues] = parseParams(updateData);
+    const [updateExpSuffix, attributeValues] = parseParams(updateData, prefix || '');
     const UpdateExpression = 'SET updatedAt= :updatedAt '+ updateExpSuffix;
     const ExpressionAttributeValues = {
         ':updatedAt': unix,

@@ -12,7 +12,7 @@ import './SprintHeaderRibbon.css';
 interface SprintHeaderRibbonProps{
     label: string;
     metric: {
-        storyPoints: { stageLabel: string; value: number; color?: string;}[];
+        storyPoints: { label: string; value: number; color?: string;}[];
         status: SprintStatus;
         issueCount: number;
     };
@@ -58,10 +58,10 @@ const SprintHeaderRibbon: FC<SprintHeaderRibbonProps> = (props) => {
             <div className='d-flex flex-nowrap align-items-center ms-auto'>
                 {
                     props.metric.storyPoints.map((item, index) => (
-                        <div className='mx-1' key={`storypoint-badge-${index}`} title={`${item.stageLabel}-Story points`}>
+                        <div className='mx-1' key={`storypoint-badge-${index}`} title={`${item.label}-Story points`}>
                             <Badge
                                 data={item.value}
-                                extraClasses={`bg-${item.color?? 'light'}`}
+                                extraClasses={`bg-${item.color?? 'thm'}`}
                             />
                         </div>
                         

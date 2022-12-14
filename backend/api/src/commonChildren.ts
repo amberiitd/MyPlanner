@@ -2,6 +2,7 @@ import { CrudRequest, ItemType, RequestAction } from "./models/common";
 import { actionHandler, FunctionMap } from "./util/util";
 import { createItem, deleteItem, getItems, updateItem } from "./util/commonDB";
 import moment from "moment";
+import { isEmpty } from "lodash";
 const AWS = require('aws-sdk');
 
 const DB = new AWS.DynamoDB.DocumentClient();
@@ -14,10 +15,11 @@ const createCommonChild = async (request: CrudRequest) => {
         createdAt: updatedAt,
         ...request.data
     }
+    const path = !isEmpty(request.data.subPath) ? (request.data.subPath+ '.'): '';
     var params = {
         TableName: TABLE,
         Key: { pk: `uid:${request.uid}`, sk:  `${request.itemType}:${request.data.parentId}`},
-        UpdateExpression: `SET ${request.data.itemType} = list_append(if_not_exists(${request.data.itemType}, :empty), :item), updatedAt = :updatedAt`,
+        UpdateExpression: `SET ${path}${request.data.itemType} = list_append(if_not_exists(${path}${request.data.itemType}, :empty), :item), updatedAt = :updatedAt`,
         ExpressionAttributeValues:{
             ":item": [data],
             ":empty": [],
@@ -58,7 +60,8 @@ const updateCommonChild = async (request: CrudRequest) => {
         updatedAt,
         ...request.data
     }
-    const [updateExpSuffix, attributeValues] = parseParams(data, `${request.data.itemType}[${request.data.childCurrentIndex}]`);
+    const path = !isEmpty(request.data.subPath) ? (request.data.subPath+ '.'): '';
+    const [updateExpSuffix, attributeValues] = parseParams(data, `${path}${request.data.itemType}[${request.data.childCurrentIndex}]`);
     const UpdateExpression = 'SET updatedAt= :updatedAt '+ updateExpSuffix;
     const ExpressionAttributeValues = {
         ':updatedAt': updatedAt,
@@ -89,10 +92,11 @@ const updateCommonChild = async (request: CrudRequest) => {
 
 const deleteCommonChild = async (request: CrudRequest) => {
     const updatedAt = moment().unix();
+    const path = !isEmpty(request.data.subPath) ? (request.data.subPath+ '.'): '';
     var params = {
         TableName: TABLE,
         Key: { pk: `uid:${request.uid}`, sk:  `${request.itemType}:${request.data.parentId}`},
-        UpdateExpression: `SET updatedAt= :updatedAt REMOVE ${request.data.itemType}[${request.data.childCurrentIndex}]`,
+        UpdateExpression: `SET updatedAt= :updatedAt REMOVE ${path}${request.data.itemType}[${request.data.childCurrentIndex}]`,
         ExpressionAttributeValues: {
             ':updatedAt': updatedAt
         }

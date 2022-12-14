@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import { Project } from '../../../../../model/types';
 import IssueCreator from '../IssueCreator/IssueCreator';
@@ -16,44 +16,41 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
     const [collapse, setCollapse] = useState(false);
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
-        drop: (item: any) => {
-            props.handleDrop({itemId: item.id, cardId: 'backlog'})
+        drop: (item: any, monitor) => {
+            if(!monitor.didDrop()){
+                props.handleDrop({itemId: item.id, cardId: 'backlog'})
+            }
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver()
         })
     }), [props.handleDrop])
 
-    const [storyPoints, setStoryPoints] = useState<{
+    const issueIds = useMemo(()=> props.issueList.map(issue => issue.id), [props.issueList]);
+    const storyPoints = useMemo<{
         notStarted: number;
         inProgress: number;
         done: number;
-    }>({
-        notStarted: 0,
-        inProgress: 0,
-        done: 0
-    });
+    }>(()=>{
+    let notStarted = 0, inProgress =0, done =0; 
+    props.issueList.forEach(issue => {
+        switch(issue.stage){
+            case 'not-started':
+                notStarted+= (issue.storyPoint || 0);
+                break;
+            case 'in-progress':
+                inProgress+= (issue.storyPoint || 0);
+                break;
+            case 'done':
+                done+= (issue.storyPoint || 0);
+                break;
+            default:
+                break;
+        }
+    })
 
-    useEffect(()=>{
-        let notStarted = 0, inProgress =0, done =0; 
-        props.issueList.forEach(issue => {
-            switch(issue.stage){
-                case 'not-started':
-                    notStarted+= (issue.storyPoint || 0);
-                    break;
-                case 'in-progress':
-                    inProgress+= (issue.storyPoint || 0);
-                    break;
-                case 'done':
-                    done+= (issue.storyPoint || 0);
-                    break;
-                default:
-                    break;
-            }
-        })
-
-        setStoryPoints({notStarted, inProgress, done})
-    }, [props.issueList])
+    return {notStarted, inProgress, done};
+}, [props.issueList]);
 
     return (
         <div ref={drop} className='backlog-card p-2 rounded-2 border'>
@@ -90,7 +87,15 @@ const BacklogCard: FC<BacklogCardProps> = (props) => {
                     props.issueList.map((issue, index)=> (
                         <div className='mb-1' key={`issue-${index}`}>
                             <IssueRibbon 
-                                issue={issue}    
+                                issue={issue} 
+                                cardIndex={index}   
+                                onColDrop={(event)=>{
+                                    props.handleDrop({
+                                        ...event, 
+                                        cardId: 'backlog', 
+                                        cardIssueIds: issueIds
+                                    })
+                                }}
                             />
                         </div>
                     ))

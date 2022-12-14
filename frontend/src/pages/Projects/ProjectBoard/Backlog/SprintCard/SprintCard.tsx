@@ -1,12 +1,14 @@
 import { isEmpty } from 'lodash';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateIssueBulk } from '../../../../../app/slices/issueSlice';
 import { removeSprint } from '../../../../../app/slices/sprintSlice';
+import { RootState } from '../../../../../app/store';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, Project, SprintStatus } from '../../../../../model/types';
 import { commonCrud, IssuesCrud } from '../../../../../services/api';
+import { ProjectBoardContext } from '../../ProjectBoard';
 import IssueCreator from '../IssueCreator/IssueCreator';
 import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
 import './SprintCard.css';
@@ -24,12 +26,15 @@ interface SprintCardProps{
 
 const SprintCard: FC<SprintCardProps> = (props) => {
     const [collapse, setCollapse] = useState(false);
+    const {openProject} = useContext(ProjectBoardContext);
     const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload))
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
-        drop: (item: any) => {
-            props.handleDrop({itemId: item.id, cardId: props.sprintId})
+        drop: (item: any, monitor) => {
+            if(!monitor.didDrop()){
+                props.handleDrop({itemId: item.id, cardId: props.sprintId})
+            }
         },
         collect: (monitor) => ({
             isOver: !!monitor.isOver()
@@ -38,30 +43,11 @@ const SprintCard: FC<SprintCardProps> = (props) => {
 
     const dispatch = useDispatch();
 
-    const storyPoints = useMemo<{
-            notStarted: number;
-            inProgress: number;
-            done: number;
-        }>(()=>{
-        let notStarted = 0, inProgress =0, done =0; 
-        props.issueList.forEach(issue => {
-            switch(issue.stage){
-                case 'not-started':
-                    notStarted+= (issue.storyPoint || 0);
-                    break;
-                case 'in-progress':
-                    inProgress+= (issue.storyPoint || 0);
-                    break;
-                case 'done':
-                    done+= (issue.storyPoint || 0);
-                    break;
-                default:
-                    break;
-            }
-        })
-
-        return {notStarted, inProgress, done};
-    }, [props.issueList, props.sprintId]);
+    const issueIds = useMemo(()=> props.issueList.map(issue => issue.id), [props.issueList]);
+    const storyPoints = useMemo(()=> (openProject?.scrumBoard.stages || []).slice(0, 3).map(stage => ({
+            label: stage.label,
+            value: props.issueList.reduce((pre, cur) => pre + (cur.stage === stage.value? (cur.storyPoint || 0): 0), 0)
+       })) , [props.issueList, props.sprintId]);
 
     const handleDelete = useCallback(()=>{
         const deleteSprint = () => {
@@ -107,23 +93,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
                 <SprintHeaderRibbon
                     label={props.sprintName?? `${props.project.key} Sprint ${props.sprintIndex}`}
                     metric={{
-                        storyPoints: [
-                            {
-                                stageLabel: 'Not started',
-                                value: storyPoints.notStarted,
-                                color: 'light'
-                            },
-                            {
-                                stageLabel: 'In progress',
-                                value: storyPoints.inProgress,
-                                color: 'thm'
-                            },
-                            {
-                                stageLabel: 'Done',
-                                value: storyPoints.done,
-                                color: 'green'
-                            }
-                        ],
+                        storyPoints: storyPoints,
                         status: props.sprintStatus,
                         issueCount: props.issueList.length
                     }}
@@ -138,7 +108,15 @@ const SprintCard: FC<SprintCardProps> = (props) => {
                     props.issueList.map((issue, index)=> (
                         <div className='mb-1' key={issue.id}>
                             <IssueRibbon 
-                                issue={issue}    
+                                issue={issue}  
+                                cardIndex={index}  
+                                onColDrop={(event)=>{
+                                    props.handleDrop({
+                                        ...event, 
+                                        cardId: props.sprintId, 
+                                        cardIssueIds: issueIds
+                                    })
+                                }}
                             />
                         </div>
                     ))

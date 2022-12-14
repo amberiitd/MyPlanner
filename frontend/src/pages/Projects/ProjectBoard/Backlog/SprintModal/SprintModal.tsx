@@ -95,7 +95,7 @@ const SprintModal: FC = () => {
     return (
         <Modal
             show={sprintModal.show}
-            // backdrop='static'
+            className='font-theme'
             // dialogClassName='modal-dialog-scrollable font-theme'
         >
             <Modal.Header className=''>

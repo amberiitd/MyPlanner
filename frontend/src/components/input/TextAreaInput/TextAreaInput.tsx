@@ -15,7 +15,7 @@ const TextAreaInput: FC<TextAreaInputProps> = (props) => {
     const [active, setActive] = useState(false);
 
     return (
-        <div className="" data-testid="TextInput">
+        <div className="px-1" data-testid="TextInput">
             <div className='' hidden={!!props.hideLabel}>
                 {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
             </div>

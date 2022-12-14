@@ -48,28 +48,6 @@ const Projects: FC<ProjectsProps> = (props) => {
         }
     ]
 
-    const projectList: Project[] = [
-        {
-            id: "dnqwowed",
-            name: "Test Project 1",
-            key: "test-project-1",
-            leadAssignee: "Nazish Amber",
-            templateType: 'MyPlanner Software',
-            managementType: 'team-managed',
-            template: 'scrum',
-        },
-        {
-            id: "liudhdwwed",
-            name: "My Project 2",
-            key: "my-project-2",
-            leadAssignee: "Khalid safi Ibne Batuta",
-            templateType: 'MyPlanner Software',
-            managementType: 'team-managed',
-            template: 'scrum',
-            isStarred: true
-        }
-    ];
-
     useEffect(()=>{
         if (isEmpty(searchText) && isEmpty(selectedTypes)){
             setFilteredProjects(projects.values)

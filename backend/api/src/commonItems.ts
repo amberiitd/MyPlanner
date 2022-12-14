@@ -43,7 +43,7 @@ const deleteOne = async (request: CrudRequest) => {
 }
 
 const update = async (request: CrudRequest) => {
-    await updateItem(`uid:${request.uid}`, `${request.itemType}:${request.data.id}`, request.data);
+    await updateItem(`uid:${request.uid}`, `${request.itemType}:${request.data.id}`, request.data , request.data.subPath);
     return {
         statusCode: 200,
         body: JSON.stringify({

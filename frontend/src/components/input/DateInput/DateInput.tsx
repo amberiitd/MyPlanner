@@ -51,7 +51,7 @@ const DateInput: FC<DateInputProps> = (props) => {
     }, [props.value, props.minDate])
 
     return (
-        <div className="">
+        <div className="px-1">
             <div className='' hidden={!!props.hideLabel}>
                 {props.label}<span className='text-thm ms-1' style={{fontSize: 'small'}}>{props.isRequired? '*': ''}</span>
             </div>

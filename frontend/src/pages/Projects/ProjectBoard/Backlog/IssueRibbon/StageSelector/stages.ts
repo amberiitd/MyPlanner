@@ -1,6 +1,6 @@
 import { SimpleAction } from "../../../../../../model/types"
 
-export type StageValue = 'in-progress' | 'not-started' | 'done' | 'none'
+export type StageValue = string;
 
 export interface Stage extends SimpleAction{
     value: StageValue;

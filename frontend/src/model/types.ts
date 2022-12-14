@@ -1,4 +1,17 @@
+import { stageMap } from "../pages/Projects/ProjectBoard/Backlog/IssueRibbon/StageSelector/stages";
 import { Duration } from "../pages/Projects/ProjectBoard/Backlog/SprintModal/SprintModal";
+
+
+export interface IssueStage{
+    label: string;
+    value: string;
+    issueOrder?: string[];
+}
+
+export interface ScrumBoard{
+    stages: IssueStage[];
+    stageOrder?: string[];
+}
 
 export interface Project{
     id: string;
@@ -9,6 +22,8 @@ export interface Project{
     template: string;
     leadAssignee?: string;
     isStarred?: boolean;
+    backlogIssueOrder?: string[];
+    scrumBoard: ScrumBoard
 }
 
 export const EMPTY_PROJECT: Project = {
@@ -17,7 +32,12 @@ export const EMPTY_PROJECT: Project = {
     key: '',
     managementType: '',
     templateType: '',
-    template: ''
+    template: '',
+    backlogIssueOrder: [],
+    scrumBoard: {
+        stages: Object.values(stageMap),
+        stageOrder: []
+    }
 }
 
 export type SprintStatus = 'complete' | 'active' | 'not-started';
@@ -31,6 +51,7 @@ export interface Sprint{
     endTimestamp?: number;
     duration?: Duration | 'custom';
     goal?: string;
+    issueOrder?: string[];
 }
 
 export const EMPTY_SPRINT: Sprint = {
@@ -38,7 +59,8 @@ export const EMPTY_SPRINT: Sprint = {
     name: '',
     projectKey: '',
     index: 0,
-    status: 'not-started'
+    status: 'not-started',
+    issueOrder: []
 }
 
 export interface IssueComment{

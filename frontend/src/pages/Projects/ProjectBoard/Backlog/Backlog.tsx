@@ -1,4 +1,4 @@
-import { isEmpty, uniqueId } from 'lodash';
+import { indexOf, isEmpty, sortBy, uniqueId } from 'lodash';
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -21,8 +21,10 @@ import SprintModal from './SprintModal/SprintModal';
 import Split from 'react-split';
 import { commonCrud } from '../../../../services/api';
 import { useQuery } from '../../../../hooks/useQuery';
-import { refreshSprint } from '../../../../app/slices/sprintSlice';
+import { refreshSprint, updateSprint } from '../../../../app/slices/sprintSlice';
 import CircleRotate from '../../../../components/Loaders/CircleRotate';
+import { ProjectBoardContext } from '../ProjectBoard';
+import { updateProject } from '../../../../app/slices/projectSlice';
 
 interface BacklogProps{
     project: Project;
@@ -37,6 +39,7 @@ export const BacklogContext = createContext<{
 })
 
 const Backlog: FC<BacklogProps>  = (props) => {
+    const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
     const [openIssue, setOpenIssue] = useState<Issue | undefined>();
@@ -49,7 +52,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
     });
     const projectSprints = useMemo(()=> sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props]);
     const projectIssues = useMemo(()=> issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
-    const fetchCommon = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const dispatch = useDispatch();
     const members = [
         {
@@ -60,10 +63,11 @@ const Backlog: FC<BacklogProps>  = (props) => {
         }
     ];
 
-    const handleDrop = useCallback((event: {itemId: string; cardId: string})=>{
+    const handleDrop = useCallback((event: {itemId: string; cardId: string; insertIdx: number; cardIssueIds: string[]})=>{
         const issue = projectIssues.find(item => item.id === event.itemId);
+        
         if (issue && issue.sprintId !== event.cardId){
-            fetchCommon.trigger({
+            commonQuery.trigger({
                 action: 'UPDATE',
                 data: {sprintId: event.cardId, id: event.itemId},
                 itemType: 'issue'
@@ -72,10 +76,39 @@ const Backlog: FC<BacklogProps>  = (props) => {
                 dispatch(updateIssue({id: event.itemId, data: {sprintId: event.cardId}}))
             })
         }
+        if (event.insertIdx === undefined || event.insertIdx < 0) return; // check for index
+
+        let newOrder = (event.cardIssueIds || []);
+        const orderIndex = newOrder.findIndex((id) => id === event.itemId);
+        if (orderIndex < 0){
+            newOrder.push(event.itemId);
+        }else if(orderIndex !== event.insertIdx){
+            newOrder.splice(orderIndex, 1);
+            newOrder.splice(event.insertIdx, 0, event.itemId);
+        }
+        if(event.cardId === 'backlog'){
+            commonQuery.trigger({
+                action: 'UPDATE',
+                data: {id: openProject?.id, backlogIssueOrder: newOrder},
+                itemType: 'project'
+            } as CrudPayload)
+            .then((res)=> {
+                dispatch(updateProject({key: openProject?.key || '', data: {backlogIssueOrder: newOrder}}))
+            })
+        }else{
+            commonQuery.trigger({
+                action: 'UPDATE',
+                data: {id: event.cardId, issueOrder: newOrder},
+                itemType: 'sprint'
+            } as CrudPayload)
+            .then((res)=> {
+                dispatch(updateSprint({id: event.cardId, data: {issueOrder: newOrder}}))
+            })
+        }
     }, [projectIssues])
 
     const onRefresh = () =>{
-        fetchCommon.trigger({
+        commonQuery.trigger({
             action: 'RETRIEVE',
             data: {},
             itemType: 'sprint'
@@ -83,7 +116,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
         .then((res) => {
             dispatch(refreshSprint(res as Sprint[]));
 
-            fetchCommon.trigger({
+            commonQuery.trigger({
                 action: 'RETRIEVE',
                 data: {},
                 itemType: 'issue'
@@ -105,7 +138,15 @@ const Backlog: FC<BacklogProps>  = (props) => {
                 projectSprints.map(sprint => (
                     <div key={uniqueId()} className='my-3'>
                         <SprintCard 
-                            issueList={projectIssues.filter(issue => issue.sprintId === sprint.id && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                            issueList={
+                                sortBy(
+                                    projectIssues.filter(issue => issue.sprintId === sprint.id && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type))),
+                                    (issue) => {
+                                        const index=  indexOf(sprint?.issueOrder || [], issue.id);
+                                        return index >= 0 ? index: 99999;
+                                    }
+                                )
+                            }
                             sprintId={sprint.id}
                             sprintIndex={sprint.index}
                             sprintStatus={sprint.status}
@@ -118,7 +159,15 @@ const Backlog: FC<BacklogProps>  = (props) => {
             }
             <div className='my-3'>
                 <BacklogCard 
-                    issueList={projectIssues.filter(issue => issue.sprintId === 'backlog' && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                    issueList={
+                        sortBy(
+                            projectIssues.filter(issue => issue.sprintId === 'backlog' && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type))),
+                            (issue) => {
+                                const index=  indexOf(openProject?.backlogIssueOrder || [], issue.id);
+                                return index >= 0 ? index: 99999;
+                            }
+                        )
+                    }
                     handleDrop={handleDrop}
                     project={props.project}
                 />
@@ -135,7 +184,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     </div>
                     <div className='mx-2'>
                         <CircleRotate
-                            loading={fetchCommon.loading}
+                            loading={commonQuery.loading}
                             onReload={onRefresh}
                         />
                     </div>
