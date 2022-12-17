@@ -4,7 +4,7 @@ import { createItem, deleteItem, getItems, updateItem } from "./util/commonDB";
 import { isEmpty } from "lodash";
 
 const createIssue = async (request: CrudRequest) => {
-    await createItem(`uid:${request.uid}`, `${ItemType.ISSUE}:${request.data.id}`, {
+    await createItem(`project:${request.data.projectId}`, `${ItemType.ISSUE}:${request.data.id}`, {
         itemType: ItemType.ISSUE,
         ...request.data
     })
@@ -22,7 +22,7 @@ const createIssue = async (request: CrudRequest) => {
 }
 
 const getIssues = async (request: CrudRequest) => {
-    const items = await getItems(`uid:${request.uid}`, ItemType.ISSUE)
+    const items = await getItems(`project:${request.data.projectId}`, ItemType.ISSUE)
     
     return {
         statusCode: 200,
@@ -34,7 +34,7 @@ const getIssues = async (request: CrudRequest) => {
 }
 
 const deleteIssue = async (request: CrudRequest) => {
-    await deleteItem(`uid:${request.uid}`, `${ItemType.ISSUE}:${request.data.id}`)
+    await deleteItem(`project:${request.data.projectId}`, `${ItemType.ISSUE}:${request.data.id}`)
     return {
         statusCode: 200,
         body: JSON.stringify({
@@ -48,7 +48,7 @@ const assignToSprint = async (request: CrudRequest) => {
     if (!isEmpty(request.data.ids)){
         const ids = request.data.ids || [];
         for (let i=0; i< ids.length; i++){
-            await updateItem(`uid:${request.uid}`, `${ItemType.ISSUE}:${ids[i]}`, {
+            await updateItem(`project:${request.data.projectId}`, `${ItemType.ISSUE}:${ids[i]}`, {
                 sprintId: request.data.sprintId
             } as Issue);
         }

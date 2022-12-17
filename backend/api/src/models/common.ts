@@ -44,6 +44,7 @@ export interface Sprint{
 export interface CrudRequest{
     uid: string;
     data:  Sprint & Project & {
+        projectId: string;
         ids?: string[], 
         sprintId?: string;
         parentId: string;
