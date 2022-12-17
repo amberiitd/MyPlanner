@@ -149,10 +149,10 @@ const Backlog: FC<BacklogProps>  = (props) => {
                             }
                             sprintId={sprint.id}
                             sprintIndex={sprint.index}
-                            sprintStatus={sprint.status}
+                            sprintStatus={sprint.sprintStatus}
                             handleDrop={handleDrop}
                             project={props.project}
-                            sprintName={sprint.name}
+                            sprintName={sprint.sprintName}
                         />
                     </div>
                 ))

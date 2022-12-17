@@ -26,7 +26,7 @@ export const SprintField: FC<FieldInputProps> = (props) => {
         {
             label: '',
             items: [
-                ...(sprints.values.map(sprint => ({label: sprint.name, value: sprint.id}))),
+                ...(sprints.values.map(sprint => ({label: sprint.sprintName, value: sprint.id}))),
                 NONE
             ]
         },

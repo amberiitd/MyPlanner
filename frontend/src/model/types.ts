@@ -44,22 +44,22 @@ export type SprintStatus = 'complete' | 'active' | 'not-started';
 export interface Sprint{
     id: string;
     projectKey: string;
-    name: string;
+    sprintName: string;
     index: number;
-    status: SprintStatus;
+    sprintStatus: SprintStatus;
     startTimestamp?: number;
     endTimestamp?: number;
-    duration?: Duration | 'custom';
+    sprintDuration?: Duration | 'custom';
     goal?: string;
     issueOrder?: string[];
 }
 
 export const EMPTY_SPRINT: Sprint = {
     id: '',
-    name: '',
+    sprintName: '',
     projectKey: '',
     index: 0,
-    status: 'not-started',
+    sprintStatus: 'not-started',
     issueOrder: []
 }
 

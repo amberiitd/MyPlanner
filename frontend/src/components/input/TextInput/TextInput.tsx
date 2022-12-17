@@ -11,6 +11,8 @@ interface TextInputProps {
   isRequired?: boolean;
   rightBsIcon?: string;
   focus?: boolean;
+  error?: string;
+  onBlur?: (e: any)=> void;
   handleChange: (value: string)=> void;
 }
 
@@ -37,12 +39,18 @@ const TextInput: FC<TextInputProps> = (props) => {
           value ={props.value} 
           onChange={(e)=> props.handleChange(e.target.value)} 
           onFocus={()=> {setActive(true)}}
-          onBlur={()=> {setActive(false)}}
+          onBlur={(e)=> {setActive(false); (props.onBlur|| (()=> {}))(e)}}
         />
         <div className='py-auto ms-auto'>
             <i className={`bi bi-${props.rightBsIcon}`} hidden={isEmpty(props.rightBsIcon)} style={{fontSize: '70%'}}></i>
         </div>
       </div>
+      {
+        !isEmpty(props.error) &&
+        <div className='text-danger px-1 f-80'>
+            {props.error}
+        </div>
+      }
     </div>
   )
   };

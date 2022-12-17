@@ -40,19 +40,22 @@ const NavBarLink: FC<NavBarLinkProps> = (props) => {
         <NavDropDownContext.Provider value={{dropdown, setDropdown}}>
             <div
                 ref={containerRef}
-                className={`dropdown ms-2 ${props.isActive? 'border-bottom border-4 border-themed': ''}`}
+                className={`dropdown h-100 ms-2 ${props.isActive? 'border-bottom border-4 border-themed': ''}`}
             >
-                <div 
-                    className='navlinkbtn d-inline-flex p-1 px-2 rounded-1' id={`nav-link-${props.label}`}
-                    onClick={()=> {
-                        setDropdown(true)
-                    }}
-                >
-                    <div className='text-nowrap'>{props.label}</div>
-                    <div className='ms-auto'>
-                        <i className="bi bi-chevron-down ms-1 mt-1 icon-font" style={{fontSize: "70%"}}></i>
+                <div className='d-flex align-items-center h-100'>
+                    <div 
+                        className='navlinkbtn d-inline-flex p-1 px-2 rounded-1' id={`nav-link-${props.label}`}
+                        onClick={()=> {
+                            setDropdown(true)
+                        }}
+                    >
+                        <div className='text-nowrap'>{props.label}</div>
+                        <div className='ms-auto'>
+                            <i className="bi bi-chevron-down ms-1 mt-1 icon-font" style={{fontSize: "70%"}}></i>
+                        </div>
                     </div>
                 </div>
+                
 
                 <div
                     className={`dropdown-menu nav-dropdown shadow-sm ${dropdown? 'show': ''}`}

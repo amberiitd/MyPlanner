@@ -69,7 +69,7 @@ const SprintHeaderRibbon: FC<SprintHeaderRibbonProps> = (props) => {
                 }
                 <div className='mx-1'>
                     <Button
-                        label={props.metric.status === 'active'? 'Complete sprint': 'Start sprint'}
+                        label={props.metric.status === 'active'? 'Complete sprint': (props.metric.status ==='complete'? 'Completed': 'Start sprint')}
                         handleClick={()=>{
                             if (props.metric.status == 'not-started'){
                                 sprintModalService.setProps({
@@ -85,7 +85,7 @@ const SprintHeaderRibbon: FC<SprintHeaderRibbonProps> = (props) => {
                             }
                             
                         }}
-                        disabled={props.metric.issueCount === 0 && props.metric.status === 'not-started'}
+                        disabled={(props.metric.issueCount === 0 && props.metric.status === 'not-started') || props.metric.status ==='complete'}
                     />
                 </div>
                 <div className='mx-1'>
