@@ -20,6 +20,7 @@ import { useQuery } from '../../../../hooks/useQuery';
 import { commonCrud, projectCommonCrud } from '../../../../services/api';
 import { ProjectBoardContext } from '../ProjectBoard';
 import { refreshSprint } from '../../../../app/slices/sprintSlice';
+import { completeSprintModalService } from '../../../../modal.service';
 
 interface SprintProps{
     project: Project;
@@ -31,6 +32,7 @@ const Sprint: FC<SprintProps> = (props) => {
     const issues = useSelector((state: RootState) => state.issues);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
+    const activeSprints = useMemo(() => sprints.values.filter(sprint => sprint.sprintStatus === 'active'), [sprints]);
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
@@ -93,13 +95,22 @@ const Sprint: FC<SprintProps> = (props) => {
                             handleClick={()=>{}} 
                         />
                     </div>
-                    <div className='me-2'>
-                        <Button 
-                            label='Complete sprint' 
-                            extraClasses='btn-as-thm px-3 py-1'
-                            handleClick={()=>{}}
-                        />
-                    </div>
+                    {
+                        activeSprints.length > 0 &&
+                        <div className='me-2'>
+                            <Button 
+                                label='Complete sprint' 
+                                extraClasses='btn-as-thm px-3 py-1'
+                                handleClick={()=>{
+                                    completeSprintModalService.setProps({
+                                        sprintIds: activeSprints.map(sp => sp.id)
+                                    });
+                                    completeSprintModalService.setShowModel(true)
+                                }}
+                            />
+                        </div>
+                    }
+                    
                     <div>
                         <DropdownAction 
                             actionCategory={[
@@ -190,7 +201,9 @@ const Sprint: FC<SprintProps> = (props) => {
                 </div>
                 <div className='d-flex scrum-board w-100'>
                     <ScrumBoard
-                        issues={projectIssues.filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                        issues={projectIssues
+                            .filter(issue => activeSprints.findIndex(sprint => sprint.id === issue.sprintId) >= 0)
+                            .filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
                     />
                 </div>
             </div>

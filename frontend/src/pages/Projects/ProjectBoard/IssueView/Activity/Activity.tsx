@@ -8,7 +8,7 @@ import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, IssueComment, ItemType, SimpleAction } from '../../../../../model/types';
 import { commonChildCrud, projectCommonChildCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
-import { IssueViewContext } from '../IssueView';
+import { IssueMainViewContext } from '../IssueMainView/IssueMainView';
 import './Activity.css';
 
 interface ActivityProps{
@@ -62,7 +62,7 @@ const Activity: FC<ActivityProps> = (props) => {
 
 const CommentSection: FC = () => {
     const {openProject} = useContext(ProjectBoardContext);
-    const {newCommentEditor, setNewCommentEditor, openIssue} = useContext(IssueViewContext);
+    const {newCommentEditor, setNewCommentEditor, openIssue} = useContext(IssueMainViewContext);
     const projectCommonChildQuery = useQuery((payload: CrudPayload) => projectCommonChildCrud(payload));
     const dispatch = useDispatch();
     const [newCommentValue, setNewCommentValue] = useState<string | undefined>(undefined);
@@ -175,7 +175,7 @@ const Comment: FC<{
     onEdit: (idx: number, value: string)=> void;
     onDelete: (id: number)=> void;
 }> = (props) => {
-    const {commentOnEdit, setCommentOnEdit} = useContext(IssueViewContext);
+    const {commentOnEdit, setCommentOnEdit} = useContext(IssueMainViewContext);
     return (
         <div>
             <div>

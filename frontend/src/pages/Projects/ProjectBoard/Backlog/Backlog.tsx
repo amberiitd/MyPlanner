@@ -25,6 +25,8 @@ import { refreshSprint, updateSprint } from '../../../../app/slices/sprintSlice'
 import CircleRotate from '../../../../components/Loaders/CircleRotate';
 import { ProjectBoardContext } from '../ProjectBoard';
 import { updateProject } from '../../../../app/slices/projectSlice';
+import IssueMainView from '../IssueView/IssueMainView/IssueMainView';
+import SideView from '../IssueView/SideView/SideView';
 
 interface BacklogProps{
     project: Project;
@@ -179,7 +181,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div className='h-100' style={{paddingTop: '30px'}}>
-                <div className='d-flex flex-nowrap align-items-center mb-3'>
+                <div className='d-flex flex-nowrap align-items-center h4em'>
                     <div className='h3'>
                         {'Backlog'}
                     </div>
@@ -205,7 +207,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                         />
                     </div>
                 </div>
-                <div className='d-flex flex-nowrap align-items-center mb-3' style={{height: '50px'}}>
+                <div className='d-flex flex-nowrap align-items-center h4em'>
                     <div className='me-2'>
                         <TextInput 
                             label='Search Project' 
@@ -265,23 +267,41 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     {
                         openIssue ? (
                             <Split 
-                                sizes={openIssue ? [50, 50]: [100]}
-                                minSize={300}
+                                sizes={[50, 50]}
+                                minSize={400}
                                 expandToMin={false}
                                 gutterSize={10}
                                 gutterAlign="center"
-                                snapOffset={30}
                                 dragInterval={1}
                                 direction="horizontal"
                                 cursor="col-resize"
-                                className='h-100 d-flex flex-nowrap'
+                                className='h100-8em d-flex flex-nowrap'
                             >
-                                <div className='overflow-auto'>
+                                <div className='h-100 overflow-auto'>
                                     {backlogBody}
                                 </div>
                                 
-                                <div className=''>
-                                    <a href={`issue?issueId=${openIssue.id}`}>Issue View</a>
+                                <div className='h-100 px-3 overflow-auto' >
+                                    {/*  */}
+                                    <div className='d-flex'>
+                                        <div>
+                                            <a className='btn btn-sm shadow-sm btn-outline-secondary' href={`issue?issueId=${openIssue.id}`}>Issue View</a>
+                                        </div>
+                                        <div className='ms-auto'>
+                                            <Button 
+                                                label={'Cancel'}
+                                                hideLabel={true}
+                                                leftBsIcon={'x-lg'} 
+                                                extraClasses='ps-2 py-1 btn-as-light'
+                                                handleClick={() => setOpenIssue(undefined)}
+                                            />
+                                        </div>
+                                        
+                                    </div>
+                                    <div>
+                                        <IssueMainView onRefresh={()=>{}} issue={openIssue}/>
+                                    </div>
+                                    <div><SideView issue={openIssue}/></div>
                                 </div>
                             </Split>
                         ):
@@ -290,7 +310,6 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     
                 </BacklogContext.Provider>
                 <SprintModal />
-                <CompleteSprintModal />
             </div>
         </DndProvider>
     )

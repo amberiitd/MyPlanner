@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { FC, useContext, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -19,18 +19,14 @@ const CompleteSprintModal: FC = () => {
     const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
-    const [sprint, setSprint] = useState<Sprint | undefined>();
-    const [metric, setMetric] = useState<{
-        completedIssueCount: number,
-        openIssueCount: number,
-        openIssueIds: string[]
-    }>({
-        completedIssueCount: 0,
-        openIssueCount: 0,
-        openIssueIds: []
-    });
     const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
+    const [selectedSprint, setSelectedSprint] = useState<{label: string; value: string;} | undefined>(undefined);
+    const [transferToSprint, setTransferToSprint] = useState<{label: string; value: string;} | undefined>({
+        label: 'Backlog',
+        value: 'backlog'
+    });
+
     const dispatch = useDispatch();
     const [modal, setModal] = useState<{
         show: boolean;
@@ -51,30 +47,61 @@ const CompleteSprintModal: FC = () => {
         });
     }, [])
 
-    useEffect(() => {
-        setSprint(sprints.values.find(sp => sp.id === modal.props.sprintId));
-    }, [sprints, modal.props])
-
-    useEffect(() => {
-        if (sprint){
-            const notDone = issues.values.filter(iss => iss.sprintId === sprint.id && iss.stage !== 'done');
-            setMetric({
-                completedIssueCount: issues.values.filter(iss => iss.sprintId === sprint.id && iss.stage === 'done').length,
+    const activeSprints = useMemo(() => {
+        return sprints.values.filter(sp => (modal.props.sprintIds || []).findIndex((id: any) => id === sp.id)>= 0)
+    }, [sprints, modal.props]);
+    const metric = useMemo<{
+        completedIssueCount: number,
+        openIssueCount: number,
+        openIssueIds: string[]
+    }>(() => {
+        if (activeSprints.length > 0){
+            const sprintIssues = issues.values.filter(iss => (activeSprints.findIndex(sp => sp.id === iss.sprintId) >= 0));
+            const notDone = sprintIssues.filter(iss => iss.stage !== 'done');
+            setSelectedSprint({label: activeSprints[0].sprintName, value: activeSprints[0].id});
+            return {
+                completedIssueCount: sprintIssues.filter(iss => iss.stage === 'done').length,
                 openIssueCount: notDone.length,
                 openIssueIds: notDone.map(issue => issue.id)
-            })
+            }
         }
-    }, [sprint, issues])
+        return {
+            completedIssueCount: 0,
+            openIssueCount: 0,
+            openIssueIds: []
+        }
+    }, [activeSprints, issues]);
 
     return (
         <Modal show={modal.show} >
             <Modal.Header>
                 <div>
-                    <h4>{`Complete sprint: `}{ sprint?.sprintName?? `${sprint?.projectKey} Sprint ${sprint?.index}`}</h4>
+                    <h4>{`Complete sprint `}{ activeSprints.length == 1 ? `: ${activeSprints[0].projectKey} ${activeSprints[0].sprintName}`: ''}</h4>
                 </div>
             </Modal.Header>
             <Modal.Body className='complete-sprint-modal-body'>
-                <div>
+                { 
+                    activeSprints.length > 1 &&
+                    <div className='w-50 mt-2'>
+                        <Select 
+                            label='Select a sprint to complete'
+                            selectedItem={selectedSprint}
+                            data={[{
+                                label: 'Active Sprints',
+                                items: activeSprints
+                                    .map(sp => ({
+                                        label: sp.sprintName,
+                                        value: sp.id
+                                    }))
+                            }]}
+                            onSelectionChange={(item: any)=> {
+                                setSelectedSprint(item);
+                            }}
+                        />
+                    </div>
+                }
+
+                <div className='mt-2'>
                     <p>This sprint contains:</p>
                     <ul>
                         <li>{metric.completedIssueCount} <span>completed issues</span></li>
@@ -92,10 +119,9 @@ const CompleteSprintModal: FC = () => {
                             }}
                             data={[{
                                 label: 'MOVE TO ',
-                                items: sprints.values
-                                    .filter(sp => sp.projectKey === sprint?.projectKey)
+                                items: activeSprints
                                     .map(sp => ({
-                                        label: `${sprint?.projectKey} Sprint ${sp.index}`,
+                                        label: `${sp.projectKey} ${sp.sprintName}`,
                                         value: sp.id
                                     }))
                                     .concat([{
@@ -104,6 +130,7 @@ const CompleteSprintModal: FC = () => {
                                     }])
                             }]}
                             onSelectionChange={(item: any)=> {
+                                setTransferToSprint(item);
                             }}
                         />
                     </div>
@@ -118,23 +145,24 @@ const CompleteSprintModal: FC = () => {
                         handleClick={()=>{ completeSprintModalService.setShowModel(false) }}
                         disabled={projectCommonQuery.loading || issueQuery.loading}
                     />
+                    
                     <Button 
                         label={'Complete sprint'}
                         handleClick={()=>{
-                            const completeSprint = () => {
+                            const completeSprint = (id: string) => {
                                 const data = {sprintStatus: 'complete'};
                                 projectCommonQuery.trigger({
                                     action: 'UPDATE',
                                     data: {
                                         projectId: openProject?.id,
-                                        id: sprint?.id || '',
+                                        id,
                                         ...data
                                     },
                                     itemType: 'sprint'
                                 } as CrudPayload)
                                 .then(()=>{
                                     dispatch(updateSprint({
-                                        id: sprint?.id || '', 
+                                        id, 
                                         data
                                     }));
                                     completeSprintModalService.setShowModel(false);
@@ -143,25 +171,28 @@ const CompleteSprintModal: FC = () => {
                             
                             if (metric.openIssueCount > 0 ){
                                 const ids = metric.openIssueIds;
-                                if (isEmpty(ids)){
-                                    completeSprint();
-                                }else{
+                                if (isEmpty(ids) && selectedSprint){
+                                    completeSprint(selectedSprint.value);
+                                }else if(transferToSprint){
                                     issueQuery.trigger({
                                         action: 'ASSIGN_SPRINT',
                                         data: {
                                             ids,
                                             projectId: openProject?.id,
-                                            sprintId: 'backlog'
+                                            sprintId: transferToSprint.value
                                         }
                                     } as CrudPayload)
                                     .then(()=>{
                                         dispatch(updateIssueBulk({
                                             ids,
                                             data: {
-                                                sprintId: 'backlog'
+                                                sprintId: transferToSprint.value
                                             }
                                         }));
-                                        completeSprint();
+                                        if (selectedSprint)
+                                        activeSprints.forEach(sp =>{
+                                            completeSprint(selectedSprint.value);
+                                        });
                                     });
                                 }
                             }

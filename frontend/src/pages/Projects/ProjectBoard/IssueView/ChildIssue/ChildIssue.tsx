@@ -15,7 +15,7 @@ import { Issue } from '../../Backlog/IssueRibbon/IssueRibbon';
 import { stageMap } from '../../Backlog/IssueRibbon/StageSelector/stages';
 import StageSelector from '../../Backlog/IssueRibbon/StageSelector/StageSelector';
 import { ProjectBoardContext } from '../../ProjectBoard';
-import { IssueViewContext } from '../IssueView';
+import { IssueMainViewContext } from '../IssueMainView/IssueMainView';
 import './ChildIssue.css';
 import ChildIssueCreator from './ChildIssueCreator/ChildIssueCreator';
 
@@ -25,7 +25,7 @@ interface ChildIssueProps{
 
 const ChildIssue: FC<ChildIssueProps> = (props) => {
     const [creator, setCreator] = useState(false);
-    const {openIssue} = useContext(IssueViewContext);
+    const {openIssue} = useContext(IssueMainViewContext);
     const childIssues = useSelector((state: RootState) => state.issues.values.filter(issue => issue.parentIssueId && (issue.parentIssueId === openIssue?.id)));
     return (
         <div>

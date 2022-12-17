@@ -79,7 +79,7 @@ const SprintHeaderRibbon: FC<SprintHeaderRibbonProps> = (props) => {
                                 sprintModalService.setShowModel(true);
                             }else if (props.metric.status === 'active'){
                                 completeSprintModalService.setProps({
-                                    sprintId: props.sprintId
+                                    sprintIds: [props.sprintId]
                                 });
                                 completeSprintModalService.setShowModel(true)
                             }

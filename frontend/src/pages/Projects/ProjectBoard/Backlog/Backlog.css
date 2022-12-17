@@ -17,3 +17,11 @@
 .gutter.gutter-horizontal {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
 }
+
+.h8em{
+    height: 8em;
+}
+
+.h100-8em{
+    height: calc(100% - 8em);
+}

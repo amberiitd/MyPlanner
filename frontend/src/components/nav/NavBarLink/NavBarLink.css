@@ -5,8 +5,8 @@
 .icon-font{
 }
 
-.border-themed{
-    border-color: coral !important;
+.border-bottom-themed{
+    border-bottom: 4px solid rgb(201, 56, 3);;
 }
 
 .nav-dropdown{

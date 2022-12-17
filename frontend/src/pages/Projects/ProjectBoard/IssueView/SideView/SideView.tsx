@@ -9,21 +9,20 @@ import FieldCard from './FieldCard/FieldCard';
 import './SideView.css';
 
 interface SideViewProps{
-
+    issue: Issue | undefined;
 }
 
 const SideView: FC<SideViewProps> = (props) => {
     const fields = useSelector((state: RootState) => state.userPref.value.fields)
     const [searchParam , setSearchParam] = useSearchParams();
-    const issue = useSelector((state: RootState) => state.issues.values.find(issue => issue.id === searchParam.get('issueId')));
 
     return (
         <div className=''>
             <div className='d-flex flex-nowrap'>
                 <div>
                     <StageSelector 
-                        selectedStage={stages.find(stage => stage.value === issue?.stage)} 
-                        issueId={issue?.id || ''} 
+                        selectedStage={stages.find(stage => stage.value === props?.issue?.stage)} 
+                        issueId={props?.issue?.id || ''} 
                         drop={'left'}
                     />
                 </div>

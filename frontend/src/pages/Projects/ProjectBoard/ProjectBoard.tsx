@@ -14,6 +14,7 @@ import { useQuery } from '../../../hooks/useQuery';
 import { CrudPayload, EMPTY_PROJECT, Project, Sprint } from '../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../services/api';
 import Backlog from './Backlog/Backlog';
+import CompleteSprintModal from './Backlog/CompleteSprintModal/CompleteSprintModal';
 import { Issue } from './Backlog/IssueRibbon/IssueRibbon';
 import IssueView from './IssueView/IssueView';
 import './ProjectBoard.css';
@@ -133,14 +134,14 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                         </div>
                     </div>
                     <div className='px-3 py-3 board-body h-100'>
-                        <div>
+                        <div className='h4em'>
                             <BreadCrumb 
                                 itemTree={breadCrumbLinks}
                                 selectedItem={boardView}
                                 handleClick={(item: BreadCrumbItem)=>{ item.navigateTo? navigate(item.navigateTo): (()=>{})()}}
                             />
                         </div>
-                        <div className='board-body'>
+                        <div className='board-body h100-4em'>
                             {/* <Routes>
                                 <Route path ='/board' element={<Sprint project={selectedProject}/>}/>
                                 <Route path ='/backlog' element={<Backlog project={selectedProject}/>}/>
@@ -157,6 +158,8 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
                     </div>
                 </Split>
             </div>
+
+            <CompleteSprintModal />
         </ProjectBoardContext.Provider>
     )
 }

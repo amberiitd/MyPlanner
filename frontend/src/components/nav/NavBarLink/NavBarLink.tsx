@@ -40,7 +40,7 @@ const NavBarLink: FC<NavBarLinkProps> = (props) => {
         <NavDropDownContext.Provider value={{dropdown, setDropdown}}>
             <div
                 ref={containerRef}
-                className={`dropdown h-100 ms-2 ${props.isActive? 'border-bottom border-4 border-themed': ''}`}
+                className={`dropdown h-100 ms-2 ${props.isActive? 'border-bottom-themed': ''}`}
             >
                 <div className='d-flex align-items-center h-100'>
                     <div 

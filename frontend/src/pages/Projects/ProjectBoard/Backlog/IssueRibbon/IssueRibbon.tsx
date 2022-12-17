@@ -105,7 +105,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     }, [props]);
 
     return (
-        <div ref={drag} className='position-relative'>
+        <div ref={drag} className='position-relative' style={{opacity: isDragging? 0: 1}}>
             <div ref={dropInCol} className='w-100 h-100 position-absolute' style={{bottom: '0'}}>
                 <div className={`w-100 pb-1 ${isOverCol? 'bg-thm-2': ''}`}>
 

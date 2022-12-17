@@ -42,6 +42,7 @@ const TicketCard: FC<TicketCardProps> = (props) => {
         <div ref={drag} className='p-2 shadow-sm ticket-card text-muted grabbable draggable'
             onMouseEnter={()=> {setHover(true)}}
             onMouseLeave={()=> {setHover(false)}}
+            style={{opacity: isDragging? 0: 1}}
         >
             <div className={`w-100 p-1 ${isOver && !isDragging? 'bg-thm-2': ''}`}></div>
 

@@ -7,7 +7,7 @@ import { RootState } from '../../../../../../app/store';
 import Badge from '../../../../../../components/Badge/Badge';
 import Button from '../../../../../../components/Button/Button';
 import { useQuery } from '../../../../../../hooks/useQuery';
-import { CrudPayload, EMPTY_PROJECT, EMPTY_SPRINT, Project } from '../../../../../../model/types';
+import { CrudPayload, EMPTY_PROJECT, EMPTY_SPRINT, Project, Sprint } from '../../../../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
 import { ProjectBoardContext } from '../../../ProjectBoard';
 import './BacklogHeaderRibbon.css';
@@ -31,11 +31,11 @@ const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
             .reduce((pre: number, cur)=> {
                 return max([pre, cur.index]) || 0
             }, 0) + 1;
-        const newSprint = {
+        const newSprint: Sprint = {
             ...EMPTY_SPRINT,
             id: uniqueId(),
             index,
-            name: `Sprint ${index}`,
+            sprintName: `Sprint ${index}`,
             projectKey: props.project.key
         }
         const payload: CrudPayload ={
