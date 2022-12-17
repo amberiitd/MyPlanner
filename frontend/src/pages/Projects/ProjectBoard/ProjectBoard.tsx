@@ -12,7 +12,7 @@ import MenuCard from '../../../components/MenuCard/MenuCard';
 import PageNotFound from '../../../components/PageNotFound/PageNotFound';
 import { useQuery } from '../../../hooks/useQuery';
 import { CrudPayload, EMPTY_PROJECT, Project, Sprint } from '../../../model/types';
-import { commonCrud } from '../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../services/api';
 import Backlog from './Backlog/Backlog';
 import { Issue } from './Backlog/IssueRibbon/IssueRibbon';
 import IssueView from './IssueView/IssueView';
@@ -36,6 +36,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const dispatch = useDispatch();
     const [windowSizes, setWindowSizes] = useState<number[]>([20, 80]);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
 
     const menuViews: BreadCrumbItem[] = [
         {
@@ -87,37 +88,16 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     }, [view]);
 
     useEffect(()=>{
-        if (!projects.loaded){
-            commonQuery.trigger({
-                'action': 'RETRIEVE',
-                data: {},
-                'itemType': 'project'
-            } as CrudPayload)
-            .then((res)=>{
-                dispatch(refreshProject(res as Project[]));
-            })
-        }
-        if (!sprints.loaded){
-            commonQuery.trigger({
-                'action': 'RETRIEVE',
-                data: {},
-                'itemType': 'sprint'
-            } as CrudPayload)
-            .then((res)=>{
-                dispatch(refreshSprint(res as Sprint[]));
-            })
-        }
-
-        if (!issues.loaded){
-            commonQuery.trigger({
-                'action': 'RETRIEVE',
-                data: {},
-                'itemType': 'issue'
-            } as CrudPayload)
-            .then((res)=>{
-                dispatch(refreshIssue(res as Issue[]));
-            })
-        }
+        // if (!projects.loaded){
+        //     commonQuery.trigger({
+        //         'action': 'RETRIEVE',
+        //         data: {},
+        //         'itemType': 'project'
+        //     } as CrudPayload)
+        //     .then((res)=>{
+        //         dispatch(refreshProject(res as Project[]));
+        //     })
+        // }
     }, [])
 
     return (

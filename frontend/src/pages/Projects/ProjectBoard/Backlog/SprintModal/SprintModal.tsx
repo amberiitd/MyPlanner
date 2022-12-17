@@ -1,6 +1,6 @@
 import { isEmpty, max, min, startCase } from 'lodash';
 import moment from 'moment';
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
@@ -15,7 +15,8 @@ import TextInput from '../../../../../components/input/TextInput/TextInput';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { sprintModalService } from '../../../../../modal.service';
 import { CrudPayload, Sprint } from '../../../../../model/types';
-import { commonCrud } from '../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../services/api';
+import { ProjectBoardContext } from '../../ProjectBoard';
 import './SprintModal.css';
 
 export interface Duration{
@@ -25,9 +26,10 @@ export interface Duration{
 }
 
 const SprintModal: FC = () => {
+    const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints.values)
     const dispatch  = useDispatch();
-    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const durations = [
         {
             label: '1 week',
@@ -243,13 +245,14 @@ const SprintModal: FC = () => {
                     />
                     <Button 
                         label={sprintModal.props.mode ==='start'? 'Start': 'Update'}
-                        disabled={commonQuery.loading}
+                        disabled={projectCommonQuery.loading}
                         handleClick={()=>{ 
                             handleSubmit((form)=>{
                                 const data = {...form, sprintStatus: sprintModal.props.mode === 'start'? 'active': sprint?.sprintStatus};
-                                commonQuery.trigger({
+                                projectCommonQuery.trigger({
                                     action: 'UPDATE',
                                     data: {
+                                        projectId: openProject?.id,
                                         id: sprint?.id || '',
                                         ...data
                                     },

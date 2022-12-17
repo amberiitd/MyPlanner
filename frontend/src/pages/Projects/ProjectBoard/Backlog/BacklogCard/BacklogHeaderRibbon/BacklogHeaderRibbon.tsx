@@ -1,5 +1,5 @@
 import { max, uniqueId } from 'lodash';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { addSprint } from '../../../../../../app/slices/sprintSlice';
@@ -8,7 +8,8 @@ import Badge from '../../../../../../components/Badge/Badge';
 import Button from '../../../../../../components/Button/Button';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload, EMPTY_PROJECT, EMPTY_SPRINT, Project } from '../../../../../../model/types';
-import { commonCrud } from '../../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
+import { ProjectBoardContext } from '../../../ProjectBoard';
 import './BacklogHeaderRibbon.css';
 
 interface BacklogHeaderRibbonProps{
@@ -22,7 +23,8 @@ interface BacklogHeaderRibbonProps{
 const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
     const dispatch = useDispatch();
     const sprints = useSelector((state: RootState) => state.sprints);
-    const sprintQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
+    const {openProject} = useContext(ProjectBoardContext);
     const createSprint = useCallback(() => {
         const index = sprints.values
             .filter(sprint => sprint.projectKey === props.project.key)
@@ -38,10 +40,10 @@ const BacklogHeaderRibbon: FC<BacklogHeaderRibbonProps> =(props) => {
         }
         const payload: CrudPayload ={
             action: 'CREATE',
-            data: newSprint,
+            data: {projectId: openProject?.id, ...newSprint},
             itemType: 'sprint'
         }
-        sprintQuery.trigger(payload)
+        projectCommonQuery.trigger(payload)
         .then(res => {
             dispatch(addSprint(newSprint));
         });

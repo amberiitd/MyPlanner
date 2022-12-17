@@ -19,7 +19,7 @@ import { Issue } from './IssueRibbon/IssueRibbon';
 import SprintCard from './SprintCard/SprintCard';
 import SprintModal from './SprintModal/SprintModal';
 import Split from 'react-split';
-import { commonCrud } from '../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../services/api';
 import { useQuery } from '../../../../hooks/useQuery';
 import { refreshSprint, updateSprint } from '../../../../app/slices/sprintSlice';
 import CircleRotate from '../../../../components/Loaders/CircleRotate';
@@ -53,6 +53,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const projectSprints = useMemo(()=> sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props]);
     const projectIssues = useMemo(()=> issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const dispatch = useDispatch();
     const members = [
         {
@@ -67,9 +68,9 @@ const Backlog: FC<BacklogProps>  = (props) => {
         const issue = projectIssues.find(item => item.id === event.itemId);
         
         if (issue && issue.sprintId !== event.cardId){
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'UPDATE',
-                data: {sprintId: event.cardId, id: event.itemId},
+                data: {projectId: openProject?.id, sprintId: event.cardId, id: event.itemId},
                 itemType: 'issue'
             } as CrudPayload)
             .then((res)=> {
@@ -96,9 +97,9 @@ const Backlog: FC<BacklogProps>  = (props) => {
                 dispatch(updateProject({key: openProject?.key || '', data: {backlogIssueOrder: newOrder}}))
             })
         }else{
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'UPDATE',
-                data: {id: event.cardId, issueOrder: newOrder},
+                data: {projectId: openProject?.id, id: event.cardId, issueOrder: newOrder},
                 itemType: 'sprint'
             } as CrudPayload)
             .then((res)=> {
@@ -108,17 +109,17 @@ const Backlog: FC<BacklogProps>  = (props) => {
     }, [projectIssues])
 
     const onRefresh = () =>{
-        commonQuery.trigger({
+        projectCommonQuery.trigger({
             action: 'RETRIEVE',
-            data: {},
+            data: {projectId: openProject?.id,},
             itemType: 'sprint'
         } as CrudPayload)
         .then((res) => {
             dispatch(refreshSprint(res as Sprint[]));
 
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'RETRIEVE',
-                data: {},
+                data: {projectId: openProject?.id},
                 itemType: 'issue'
             } as CrudPayload)
             .then((res) => {
@@ -127,10 +128,10 @@ const Backlog: FC<BacklogProps>  = (props) => {
         });
     }
     useEffect(()=>{
-        if (!sprints.loaded || !issues.loaded){
+        if (!isEmpty(openProject?.id)){
             onRefresh();
         }
-    }, [])
+    }, [openProject])
 
     const backlogBody = (
         <div className='overflow-auto backlog-body pe-2' >
@@ -184,7 +185,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                     </div>
                     <div className='mx-2'>
                         <CircleRotate
-                            loading={commonQuery.loading}
+                            loading={commonQuery.loading || projectCommonQuery.loading}
                             onReload={onRefresh}
                         />
                     </div>

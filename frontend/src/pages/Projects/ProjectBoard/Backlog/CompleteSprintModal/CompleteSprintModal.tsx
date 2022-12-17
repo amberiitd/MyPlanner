@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { FC, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -11,10 +11,12 @@ import Select from '../../../../../components/input/Select/Select';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { completeSprintModalService } from '../../../../../modal.service';
 import { CrudPayload, Sprint } from '../../../../../model/types';
-import { commonCrud, IssuesCrud } from '../../../../../services/api';
+import { commonCrud, IssuesCrud, projectCommonCrud } from '../../../../../services/api';
+import { ProjectBoardContext } from '../../ProjectBoard';
 import './CompleteSprintModal.css';
 
 const CompleteSprintModal: FC = () => {
+    const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
     const [sprint, setSprint] = useState<Sprint | undefined>();
@@ -28,7 +30,7 @@ const CompleteSprintModal: FC = () => {
         openIssueIds: []
     });
     const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
-    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const dispatch = useDispatch();
     const [modal, setModal] = useState<{
         show: boolean;
@@ -114,16 +116,17 @@ const CompleteSprintModal: FC = () => {
                         label='Close'
                         extraClasses='btn-as-link px-3 py-1'
                         handleClick={()=>{ completeSprintModalService.setShowModel(false) }}
-                        disabled={commonQuery.loading || issueQuery.loading}
+                        disabled={projectCommonQuery.loading || issueQuery.loading}
                     />
                     <Button 
                         label={'Complete sprint'}
                         handleClick={()=>{
                             const completeSprint = () => {
                                 const data = {sprintStatus: 'complete'};
-                                commonQuery.trigger({
+                                projectCommonQuery.trigger({
                                     action: 'UPDATE',
                                     data: {
+                                        projectId: openProject?.id,
                                         id: sprint?.id || '',
                                         ...data
                                     },
@@ -147,6 +150,7 @@ const CompleteSprintModal: FC = () => {
                                         action: 'ASSIGN_SPRINT',
                                         data: {
                                             ids,
+                                            projectId: openProject?.id,
                                             sprintId: 'backlog'
                                         }
                                     } as CrudPayload)

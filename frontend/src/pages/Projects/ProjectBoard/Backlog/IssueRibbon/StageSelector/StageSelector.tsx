@@ -5,7 +5,7 @@ import Button from '../../../../../../components/Button/Button';
 import LinkCard from '../../../../../../components/LinkCard/LinkCard';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../../../model/types';
-import { commonCrud } from '../../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
 import { ProjectBoardContext } from '../../../ProjectBoard';
 import { Stage, stages } from './stages';
 import './StageSelector.css';
@@ -21,7 +21,7 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
     const [dropdown, setDropdown] = useState(false);
     const compRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload)=> projectCommonCrud(payload));
     const dispatch = useDispatch();
     const NONE: Stage ={
         label: 'None',
@@ -63,9 +63,9 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                         linkItems={openProject?.scrumBoard.stages || []}
                         extraClasses='quote'
                         handleClick={(item: Stage) => { 
-                            issueQuery.trigger({
+                            projectCommonQuery.trigger({
                                 action: 'UPDATE',
-                                data: {id: props.issueId, stage: item.value},
+                                data: {projectId: openProject?.id, id: props.issueId, stage: item.value},
                                 itemType: 'issue'
                             } as CrudPayload)
                             .then(()=>{

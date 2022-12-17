@@ -7,7 +7,7 @@ import Button from '../../../../../components/Button/Button';
 import Select from '../../../../../components/input/Select/Select';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, Project } from '../../../../../model/types';
-import { commonCrud } from '../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { Issue } from '../IssueRibbon/IssueRibbon';
 import './IssueCreator.css';
 import IssueTypeSelector from './IssueTypeSelector/IssueTypeSelector';
@@ -23,7 +23,7 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
     const compRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [issueType, setIssueType] = useState<any>('bug');
-    const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
 
     const dispatch = useDispatch();
     const handleIssueCreation = useCallback((e: any) => {
@@ -38,9 +38,9 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
                     storyPoint: 0,
                     stage: 'not-started'
                 };
-                issueQuery.trigger({
+                projectCommonQuery.trigger({
                     action: 'CREATE',
-                    data: newIssue,
+                    data: {projectId: props.project.id , ...newIssue},
                     itemType: 'issue'
                 } as CrudPayload)
                 .then(()=>{

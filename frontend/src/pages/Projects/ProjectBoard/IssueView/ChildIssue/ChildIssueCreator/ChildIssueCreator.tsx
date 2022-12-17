@@ -11,7 +11,7 @@ import Select from '../../../../../../components/input/Select/Select';
 import TextInput from '../../../../../../components/input/TextInput/TextInput';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload, SimpleAction } from '../../../../../../model/types';
-import { commonCrud } from '../../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
 import { Issue } from '../../../Backlog/IssueRibbon/IssueRibbon';
 import { ProjectBoardContext } from '../../../ProjectBoard';
 import './ChildIssueCreator.css';
@@ -21,11 +21,12 @@ interface ChildIssueCreatorProps{
 }
 
 const ChildIssueCreator: FC<ChildIssueCreatorProps> = (props) => {
+    const {openProject} = useContext(ProjectBoardContext);
     const [summary, setSummary] = useState('');
     const [selectedIssueOption, setSelectedIssueOption] = useState<SimpleAction>();
     const [formType, setFormType] = useState<'new' | 'existing'>('new');
     const issues = useSelector((state: RootState) => state.issues.values.filter(issue => !isEmpty(issue.id)));
-    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [searchParam , setSearchParam] = useSearchParams();
     const openIssue = useMemo(() => {
         return issues.find(issue => issue.id === searchParam.get('issueId'));
@@ -45,9 +46,9 @@ const ChildIssueCreator: FC<ChildIssueCreatorProps> = (props) => {
                 stage: 'not-started',
                 parentIssueId: openIssue?.id,
             };
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'CREATE',
-                data: newIssue,
+                data: {projectId: openProject?.id, ...newIssue},
                 itemType: 'issue'
             } as CrudPayload)
             .then(() => {
@@ -57,9 +58,10 @@ const ChildIssueCreator: FC<ChildIssueCreatorProps> = (props) => {
         }else{
             const issue = issues.find(issue => issue.id === selectedIssueOption?.value);
             if(!issue) return;
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'UPDATE',
                 data: {
+                    projectId: openProject?.id,
                     parentIssueId: openIssue?.id
                 },
                 itemType: 'issue'

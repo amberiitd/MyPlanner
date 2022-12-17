@@ -86,3 +86,39 @@ functions:
     layers:
       - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
   
+  projectCommonItem:
+    handler: src/compiled/projectCommonItems.handler
+    events:
+      - http:
+          path: /projectCommon
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+
+  projectCommonChildren:
+    handler: src/compiled/projectCommonChildren.handler
+    events:
+      - http:
+          path: /projectCommonChild
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  

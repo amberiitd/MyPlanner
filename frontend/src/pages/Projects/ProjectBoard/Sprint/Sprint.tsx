@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
 import BinaryAction from '../../../../components/BinaryAction/BinaryAction';
@@ -7,23 +7,30 @@ import DropdownAction from '../../../../components/DropdownAction/DropdownAction
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
 import ScrumBoard from '../../../../components/ScrumBoard/ScrumBoard';
-import { Project } from '../../../../model/types';
+import { CrudPayload, Project } from '../../../../model/types';
 import { Issue } from '../Backlog/IssueRibbon/IssueRibbon';
 import { Sprint as SprintData } from '../../../../model/types'
 import './Sprint.css';
-import { updateIssue } from '../../../../app/slices/issueSlice';
+import { refreshIssue, updateIssue } from '../../../../app/slices/issueSlice';
 import { useDispatch } from 'react-redux';
 import { isEmpty } from 'lodash';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQuery } from '../../../../hooks/useQuery';
+import { commonCrud, projectCommonCrud } from '../../../../services/api';
+import { ProjectBoardContext } from '../ProjectBoard';
+import { refreshSprint } from '../../../../app/slices/sprintSlice';
 
 interface SprintProps{
     project: Project;
 }
 
 const Sprint: FC<SprintProps> = (props) => {
+    const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
@@ -44,6 +51,31 @@ const Sprint: FC<SprintProps> = (props) => {
 
     const projectIssues = useMemo(() => issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
     // const projectSprints = useMemo(() => sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props])
+
+    const onRefresh = () =>{
+        projectCommonQuery.trigger({
+            action: 'RETRIEVE',
+            data: {projectId: openProject?.id,},
+            itemType: 'sprint'
+        } as CrudPayload)
+        .then((res) => {
+            dispatch(refreshSprint(res as SprintData[]));
+        });
+
+        projectCommonQuery.trigger({
+            action: 'RETRIEVE',
+            data: {projectId: openProject?.id},
+            itemType: 'issue'
+        } as CrudPayload)
+        .then((res) => {
+            dispatch(refreshIssue(res as Issue[]))
+        });
+    }
+    useEffect(()=>{
+        if (!isEmpty(openProject)){
+            onRefresh();
+        }
+    }, [openProject])
 
     return (
         <DndProvider backend={HTML5Backend}>

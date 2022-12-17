@@ -7,7 +7,7 @@ import { removeSprint } from '../../../../../app/slices/sprintSlice';
 import { RootState } from '../../../../../app/store';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, Project, SprintStatus } from '../../../../../model/types';
-import { commonCrud, IssuesCrud } from '../../../../../services/api';
+import { commonCrud, IssuesCrud, projectCommonCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
 import IssueCreator from '../IssueCreator/IssueCreator';
 import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
@@ -28,7 +28,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
     const [collapse, setCollapse] = useState(false);
     const {openProject} = useContext(ProjectBoardContext);
     const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
-    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload))
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload))
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
         drop: (item: any, monitor) => {
@@ -51,9 +51,10 @@ const SprintCard: FC<SprintCardProps> = (props) => {
 
     const handleDelete = useCallback(()=>{
         const deleteSprint = () => {
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'DELETE',
                 data: {
+                    projectId: openProject?.id,
                     id: props.sprintId,
                 },
                 itemType: 'sprint'

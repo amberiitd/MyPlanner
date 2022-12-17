@@ -11,7 +11,7 @@ import { CrudPayload, IssueStage } from '../../../model/types';
 import { Issue } from '../../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon';
 import { StageValue } from '../../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/StageSelector/stages';
 import { ProjectBoardContext } from '../../../pages/Projects/ProjectBoard/ProjectBoard';
-import { commonChildCrud, commonCrud } from '../../../services/api';
+import { commonChildCrud, commonCrud, projectCommonCrud } from '../../../services/api';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import EditableText from '../../EditableText/EditableText';
 import CircleRotate from '../../Loaders/CircleRotate';
@@ -35,16 +35,18 @@ const TicketStage: FC<TicketStageProps> = (props) => {
     const {orderedStages} = useContext(ScrumContext);    
     const projectIssues = useSelector((state: RootState) => state.issues.values.filter(issue => issue.projectKey === openProject?.key));
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const commonChildQuery = useQuery((payload: CrudPayload) => commonChildCrud(payload));
 
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
         drop: (item: any, monitor) => {
             if(!monitor.didDrop()){
-                commonQuery.trigger({
+                projectCommonQuery.trigger({
                     action: 'UPDATE',
                     data: {
                         id: item.id,
+                        projectId: openProject?.id,
                         stage: props.stage.value
                     },
                     itemType: 'issue'
@@ -131,10 +133,11 @@ const TicketStage: FC<TicketStageProps> = (props) => {
         const issue = projectIssues.find(item => item.id === event.itemId);
         
         if (issue && issue.stage !== props.stage.value){
-            commonQuery.trigger({
+            projectCommonQuery.trigger({
                 action: 'UPDATE',
                 data: {
                     id: event.itemId,
+                    projectId: openProject?.id,
                     stage: props.stage.value
                 },
                 itemType: 'issue'
@@ -221,7 +224,7 @@ const TicketStage: FC<TicketStageProps> = (props) => {
                                     });
                                 }}                            
                             />
-                            <div hidden={!(commonChildQuery.loading || commonQuery.loading)}>
+                            <div hidden={!(commonChildQuery.loading || commonQuery.loading || projectCommonQuery.loading)}>
                                 <CircleRotate loading={true}/>
                             </div>
                         </div>

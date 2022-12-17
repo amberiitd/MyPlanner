@@ -11,12 +11,13 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
 import { useQuery } from '../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../model/types';
-import { commonCrud } from '../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshIssue, updateIssue } from '../../../../app/slices/issueSlice';
 import { Issue } from '../Backlog/IssueRibbon/IssueRibbon';
 import CircleRotate from '../../../../components/Loaders/CircleRotate';
 import ChildIssue from './ChildIssue/ChildIssue';
+import { isEmpty } from 'lodash';
 
 interface IssueViewProps{
 
@@ -43,6 +44,7 @@ export const IssueViewContext = createContext<{
 
 
 const IssueView: FC<IssueViewProps> = (props) => {
+    const {openProject} = useContext(ProjectBoardContext);
     const observer = useRef<any>();
     const containerRef = useRef<HTMLDivElement>(null);
     const [viewType, setViewType] = useState<1 | 2>(2);
@@ -54,7 +56,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
     const [descEditor, setDescEditor] = useState(false);
     const [newCommentEditor, setNewCommentEditor] = useState(false);
     const [commentOnEdit, setCommentOnEdit] = useState<string | undefined>('');
-    const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const dispatch = useDispatch();
     const handleResize = useCallback(() => {
         if (
@@ -76,9 +78,9 @@ const IssueView: FC<IssueViewProps> = (props) => {
     };
 
     const onRefresh = () => {
-        issueQuery.trigger({
+        projectCommonQuery.trigger({
             action: 'RETRIEVE',
-            data: {},
+            data: {projectId: openProject?.id,},
             itemType: 'issue'
         } as CrudPayload)
         .then((res)=>{
@@ -86,10 +88,10 @@ const IssueView: FC<IssueViewProps> = (props) => {
         });
     }
     useEffect(() => {
-        if (!issues.loaded){
+        if (!isEmpty(openProject?.id)){
             onRefresh();
         }
-    }, []);
+    }, [openProject]);
 
 
     const mainView = (
@@ -99,7 +101,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
                     {openIssue?.label}
                 </div>
                 <div className='mx-2'>
-                    <CircleRotate loading={issueQuery.loading}
+                    <CircleRotate loading={projectCommonQuery.loading}
                         onReload={onRefresh}
                     />
                 </div>
@@ -128,9 +130,10 @@ const IssueView: FC<IssueViewProps> = (props) => {
                         open={descEditor}
                         onToggle={(open: boolean)=> setDescEditor(open)}
                         onSave={(value: string)=>{
-                            issueQuery.trigger({
+                            projectCommonQuery.trigger({
                                 action: 'UPDATE',
                                 data: {
+                                    projectId: openProject?.id,
                                     id: openIssue?.id || '',
                                     description: value,
                                 },

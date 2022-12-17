@@ -6,7 +6,8 @@ import ButtonSelect from '../../../../../components/input/ButtonSelect/ButtonSel
 import TextEditor from '../../../../../components/input/TextEditor/TextEditor';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, IssueComment, ItemType, SimpleAction } from '../../../../../model/types';
-import { commonChildCrud } from '../../../../../services/api';
+import { commonChildCrud, projectCommonChildCrud } from '../../../../../services/api';
+import { ProjectBoardContext } from '../../ProjectBoard';
 import { IssueViewContext } from '../IssueView';
 import './Activity.css';
 
@@ -60,15 +61,17 @@ const Activity: FC<ActivityProps> = (props) => {
 }
 
 const CommentSection: FC = () => {
+    const {openProject} = useContext(ProjectBoardContext);
     const {newCommentEditor, setNewCommentEditor, openIssue} = useContext(IssueViewContext);
-    const commonChildQuery = useQuery((payload: CrudPayload) => commonChildCrud(payload));
+    const projectCommonChildQuery = useQuery((payload: CrudPayload) => projectCommonChildCrud(payload));
     const dispatch = useDispatch();
     const [newCommentValue, setNewCommentValue] = useState<string | undefined>(undefined);
     const handleEdit =(idx: number, value: string) => {
         if (!openIssue) return;
-        commonChildQuery.trigger({
+        projectCommonChildQuery.trigger({
             action: 'UPDATE',
             data: {
+                projectId: openProject?.id,
                 parentId: openIssue?.id,
                 childCurrentIndex: idx,
                 description: value,
@@ -91,9 +94,10 @@ const CommentSection: FC = () => {
 
     const handleDelete = (idx: number) => {
         if (!openIssue) return;
-        commonChildQuery.trigger({
+        projectCommonChildQuery.trigger({
             action: 'DELETE',
             data: {
+                projectId: openProject?.id,
                 parentId: openIssue?.id,
                 childCurrentIndex: idx,
                 itemType: 'comments'
@@ -125,9 +129,10 @@ const CommentSection: FC = () => {
                                 description: value
                             }
                             const parentItemType: ItemType = 'issue';
-                            commonChildQuery.trigger({
+                            projectCommonChildQuery.trigger({
                                 action: 'CREATE',
                                 data:{
+                                    projectId: openProject?.id,
                                     parentId: openIssue.id,
                                     parentItemType,
                                     itemType: 'comments',

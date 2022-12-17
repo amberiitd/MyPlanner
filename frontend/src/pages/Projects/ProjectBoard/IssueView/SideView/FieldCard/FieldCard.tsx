@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import { FC, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -7,7 +7,8 @@ import { updateIssue } from '../../../../../../app/slices/issueSlice';
 import { RootState } from '../../../../../../app/store';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../../../model/types';
-import { commonCrud } from '../../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
+import { ProjectBoardContext } from '../../../ProjectBoard';
 import './FieldCard.css';
 import {SprintField, StoryPointField} from './FieldInputs';
 
@@ -40,9 +41,10 @@ const fieldMap: {
 
 const FieldCard: FC<FieldCardProps> = (props) => {
     const [open, setOpen] = useState(false);
+    const {openProject} = useContext(ProjectBoardContext);
     const [searchParam , setSearchParam] = useSearchParams();
     const issue = useSelector((state: RootState) => state.issues.values.find(issue => issue.id === searchParam.get('issueId')));
-    const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload)=> projectCommonCrud(payload));
     const dispatch = useDispatch();
 
     return (
@@ -70,9 +72,10 @@ const FieldCard: FC<FieldCardProps> = (props) => {
                                         fieldCardId={props.id}
                                         onEdit={(data) => {
                                             if(!issue) return;
-                                            issueQuery.trigger({
+                                            projectCommonQuery.trigger({
                                                 action: 'UPDATE',
                                                 data: {
+                                                    projectId: openProject?.id,
                                                     id: issue.id,
                                                     sprintId: data.value
                                                 },
@@ -97,9 +100,10 @@ const FieldCard: FC<FieldCardProps> = (props) => {
                                         fieldCardId={props.id}
                                         onEdit={(data)=>{
                                             if(!issue) return;
-                                            issueQuery.trigger({
+                                            projectCommonQuery.trigger({
                                                 action: 'UPDATE',
                                                 data: {
+                                                    projectId: openProject?.id,
                                                     id: issue.id,
                                                     storyPoint: data
                                                 },

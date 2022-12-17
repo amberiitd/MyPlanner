@@ -9,7 +9,7 @@ import DropdownAction from '../../../../../components/DropdownAction/DropdownAct
 import NumberBadge from '../../../../../components/NumberBadge/NumberBadge';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, EMPTY_PROJECT } from '../../../../../model/types';
-import { commonCrud } from '../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
 import { BacklogContext } from '../Backlog';
 import { issueTypeMap, IssueTypeValue } from '../IssueCreator/IssueTypeSelector/issueTypes';
@@ -46,7 +46,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     const {openIssue, setOpenIssue} = useContext(BacklogContext);
 
     const{openProject}= useContext(ProjectBoardContext);
-    const issueQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [{isDragging, didDrop}, drag] = useDrag(()=>({
         type: "issue",
         item: props.issue,
@@ -74,11 +74,12 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                         const payload: CrudPayload = {
                             action: 'DELETE',
                             data: {
+                                projectId: openProject?.id,
                                 id: props.issue.id
                             },
                             itemType: 'issue'
                         }
-                        issueQuery.trigger(payload)
+                        projectCommonQuery.trigger(payload)
                         .then((res) => {dispatch(removeIssue({id: props.issue.id}));})
                         
                         break;
@@ -90,12 +91,13 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                 const payload: CrudPayload = {
                     action: 'UPDATE',
                     data: {
+                        projectId: openProject?.id,
                         id: props.issue.id,
                         sprintId: event.item.value
                     },
                     itemType: 'issue'
                 }
-                issueQuery.trigger(payload)
+                projectCommonQuery.trigger(payload)
                 .then((res) => {dispatch(updateIssue({id: props.issue.id, data: {sprintId: event.item.value}}));})
                 
                 break;
@@ -127,9 +129,9 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                         extraClasses='bg-light'
                         inputClasses='input-sm'
                         onValueChange={(value: number)=>{
-                            issueQuery.trigger({
+                            projectCommonQuery.trigger({
                                 action: 'UPDATE',
-                                data: {id: props.issue.id, storyPoint: value},
+                                data: {projectId: openProject?.id, id: props.issue.id, storyPoint: value},
                                 itemType: 'issue'
                             } as CrudPayload)
                             .then(()=>{
