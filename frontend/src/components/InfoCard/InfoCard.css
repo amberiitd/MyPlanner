@@ -1,0 +1,30 @@
+.card-container{
+    width: 17em;
+    height: 14em;
+}
+
+.f-75{
+    font-size: 75%;
+}
+
+.f-90{
+    font-size: 90%;
+}
+
+.info-link{
+    background-color: inherit;
+}
+
+.info-link:hover{
+    background-color: rgb(234, 234, 234);
+}
+
+.info-body{
+    margin-top: 3.5em;
+    height: 8em;
+}
+
+.left-border{
+    padding-left: 11px;
+    padding-right: 11px;
+}

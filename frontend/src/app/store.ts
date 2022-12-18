@@ -10,7 +10,7 @@ export const store = configureStore({
         projects: projectReducer,
         sprints: sprintReducers,
         issues: issueReducer,
-        userPref: userPrefReducers
+        userPrefs: userPrefReducers
     }
 })
 

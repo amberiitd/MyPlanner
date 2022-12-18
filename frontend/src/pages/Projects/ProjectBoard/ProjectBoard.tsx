@@ -1,11 +1,10 @@
+import { isEmpty } from 'lodash';
 import { createContext, FC, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import Split from 'react-split';
-import { refreshIssue } from '../../../app/slices/issueSlice';
-import { refreshProject } from '../../../app/slices/projectSlice';
-import { refreshSprint } from '../../../app/slices/sprintSlice';
+import { updateUserPref } from '../../../app/slices/userPrefSlice';
 import { RootState } from '../../../app/store';
 import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
@@ -34,6 +33,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const projects = useSelector((state: RootState) => state.projects);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
+    const defaultUserPrefs = useSelector((state: RootState) => state.userPrefs.values.find(pref => pref.id === 'default'));
     const dispatch = useDispatch();
     const [windowSizes, setWindowSizes] = useState<number[]>([20, 80]);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
@@ -62,7 +62,27 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
 
     // since projectBoard is a route component, you can keep selected project as non-state const.
     const selectedProject = useMemo(()=> {
-        return projects.values.find(p => p.key === projectKey) || EMPTY_PROJECT
+        const project = projects.values.find(p => p.key === projectKey) || EMPTY_PROJECT;
+        const newRecent = [...(defaultUserPrefs?.recentViewedProjects || [])];
+        if (!isEmpty(project.id)){
+            const index = newRecent.findIndex(p => p === project.id);
+            if (index >= 0){
+                newRecent.splice(index, 1);
+            }
+            newRecent.splice(0, 0, project.id);
+            commonQuery.trigger({
+                action: 'UPDATE',
+                data: {
+                    id: 'default',
+                    recentViewedProjects: newRecent
+                },
+                itemType: 'userPref'
+            } as CrudPayload)
+            .then(() => {
+                dispatch(updateUserPref({id: 'default', data: {recentViewedProjects: newRecent}}));
+            })
+        }
+        return project
     }, [projects]);
     const breadCrumbLinks: BreadCrumbItem = {
         label: 'Projects',

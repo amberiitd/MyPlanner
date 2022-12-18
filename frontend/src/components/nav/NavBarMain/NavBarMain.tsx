@@ -22,13 +22,13 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
                 id: 0,
                 label: 'Your Work',
                 value: 'your-work',
-                dropdownElement: <YourWork />
+                dropdownElement: <div className='f-90'><YourWork /></div>
             },
             {
                 id: 1,
                 label: 'Projects',
                 value: 'projects',
-                dropdownElement: (<Projects />)
+                dropdownElement: (<div className='f-90'><Projects /></div>)
             },
             {
                 id: 2,

@@ -15,7 +15,7 @@ const CardNavTab: FC<CardNavTabProps> = (props) => {
     // 
     return (
         <div>
-            <div className='d-flex flex-nowrap'>
+            <div className='d-flex flex-nowrap fw-645'>
                 {
                     props.options.map((option, index)=>(
                         <div className={`tab pb-1 me-3 text-nowrap ${index === props.selectedOptionIndex? 'tab-active': ''}`} key={index} onClick={()=>{props.handleClick(index)}}>

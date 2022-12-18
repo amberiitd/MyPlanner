@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { uniq } from "lodash";
 import { IssueComment } from "../../model/types";
 import { Issue } from "../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon";
+import { distinct } from "../../util/method";
 
 
 const initialState: {
@@ -24,7 +26,7 @@ const issueSlice = createSlice({
             }
         },
         addBulk: (state, action: PayloadAction<Issue[]> ) =>{
-            state.values = state.values.concat(action.payload);
+            state.values = distinct(state.values.concat(action.payload), (obj: Issue)=> obj.id);
         },
         resfresh: (state, action: PayloadAction<Issue[]> ) =>{
             state.values = action.payload;

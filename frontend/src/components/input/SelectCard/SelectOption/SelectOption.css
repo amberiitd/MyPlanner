@@ -1,11 +1,10 @@
-.bg-smoke{
+.custom-padding{
     padding: 8px;
     padding-left: 12px;
 }
 
 .bg-smoke:hover{
     background-color: whitesmoke;
-    cursor: pointer;
 }
 
 .quote:hover{

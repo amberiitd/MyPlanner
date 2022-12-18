@@ -1,3 +1,5 @@
+import { uniqueId } from 'lodash';
+import React from 'react';
 import { FC } from 'react';
 import BinaryAction from '../BinaryAction/BinaryAction';
 import './CustomOption.css';
@@ -13,28 +15,57 @@ interface CustomOptionAction{
 interface CustomOptionProps{
     label: string;
     value: string;
-    caption?: string;
+    href?: string;
+    caption?: string | string[];
     leftBsIcon?: string;
     rightBsIcon?: string;
     extraClasses?: string;
     actions?: CustomOptionAction[];
+    onClick?: (e: MouseEvent)=> void;
 }
 
 const CustomOption: FC<CustomOptionProps> = (props) => {
-
-    return (
-        <div className={`bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
-            {/*  */}
+    const innerElem = (
+        <React.Fragment>
             <div className='pe-2' hidden={!props.leftBsIcon}>
                 <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
             </div>
-            <div className='f-90'>
-                {props.label}
+            <div>
+                <div>{props.label}</div>
                 <div className='caption text-cut text-muted'>
-                    {props.caption}
+                    {
+                        props.caption && typeof props.caption === 'string' &&
+                        <span>
+                            {props.caption}
+                        </span>
+                    }
+                    {
+                        props.caption && typeof props.caption !== 'string' &&
+                        props.caption.map(cap => (
+                            <span key={uniqueId()}>
+                                {cap}<span className='px-1'>.</span>
+                            </span>
+                        ))
+                        
+                    }
                 </div>
             </div>
-            <div className='ms-auto d-flex flex-nowrap'>
+        </React.Fragment>
+    );
+
+    return (
+        <div className={`px-3 py-2 bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
+            {/*  */}
+            {
+                props.href?
+                <a className='cursor-pointer me-auto d-flex flex-nowrap w-100 no-link' href={props.href}>
+                    {innerElem}
+                </a> :
+                <div className='cursor-pointer me-auto d-flex flex-nowrap w-100' onMouseDown={(e: any)=> {(props.onClick || (()=>{}))(e)}}>
+                    {innerElem}
+                </div>
+            }
+            <div className='d-flex flex-nowrap' style={{zIndex: 10}}>
                 {
                     props.actions?.map( (action, index) => (
                         // there might be an issue with click action since parent has a click action

@@ -20,3 +20,8 @@ button{
 .bg-thm{
     background-color: rgb(253, 218, 206);
 }
+
+.no-link{
+    color: black !important;
+    text-decoration: none !important;
+}

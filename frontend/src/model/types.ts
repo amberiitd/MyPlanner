@@ -1,5 +1,6 @@
 import { stageMap } from "../pages/Projects/ProjectBoard/Backlog/IssueRibbon/StageSelector/stages";
 import { Duration } from "../pages/Projects/ProjectBoard/Backlog/SprintModal/SprintModal";
+import { Field } from "../pages/Projects/ProjectBoard/IssueView/SideView/FieldCard/FieldCard";
 
 
 export interface IssueStage{
@@ -74,9 +75,31 @@ export interface SimpleAction{
     value: string;
 }
 export type ISSUE_ACTION = 'ASSIGN_SPRINT';
-export type ItemType  = 'project' | 'sprint' | 'issue';
+export type ItemType  = 'project' | 'sprint' | 'issue' | 'userPref';
 export interface CrudPayload{
     itemType: ItemType;
     action: 'CREATE' | 'RETRIEVE' | 'UPDATE' | 'DELETE' | ISSUE_ACTION;
     data: any;
+}
+
+export interface UserPref{
+    id: string | 'default';
+    projectId?: string;
+    recentViewedBoards?: string[];
+    recentViewedIssues?: string[];
+    recentViewedProjects?: string[];
+    recentWorkedBoards?: string[];
+    recentWorkedIssues?: string[];
+    recentWorkedProjects?: string[];
+    issueFields?: Field[];
+}
+
+export const EMPTY_USER_PREF: UserPref = {
+    id: 'default',
+    recentViewedBoards: [],
+    recentViewedIssues: [],
+    recentViewedProjects: [],
+    recentWorkedBoards: [],
+    recentWorkedIssues: [],
+    recentWorkedProjects: []
 }

@@ -1,11 +1,11 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { SimpleAction } from '../../model/types';
 import Button from '../Button/Button'
-import LinkCard from '../LinkCard/LinkCard';
+import LinkCard, { LinkItem } from '../LinkCard/LinkCard';
 import './DropdownAction.css'
 
 interface DropdownActionProps{
-    actionCategory: {label: string; value: string; items: SimpleAction[]; showLabel?: boolean; selectedItems?: SimpleAction[]}[];
+    actionCategory: {label: string; value: string; items: LinkItem[]; showLabel?: boolean; selectedItems?: SimpleAction[]}[];
     handleItemClick: (event: {category: string; item: SimpleAction}) => void;
     disabled?: boolean;
     bsIcon?: string;

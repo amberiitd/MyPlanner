@@ -1,11 +1,11 @@
 import { isEmpty } from 'lodash';
 import { FC } from 'react';
+import { SimpleAction } from '../../model/types';
 import CustomOption from '../CustomOption/CustomOption';
 import './LinkCard.css';
 
-export interface LinkItem{
-    label: string;
-    value: string;
+export interface LinkItem extends SimpleAction{
+    caption?: string | string[];
     href?: string;
     htmlId?: string;
 }
@@ -24,21 +24,19 @@ const LinkCard: FC<LinkCardProps> = (props) => {
     
     
     return (
-        <div className='w-100'>
+        <div className='w-100 py-1'>
             <div className='p-1 ps-3 label-card' hidden={!props.showLabel}>{props.label}</div>
             {
                 props.linkItems.map((item, index) => {
-                    return  item.href ?
-                        (<a className='text-decor-none' id={item.htmlId || ''} key ={`custom-link-${index}`} href={item.href}>
+                    return  (
+                        <div id={item.htmlId || ''} key ={`custom-link-${index}`}>
                             <CustomOption {...item} 
                                 extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
+                                href={item.href}
+                                onClick={(e: MouseEvent) => {e.preventDefault(); props.handleClick(item)}}
                             />
-                        </a>) :
-                        (<div id={item.htmlId || ''} key ={`custom-link-${index}`} onMouseDown={(e) => {e.preventDefault(); props.handleClick(item)}}>
-                            <CustomOption {...item} 
-                                extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
-                            />
-                        </div>)
+                        </div>
+                    )
                         
                 })
             }

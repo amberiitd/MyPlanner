@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useContext, useState } from "react"
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -11,11 +11,12 @@ import NumberBadge from "../../../../../../components/NumberBadge/NumberBadge";
 import { useQuery } from "../../../../../../hooks/useQuery";
 import { CrudPayload } from "../../../../../../model/types";
 import { commonCrud } from "../../../../../../services/api";
+import { ProjectBoardContext } from "../../../ProjectBoard";
 import { FieldInputProps } from "./FieldCard"
 
 
 export const SprintField: FC<FieldInputProps> = (props) => {
-
+    const {openProject} = useContext(ProjectBoardContext);
     const NONE = {
         label: 'None',
         value: 'none',
@@ -45,7 +46,8 @@ export const SprintField: FC<FieldInputProps> = (props) => {
                     showAction &&
                     <span className="cursor-pointer ms-1" onClick={(e) => {
                         dispatch(updateFields({
-                            id: props.id, 
+                            projectId: openProject?.id || '',
+                            fieldId: props.id, 
                             data: {
                                 fieldCardId: props.fieldCardId === 'pinned'? 'details': 'pinned'
                             }
@@ -74,7 +76,7 @@ export const SprintField: FC<FieldInputProps> = (props) => {
 }
 
 export const StoryPointField: FC<FieldInputProps> = (props) => {
-
+    const {openProject} = useContext(ProjectBoardContext);
     const dispatch = useDispatch();
     const [showAction, setShowAction] = useState(false);
     const issueQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
@@ -89,7 +91,8 @@ export const StoryPointField: FC<FieldInputProps> = (props) => {
                     showAction &&
                     <span className="cursor-pointer ms-1" onClick={(e) => {
                         dispatch(updateFields({
-                            id: props.id, 
+                            projectId: openProject?.id || '',
+                            fieldId: props.id,
                             data: {
                                 fieldCardId: props.fieldCardId === 'pinned'? 'details': 'pinned'
                             }

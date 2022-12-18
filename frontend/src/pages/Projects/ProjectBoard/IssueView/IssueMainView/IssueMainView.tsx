@@ -9,13 +9,14 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../../../app/store';
 import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../../model/types';
-import { projectCommonCrud } from '../../../../../services/api';
+import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshIssue, updateIssue } from '../../../../../app/slices/issueSlice';
 import { Issue } from '../../Backlog/IssueRibbon/IssueRibbon';
 import CircleRotate from '../../../../../components/Loaders/CircleRotate';
 import ChildIssue from './../ChildIssue/ChildIssue';
 import { isEmpty } from 'lodash';
+import { updateUserPref } from '../../../../../app/slices/userPrefSlice';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
@@ -47,7 +48,32 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const [newCommentEditor, setNewCommentEditor] = useState(false);
     const [commentOnEdit, setCommentOnEdit] = useState<string | undefined>('');
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
+    const userPrefs = useSelector((state: RootState) => state.userPrefs);
+    const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const dispatch = useDispatch();
+
+    useEffect(()=>{
+        const newRecent = [...(defaultUserPrefs?.recentViewedIssues || [])];
+        if (!isEmpty(props.issue?.id)){
+            const index = newRecent.findIndex(p => p === props.issue?.id);
+            if (index >= 0){
+                newRecent.splice(index, 1);
+            }
+            newRecent.splice(0, 0, props.issue?.id || '');
+            commonQuery.trigger({
+                action: 'UPDATE',
+                data: {
+                    id: 'default',
+                    recentViewedIssues: newRecent
+                },
+                itemType: 'userPref'
+            } as CrudPayload)
+            .then(() => {
+                dispatch(updateUserPref({id: 'default', data: {recentViewedProjects: newRecent}}));
+            })
+        }
+    }, [props.issue, openProject])
 
     return (
         <IssueMainViewContext.Provider value={{descEditor, setDescEditor, newCommentEditor, setNewCommentEditor, openIssue, commentOnEdit, setCommentOnEdit}}>

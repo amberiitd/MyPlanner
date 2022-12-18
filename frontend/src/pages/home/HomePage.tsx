@@ -8,6 +8,11 @@ import { useState, useEffect } from 'react';
 import './HomePage.css';
 import projectModalService from '../../modal.service';
 import ProjectModal from '../../components/dropdowns/Projects/ProjectModal/ProjectModal';
+import { useQuery } from '../../hooks/useQuery';
+import { CrudPayload, UserPref } from '../../model/types';
+import { commonCrud } from '../../services/api';
+import { useDispatch } from 'react-redux';
+import { refreshUserPref } from '../../app/slices/userPrefSlice';
 
 interface HomePageProps{
 
@@ -15,10 +20,19 @@ interface HomePageProps{
 
 const HomePage: FC<HomePageProps> = (props) => {
     const [showProjectModal, setShowProjectModal] = useState(projectModalService.getShowModal());
-
+    const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const dispatch = useDispatch();
     useEffect(()=>{
         projectModalService.subscribe(()=>{
             setShowProjectModal(projectModalService.getShowModal());
+        })
+        commonQuery.trigger({
+            action: 'RETRIEVE',
+            data: {},
+            itemType: 'userPref'
+        } as CrudPayload)
+        .then((res) => {
+            dispatch(refreshUserPref(res as UserPref[]));
         })
     }, [])
 
