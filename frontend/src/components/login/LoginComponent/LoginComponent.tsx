@@ -23,9 +23,12 @@ export interface AuthServer{
 }
 interface LoginComponentState{
     authServers: AuthServer[];
-    verificationStatus: string | 'init'| 'logged-out' | 'email-not-verified' | 'email-verified' | 'logged-in';
+    verificationStatus: 'init'| 'logged-out' | 'email-not-verified' | 'email-verified' | 'logged-in' | 'user-exists';
     emailInput: string;
     passwordInput: string;
+    fullNameInput?: string;
+    formError?: {email?: string; password?: string; fullName?: string};
+    stageError?: JSX.Element;
 }
 class LoginComponent extends React.Component<LoginComponentProps, LoginComponentState>{
     private authServerList = [
@@ -35,26 +38,26 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
             bsIcon: "google",
             extraClasses: 'g-signin2',
             configure: ()=> {
-                const handleCredentialResponse = (response: any) => {
-                    fetch('https://oauth2.googleapis.com/token?'+ new URLSearchParams({
-                        code: response.code,
-                        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
-                        client_secret: "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",
-                        grant_type: "authorization_code",
-                        redirect_uri: "http://localhost:3000"
-                    }), { method: 'POST'})
-                    .then(response => response.json())
-                    .then(data => console.log(data));
-                };
-                /* global google */
-                const client = google.accounts.oauth2.initCodeClient({
-                    client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-                    scope: 'email profile ',
-                    callback: handleCredentialResponse
-                });
-                document.getElementById('google-login')?.addEventListener('click', ()=> {
-                    client.requestCode()
-                });
+                // const handleCredentialResponse = (response: any) => {
+                //     fetch('https://oauth2.googleapis.com/token?'+ new URLSearchParams({
+                //         code: response.code,
+                //         client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '',
+                //         client_secret: "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",
+                //         grant_type: "authorization_code",
+                //         redirect_uri: "http://localhost:3000"
+                //     }), { method: 'POST'})
+                //     .then(response => response.json())
+                //     .then(data => console.log(data));
+                // };
+                // /* global google */
+                // const client = google.accounts.oauth2.initCodeClient({
+                //     client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+                //     scope: 'email profile ',
+                //     callback: handleCredentialResponse
+                // });
+                // document.getElementById('google-login')?.addEventListener('click', ()=> {
+                //     client.requestCode()
+                // });
             }
         },
         {
@@ -69,39 +72,85 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
         },
     ];
 
-    constructor(props: any){
-        super(props);
-        this.state= {
-            authServers: this.authServerList,
-            verificationStatus: 'init',
-            emailInput: '',
-            passwordInput: '',
-        };
-    }
-
-    componentDidMount(){
-        
-        Auth.currentAuthenticatedUser()
-        .then(res => {
-            if( !isEmpty(res) && !isEmpty(res.username) ){
-                this.props.navigate('/myp/home')
+    private loginActionLabel: {[key: string]: {btnLabel: string; action: () => void;}} = {
+        'init': {
+            btnLabel: 'Continue',
+            action: () => {
+                this.setState({...this.state, verificationStatus: 'email-verified'});
+                this.props.setSearchParam({
+                    credstage: 'email-verified',
+                    email: this.props.searchParam.get('email')
+                });
             }
-        })
-        .catch(err => console.log(err))
-        this.setState({
-            ...this.state, 
-            emailInput: this.props.searchParam.get('email') || this.state.emailInput,
-            verificationStatus: this.props.searchParam.get('credstage') || this.state.verificationStatus
-        })
-    }
+        },
+        'email-verified': {
+            btnLabel: 'Sign In',
+            action: ()=> {
+                const passverified = this.state.passwordInput && this.state.passwordInput.length > 8;
+                if (!passverified){
+                    const passerror = 'Invalid password';
+                    this.setState({...this.state, formError: {password: passerror, email: undefined}});
+                    return
+                }
+                this.setState({...this.state, formError: {password: undefined, email: undefined}});
+                Auth.signIn(this.state.emailInput, this.state.passwordInput)
+                .then(res => {
+                    console.log(res);
+                    this.setState({
+                        ...this.state,
+                        stageError: undefined
+                    });
+                    this.props.navigate('/myp/your-work')
+                })
+                .catch(err => {
+                    this.setState({
+                        ...this.state, 
+                        verificationStatus: 'email-not-verified',
+                        stageError: <div className='text-danger f-90'>Wrong user credential! Please sign up</div>
+                    });
+                    this.props.setSearchParam({
+                        credstage: 'email-not-verified',
+                        email: this.props.searchParam.get('email')
+                    })
+                });
+            }
+        },
+        'email-not-verified': {
+            btnLabel: 'Sign Up',
+            action: ()=>{
+                const passverified = this.state.passwordInput && this.state.passwordInput.length > 8;
+                const nameverfied = this.state.fullNameInput && this.state.fullNameInput.length > 3;
+                if (passverified && nameverfied){
+                    this.setState({...this.state, formError: {...this.state.formError, fullName: undefined, password: undefined}});
+                    Auth.signUp({
+                        username: this.state.emailInput, 
+                        password: this.state.passwordInput, 
+                        attributes:{
+                            'email': this.state.emailInput,
+                            'custom:fullName': this.state.fullNameInput
+                        }
+                    })
+                    .then(res => {
+                        console.log(res);
+                        this.setState({...this.state, verificationStatus: 'init', stageError: undefined});
+                        this.props.setSearchParam({
+                            credstage: 'init',
+                            email: this.props.searchParam.get('email')
+                        });
+                    })
+                    .catch(err=>{
+                        console.log(err);
+                        this.setState({...this.state, stageError: <div className='text-primary f-90'>User already exists with email: <strong>{this.state.emailInput}</strong></div>});
+                    });
+                }else{
+                    const passerror = 'Invalid password';
+                    const nameerror = 'Name literal mus be of length > 3.';
+                    this.setState({...this.state, formError: {...this.state.formError, fullName: nameerror, password: passerror}})
+                }
+            }
+        },
 
-    loginActionLabel: {[key: string]: string} = {
-        'init': 'Continue',
-        'email-verified': 'Sign In',
-        'email-not-verified': 'Sign Up',
-
-    }
-
+    };
 
     footerLinks: {[key: string]: SimpleLink[]} = {
         'init': [
@@ -132,6 +181,33 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                 value: 'sign-in'
             }
         ]
+    };
+
+    constructor(props: any){
+        super(props);
+        this.state= {
+            authServers: this.authServerList,
+            verificationStatus: 'init',
+            emailInput: '',
+            passwordInput: '',
+        };
+    }
+
+    componentDidMount(){
+        
+        Auth.currentAuthenticatedUser()
+        .then(res => {
+            if( !isEmpty(res) && !isEmpty(res.username) ){
+                this.props.navigate('/myp/home')
+            }
+        })
+        .catch(err => console.log(err))
+
+        this.setState({
+            ...this.state, 
+            emailInput: this.props.searchParam.get('email') || this.state.emailInput,
+            verificationStatus: this.props.searchParam.get('credstage') || this.state.verificationStatus || 'init'
+        })
     }
 
     public handleClick(event: any): void{
@@ -155,49 +231,23 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
         }
     }
 
-    private verifyInput(): boolean{
+    private verifyEmailInput(): boolean{
         const emailVerified = toLower(this.state.emailInput).match(
             /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
           );
+        
         return !!emailVerified
     }
 
     public handleLoginAction(event?: any){
+        const emailverfied = this.verifyEmailInput();
+        if (emailverfied){
+            this.setState({...this.state, formError: {password: undefined, email: undefined}});
+            this.loginActionLabel[this.state.verificationStatus].action();
+        }else{
+            const emailerror = emailverfied? undefined: 'Invalid email input!';
 
-        if (this.state.verificationStatus === 'init' && this.verifyInput()){
-            this.setState({...this.state, verificationStatus: 'email-verified', passwordInput: ''});
-            this.props.setSearchParam({
-                credstage: 'email-verified',
-                email: this.props.searchParam.get('email')
-            })
-        }
-        if (this.state.verificationStatus === 'email-verified' && this.verifyInput()){
-            Auth.signIn(this.state.emailInput, this.state.passwordInput)
-            .then(res => {
-                console.log(res);
-                this.props.navigate('/myp/your-work')
-            })
-            .catch(err => {
-                this.setState({...this.state, verificationStatus: 'email-not-verified'});
-                this.props.setSearchParam({
-                    credstage: 'email-not-verified',
-                    email: this.props.searchParam.get('email')
-                })
-            })
-            ;
-        }
-        if (this.state.verificationStatus === 'email-not-verified' && this.verifyInput()){
-            Auth.signUp({
-                username: this.state.emailInput, 
-                password: this.state.passwordInput, 
-                attributes:{
-                    'email': this.state.emailInput
-                }
-            })
-            .then(res => console.log(res))
-            .catch(err=>{
-                console.log(err)
-            })
+            this.setState({...this.state, formError: {password: undefined, email: emailerror}});
         }
     }
 
@@ -212,6 +262,12 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                 <div className ="text-center h6">
                     Login To MyPlanner
                 </div>
+                {
+                    this.state.stageError &&
+                    <div className='text-primary f-80 text-center'>
+                        {this.state.stageError}
+                    </div>
+                }
                 <div className={yMargin} hidden={this.state.verificationStatus !== 'email-verified'}>
                     <ButtonEdit 
                         label={this.state.emailInput}
@@ -235,10 +291,31 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                             this.setState({...this.state, emailInput: value});
                             this.props.setSearchParam({
                                 email: value,
-                                credstage: this.props.searchParam.get('credstage')
+                                credstage: this.props.searchParam.get('credstage') || this.state.verificationStatus
                             })
                         }).bind(this)}
                     />
+                    {
+                        this.state.formError?.email &&
+                        <div className='text-danger f-80 px-1'>{this.state.formError?.email}</div>
+                    }
+                </div>
+                <div className={yMargin} 
+                    hidden={this.state.verificationStatus !== 'email-not-verified'}
+                >
+                    <TextInput 
+                        label='Full Name'
+                        hideLabel={true}
+                        value={this.state.fullNameInput || ''}
+                        placeholder='Enter Full Name'
+                        handleChange= {((value: string)=>{
+                            this.setState({...this.state, fullNameInput: value});
+                        }).bind(this)}
+                    />
+                    {
+                        this.state.formError?.fullName &&
+                        <div className='text-danger f-80 px-1'>{this.state.formError?.fullName}</div>
+                    }
                 </div>
                 <div className={yMargin} 
                     hidden={
@@ -252,10 +329,14 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                         }).bind(this)}
                         
                     />
+                    {
+                        this.state.formError?.password &&
+                        <div className='text-danger f-80 px-1'>{this.state.formError?.password}</div>
+                    }
                 </div>
                 <div className={yMargin}>
                     <Button
-                        label={this.loginActionLabel[this.state.verificationStatus]}
+                        label={this.loginActionLabel[this.state.verificationStatus].btnLabel}
                         handleClick= {this.handleLoginAction.bind(this)}
                         extraClasses='btn-as-thm w-100 px-3 py-1'
                     />

@@ -1,0 +1,21 @@
+service: event-process
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  profile: personal
+  role: arn:aws:iam::343547439778:role/myplanner-lambda-role
+  environment:
+    REGION: ${self:provider.region}
+    STAGE: ${self:provider.stage}
+
+functions:
+  cognitoEvent:
+    handler: src/compiled/cognitoEvents.handler
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+

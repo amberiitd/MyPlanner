@@ -1,0 +1,71 @@
+service: buses
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  profile: personal
+  role: arn:aws:iam::343547439778:role/myplanner-lambda-role
+  environment:
+    REGION: ${self:provider.region}
+    STAGE: ${self:provider.stage}
+
+resources:
+  Resources:
+    # treatment_plan event queue
+    sampleEventQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "sample-event-${self:provider.stage}"
+        VisibilityTimeout: 180
+        MessageRetentionPeriod: 1209600
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - sampleEventDeadQueue
+              - Arn
+          maxReceiveCount: 3
+
+    sampleEventDeadQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "sample-event-dead-${self:provider.stage}"
+        MessageRetentionPeriod: 1209600
+
+    treatmentPlanPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Statement:
+            - Action: "SQS:SendMessage"
+              Effect: "Allow"
+              Resource: !GetAtt sampleEventDeadQueue.Arn
+              Principal:
+                Service: events.amazonaws.com
+              Condition:
+                ArnEquals:
+                  "aws:SourceArn": !GetAtt sampleEventRule.Arn
+        Queues:
+          - !Ref sampleEventQueue
+
+    sampleEventRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: sampleEventRule
+        Description: rule to project data change
+        EventBusName: !GetAtt DynamoEventBus.Name
+        Targets:
+          - Arn: !GetAtt sampleEventQueue.Arn
+            Id: sampleEventQueueId
+        EventPattern:
+          source:
+            - "dynamo-stream"
+          detail:
+            itemType:
+              - project
+            eventName:
+              - INSERT
+              - MODIFY
