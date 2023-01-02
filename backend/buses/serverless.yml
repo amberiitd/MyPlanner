@@ -15,57 +15,72 @@ provider:
 
 resources:
   Resources:
+    DynamoEventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:provider.stage}-db-event-bus
+
     # treatment_plan event queue
-    sampleEventQueue:
+    inviteEventQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: "sample-event-${self:provider.stage}"
+        QueueName: "invite-event-${self:provider.stage}"
         VisibilityTimeout: 180
         MessageRetentionPeriod: 1209600
         RedrivePolicy:
           deadLetterTargetArn:
             Fn::GetAtt:
-              - sampleEventDeadQueue
+              - inviteEventDeadQueue
               - Arn
           maxReceiveCount: 3
 
-    sampleEventDeadQueue:
+    inviteEventDeadQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: "sample-event-dead-${self:provider.stage}"
+        QueueName: "invite-event-dead-${self:provider.stage}"
         MessageRetentionPeriod: 1209600
 
-    treatmentPlanPolicy:
+    inviteEventPolicy:
       Type: AWS::SQS::QueuePolicy
       Properties:
         PolicyDocument:
           Statement:
             - Action: "SQS:SendMessage"
               Effect: "Allow"
-              Resource: !GetAtt sampleEventDeadQueue.Arn
+              Resource: !GetAtt inviteEventDeadQueue.Arn
               Principal:
                 Service: events.amazonaws.com
               Condition:
                 ArnEquals:
-                  "aws:SourceArn": !GetAtt sampleEventRule.Arn
+                  "aws:SourceArn": !GetAtt inviteEventRule.Arn
         Queues:
-          - !Ref sampleEventQueue
+          - !Ref inviteEventQueue
 
-    sampleEventRule:
+    inviteEventRule:
       Type: AWS::Events::Rule
       Properties:
-        Name: sampleEventRule
+        Name: inviteEventRule
         Description: rule to project data change
         EventBusName: !GetAtt DynamoEventBus.Name
         Targets:
-          - Arn: !GetAtt sampleEventQueue.Arn
-            Id: sampleEventQueueId
+          - Arn: !GetAtt inviteEventQueue.Arn
+            Id: inviteEventQueueId
         EventPattern:
           source:
             - "dynamo-stream"
           detail:
             itemType:
-              - project
+              - project-invite
             eventName:
               - INSERT
               - MODIFY
+  
+  Outputs:
+    DBEventBusName:
+      Value: !Ref DynamoEventBus
+      Export:
+        Name: ${self:provider.stage}-db-event-bus-name
+    inviteEventQueueArn:
+      Value: !GetAtt inviteEventQueue.Arn
+      Export:
+        Name: ${self:provider.stage}-inviteEventQueueArn

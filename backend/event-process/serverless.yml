@@ -18,4 +18,11 @@ functions:
     handler: src/compiled/cognitoEvents.handler
     layers:
       - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  projectInvitation:
+    handler: src/compiled/invitation.projectInvitationHandler
+    events:
+      - sqs:
+          arn: !ImportValue ${self:provider.stage}-inviteEventQueueArn
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
 

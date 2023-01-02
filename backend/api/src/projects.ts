@@ -5,7 +5,9 @@ import { createItem, deleteItem, getItems } from "./util/commonDB";
 const createProject = async (request: CrudRequest) => {
     await createItem(`uid:${request.uid}`, `${ItemType.PROJECT}:${request.data.id}`, {
         itemType: ItemType.PROJECT,
-        ...request.data
+        ...request.data,
+        gsi_pk_1: `project:${request.data.id}`,
+        gsi_sk_1: 'project'
     })
     return {
         statusCode: 200,

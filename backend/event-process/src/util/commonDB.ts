@@ -1,6 +1,4 @@
 import moment from "moment";
-import { ItemType } from "../models/common";
-import { createLogger } from 'logger';
 import { isEmpty } from "lodash";
 const AWS = require('aws-sdk');
 
@@ -45,21 +43,6 @@ export const getItems = async (pk: string, itemType: string, table?: string) => 
     console.info(response)
     
     return response.Items
-}
-
-export const getItem = async (pk: string, sk: string, table?: string) => {
-    const params = {
-        TableName: table || TABLE,
-        Key: {
-            pk,
-            sk
-        }
-    };
-  
-    const response = await DB.getItem(params).promise();
-    console.info(response)
-    
-    return response.Item
 }
 
 export const deleteItem = async (pk: string, sk: string, table?: string) => {
