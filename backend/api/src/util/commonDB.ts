@@ -56,7 +56,7 @@ export const getItem = async (pk: string, sk: string, table?: string) => {
         }
     };
   
-    const response = await DB.getItem(params).promise();
+    const response = await DB.get(params).promise();
     console.info(response)
     
     return response.Item

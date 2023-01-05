@@ -1,0 +1,19 @@
+service: googleapis
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  profile: personal
+  environment:
+    REGION: ${self:provider.region}
+    STAGE: ${self:provider.stage}
+
+layers:
+  googleapis:
+    path: ./
+    compatibleRuntimes:
+      - nodejs14.x

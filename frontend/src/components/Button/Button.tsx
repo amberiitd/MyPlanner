@@ -16,7 +16,7 @@ interface ButtonProps {
 
 const Button: FC<ButtonProps> = (props) => (
     <button 
-        className={`d-flex flex-nowrap app-button hover-button w-100 rounded-1 ${props.extraClasses?? 'btn-as-thm px-3 py-1'} ${props.disabled? 'btn-as-muted': ''}`} 
+        className={`d-flex flex-nowrap app-button hover-button w-100 rounded-1 ${props.extraClasses?? 'btn-as-thm py-1 px-1'} ${props.disabled? 'btn-as-muted': ''}`} 
         unselectable='on' 
         onMouseDown={(e) => {e.preventDefault(); if (!props.disabled)props.handleClick()}} 
         tabIndex={-1} 
@@ -24,10 +24,10 @@ const Button: FC<ButtonProps> = (props) => (
         style={{cursor: props.disabled? 'not-allowed': 'pointer'}}
         title={props.tooltip}
     >
-    <div className='me-2' hidden={!!props.hideIcon || !props.leftBsIcon}>
+    <div className='' hidden={!!props.hideIcon || !props.leftBsIcon}>
         <i className={`bi bi-${props.leftBsIcon}`}></i>
     </div>
-    <div className='btn-label' hidden={!!props.hideLabel}>{props.label}</div>
+    <div className='btn-label mx-2' hidden={!!props.hideLabel}>{props.label}</div>
     <div className='me-1 ms-auto' hidden={!!props.hideIcon || !props.rightBsIcon}>
         <i className={`bi bi-${props.rightBsIcon}`}></i>
     </div>

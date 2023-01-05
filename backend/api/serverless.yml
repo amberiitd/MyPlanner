@@ -122,3 +122,39 @@ functions:
     layers:
       - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
   
+  userService:
+    handler: src/compiled/user.handler
+    events:
+      - http:
+          path: /user/{proxy+}
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  
+  projectService:
+    handler: src/compiled/projectService.handler
+    events:
+      - http:
+          path: /project-service/{proxy+}
+          method: post
+          cors: true
+          integration: lambda
+          authorizer: 
+            name: myplanner-test-auth
+            arn: arn:aws:cognito-idp:ap-south-1:343547439778:userpool/ap-south-1_ecKPsMkmz
+            type: COGNITO_USER_POOLS
+            claims:
+              - email
+              - sub
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+  

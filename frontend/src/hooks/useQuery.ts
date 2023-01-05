@@ -1,10 +1,10 @@
 import { isEmpty } from "lodash";
 import { useState } from "react"
 
-export const useQuery = (callback: (paload: any)=> Promise<any>) => {
+export const useQuery = <T>(callback: (paload: T)=> Promise<any>) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(undefined);
-    const trigger = (args: any) => {
+    const trigger = (args: T) => {
         setLoading(true);
         return callback(args)
         .then(res => {

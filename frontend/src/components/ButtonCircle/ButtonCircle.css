@@ -1,0 +1,17 @@
+.size-md{
+    height: 1.8em;
+    width: 1.8em;
+    font-size: 140%;
+}
+
+.size-sm{
+    height: 1.8em;
+    width: 1.8em;
+    font-size: 90%;
+}
+
+.size-lg{
+    height: 1.8em;
+    width: 1.8em;
+    font-size: 250%;
+}

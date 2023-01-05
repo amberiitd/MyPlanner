@@ -84,3 +84,36 @@ export const projectCommonChildCrud = (payload: CrudPayload) => {
 		});
 	});
 };
+
+export const searchUser = (searchText: string, cancelTokeCallback?: (promise: Promise<any>) => void) => {
+    const promise = Auth.currentSession().then((res) => {
+		return API.post("base_url", "/user/search", {
+			body: {
+                searchText
+            },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: res.getIdToken().getJwtToken(),
+			},
+		});
+	});
+    if (cancelTokeCallback) cancelTokeCallback(promise);
+    return promise.then((res)=>{
+        const body = JSON.parse(res.body);
+        return body.data;
+    });
+}
+
+export const inviteToProject = (args: {projectId: string; inviteEmails: string[];}) => {
+    return Auth.currentSession().then((res) => {
+		return API.post("base_url", "/project-service/invite", {
+			body: {
+                ...args
+            },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: res.getIdToken().getJwtToken(),
+			},
+		});
+	});
+}

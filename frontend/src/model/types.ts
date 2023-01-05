@@ -75,7 +75,7 @@ export interface SimpleAction{
     value: string;
 }
 export type ISSUE_ACTION = 'ASSIGN_SPRINT';
-export type ItemType  = 'project' | 'sprint' | 'issue' | 'userPref';
+export type ItemType  = 'project' | 'sprint' | 'issue' | 'userPref' | 'user';
 export interface CrudPayload{
     itemType: ItemType;
     action: 'CREATE' | 'RETRIEVE' | 'UPDATE' | 'DELETE' | ISSUE_ACTION;
@@ -102,4 +102,9 @@ export const EMPTY_USER_PREF: UserPref = {
     recentWorkedBoards: [],
     recentWorkedIssues: [],
     recentWorkedProjects: []
+}
+
+export interface User{
+    email: string;
+    fullName: string;
 }

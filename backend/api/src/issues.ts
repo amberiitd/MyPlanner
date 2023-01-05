@@ -1,5 +1,5 @@
 import { CrudRequest, Issue, ItemType, RequestAction } from "./models/common";
-import { actionHandler, FunctionMap } from "./util/util";
+import { actionHandler, CrudFunctionMap } from "./util/util";
 import { createItem, deleteItem, getItems, updateItem } from "./util/commonDB";
 import { isEmpty } from "lodash";
 
@@ -66,7 +66,7 @@ const assignToSprint = async (request: CrudRequest) => {
     };
 }
 
-const functionMap: FunctionMap = {
+const functionMap: CrudFunctionMap = {
     [RequestAction.CREATE]: {
         requiredParams: ['uid', 'data', 'itemType'],
         callback: createIssue

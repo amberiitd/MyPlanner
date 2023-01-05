@@ -24,6 +24,22 @@ resources:
             AttributeType: S
           - AttributeName: gsi_sk_1
             AttributeType: S
+          - AttributeName: gsi_pk_2
+            AttributeType: S
+          - AttributeName: gsi_sk_2
+            AttributeType: S
+          # - AttributeName: gsi_pk_3
+          #   AttributeType: S
+          # - AttributeName: gsi_sk_3
+          #   AttributeType: S
+          # - AttributeName: gsi_pk_4
+          #   AttributeType: S
+          # - AttributeName: gsi_sk_4
+          #   AttributeType: S
+          # - AttributeName: gsi_pk_5
+          #   AttributeType: S
+          # - AttributeName: gsi_sk_5
+          #   AttributeType: S
         BillingMode: PAY_PER_REQUEST
         GlobalSecondaryIndexes:
           - IndexName: gsi_1
@@ -34,11 +50,45 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+          - IndexName: gsi_2
+            KeySchema:
+              - AttributeName: gsi_pk_2
+                KeyType: HASH
+              - AttributeName: gsi_sk_2
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          # - IndexName: gsi_3
+          #   KeySchema:
+          #     - AttributeName: gsi_pk_3
+          #       KeyType: HASH
+          #     - AttributeName: gsi_sk_3
+          #       KeyType: RANGE
+          #   Projection:
+          #     ProjectionType: ALL
+          # - IndexName: gsi_4
+          #   KeySchema:
+          #     - AttributeName: gsi_pk_4
+          #       KeyType: HASH
+          #     - AttributeName: gsi_sk_4
+          #       KeyType: RANGE
+          #   Projection:
+          #     ProjectionType: ALL
+          # - IndexName: gsi_5
+          #   KeySchema:
+          #     - AttributeName: gsi_pk_5
+          #       KeyType: HASH
+          #     - AttributeName: gsi_sk_5
+          #       KeyType: RANGE
+          #   Projection:
+          #     ProjectionType: ALL
         KeySchema:
           - AttributeName: pk
             KeyType: HASH
           - AttributeName: sk
             KeyType: RANGE
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
         TableName: ${self:provider.stage}-mainTable
   
   Outputs:
@@ -50,5 +100,9 @@ resources:
       Value: !GetAtt mainTable.Arn
       Export:
         Name: ${self:provider.stage}-mainTable-arn
+    DynamoDBTableStreamARN:
+      Value: !GetAtt mainTable.StreamArn
+      Export:
+        Name: ${self:provider.stage}-dynamodata-stream-arn
 
 plugins:

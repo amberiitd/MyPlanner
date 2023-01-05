@@ -4,13 +4,15 @@ import { issueReducer } from './slices/issueSlice';
 import { projectReducer } from './slices/projectSlice'
 import { sprintReducers } from './slices/sprintSlice';
 import { userPrefReducers } from './slices/userPrefSlice';
+import { userReducers } from './slices/userSlice';
 
 export const store = configureStore({
     reducer: {
         projects: projectReducer,
         sprints: sprintReducers,
         issues: issueReducer,
-        userPrefs: userPrefReducers
+        userPrefs: userPrefReducers,
+        users: userReducers
     }
 })
 

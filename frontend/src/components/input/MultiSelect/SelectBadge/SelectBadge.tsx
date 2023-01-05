@@ -11,16 +11,16 @@ interface SelectBadgeProps{
 const SelectBadge: FC<SelectBadgeProps> = (props) => {
 
     return (
-        <div className='d-flex flex-nowrap rounded-1 border py-0'>
-            <div className='text-nowrap px-1' style={{fontSize: 'small'}}>
+        <div className='d-flex flex-nowrap rounded-1 border py-0 f-80 bg-light'>
+            <div className='text-nowrap ps-1 d-flex align-items-center' style={{fontSize: 'small'}}>
                 {props.label}
             </div>
             <div>
                 <Button 
                     label='Cancel'
                     hideLabel={true}
-                    rightBsIcon='x'
-                    extraClasses='btn-as-bg p-0'
+                    leftBsIcon='x'
+                    extraClasses='btn-as-bg px-1'
                     handleClick={()=>props.handleCancel(props.value)}
                 />
             </div>

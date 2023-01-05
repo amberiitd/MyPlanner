@@ -1,11 +1,12 @@
 import { CrudRequest, ItemType, RequestAction } from "./models/common";
-import { actionHandler, FunctionMap } from "./util/util";
+import { actionHandler, CrudFunctionMap } from "./util/util";
 import { createItem, deleteItem, getItems } from "./util/commonDB";
 
 const createProject = async (request: CrudRequest) => {
     await createItem(`uid:${request.uid}`, `${ItemType.PROJECT}:${request.data.id}`, {
         itemType: ItemType.PROJECT,
         ...request.data,
+        uid: request.uid,
         gsi_pk_1: `project:${request.data.id}`,
         gsi_sk_1: 'project'
     })
@@ -44,7 +45,7 @@ const deleteProject = async (request: CrudRequest) => {
     }
 }
 
-const functionMap: FunctionMap = {
+const functionMap: CrudFunctionMap = {
     [RequestAction.CREATE]: {
         requiredParams: ['uid', 'itemType'],
         callback: createProject

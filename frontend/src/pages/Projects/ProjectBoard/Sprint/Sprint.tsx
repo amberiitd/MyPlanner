@@ -21,6 +21,8 @@ import { commonCrud, projectCommonCrud } from '../../../../services/api';
 import { ProjectBoardContext } from '../ProjectBoard';
 import { refreshSprint } from '../../../../app/slices/sprintSlice';
 import { completeSprintModalService } from '../../../../modal.service';
+import InvitePeople from '../InvitePeople/InvitePeople';
+import ButtonCircle from '../../../../components/ButtonCircle/ButtonCircle';
 
 interface SprintProps{
     project: Project;
@@ -149,22 +151,16 @@ const Sprint: FC<SprintProps> = (props) => {
                         {
                             members.map((item, index)=>(
                                 <div key={`members-${index}`} className='mx-1'>
-                                    <Button
+                                    <ButtonCircle
                                         label={item.name.split(' ').map(w => w[0]).join('')}
-                                        extraClasses='rounded-circle circle-1 btn-as-thm'
-                                        handleClick={()=>{}}
+                                        showLabel={true}
+                                        onClick={()=>{}}
                                     />
                                 </div>
                             ))
                         }
                         <div className='mx-2'>
-                            <Button
-                                label='Add member'
-                                hideLabel={true}
-                                rightBsIcon='person-plus-fill'
-                                extraClasses='rounded-circle circle-1 btn-as-light'
-                                handleClick={()=>{}}
-                            />
+                            <InvitePeople />
                         </div>
                     </div>
                     <div className='d-flex flex-nowrap'>

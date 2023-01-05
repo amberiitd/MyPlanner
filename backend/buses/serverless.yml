@@ -13,12 +13,45 @@ provider:
     REGION: ${self:provider.region}
     STAGE: ${self:provider.stage}
 
+functions:
+  dataSync:
+    handler: src/compiled/dbStream.handler
+    environment:
+      EVENTBUS: ${self:provider.stage}-db-event-bus
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::ImportValue: ${self:provider.stage}-dynamodata-stream-arn
+          batchSize: 10
+          batchWindow: 10
+          startingPosition: TRIM_HORIZON
+          enabled: true
+          maximumRetryAttempts: 10
+          destinations:
+            onFailure:
+              arn:
+                Fn::GetAtt:
+                  - DynanoDbStreamDeadLetterQueue
+                  - Arn
+              type: sqs
+    memorySize: 1024
+    timeout: 900
+    layers:
+      - arn:aws:lambda:ap-south-1:343547439778:layer:commonLibs:1
+
 resources:
   Resources:
     DynamoEventBus:
       Type: AWS::Events::EventBus
       Properties:
         Name: ${self:provider.stage}-db-event-bus
+
+    DynanoDbStreamDeadLetterQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "dynamo-db-stream-${self:provider.stage}"
+        MessageRetentionPeriod: 1209600
 
     # treatment_plan event queue
     inviteEventQueue:
@@ -47,7 +80,7 @@ resources:
           Statement:
             - Action: "SQS:SendMessage"
               Effect: "Allow"
-              Resource: !GetAtt inviteEventDeadQueue.Arn
+              Resource: !GetAtt inviteEventQueue.Arn
               Principal:
                 Service: events.amazonaws.com
               Condition:
@@ -69,7 +102,7 @@ resources:
           source:
             - "dynamo-stream"
           detail:
-            itemType:
+            item_type:
               - project-invite
             eventName:
               - INSERT

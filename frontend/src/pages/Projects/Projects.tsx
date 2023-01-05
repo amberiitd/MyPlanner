@@ -4,7 +4,7 @@ import Button from '../../components/Button/Button';
 import MultiSelect from '../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../components/input/TextInput/TextInput';
 import Table, { ColDef, RowAction } from '../../components/Table/Table';
-import { CrudPayload, Project, SimpleAction } from '../../model/types';
+import { CrudPayload, Project, SimpleAction, User } from '../../model/types';
 import BinaryAction from '../../components/BinaryAction/BinaryAction'
 import './Projects.css';
 import projectModalService, { projectCreateModalService } from '../../modal.service';
@@ -15,9 +15,10 @@ import { API, Auth } from 'aws-amplify';
 import { addProjectBulk, refreshProject, removeProject } from '../../app/slices/projectSlice';
 import { useDispatch } from 'react-redux';
 import { isEmpty } from 'lodash';
-import { projectsCrud } from '../../services/api';
+import { commonCrud, projectsCrud } from '../../services/api';
 import { useQuery } from '../../hooks/useQuery';
 import CircleRotate from '../../components/Loaders/CircleRotate';
+import { refreshUser } from '../../app/slices/userSlice';
 
 interface ProjectsProps{
 
@@ -28,6 +29,7 @@ const Projects: FC<ProjectsProps> = (props) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const projectsQuery = useQuery((payload: CrudPayload)=> projectsCrud(payload));
+    const commonQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
     const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects.values);
     const [searchText, setSearchText] = useState<string>('');
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -105,6 +107,12 @@ const Projects: FC<ProjectsProps> = (props) => {
         .then(res => {
             dispatch(refreshProject(res as Project[]))
         });
+        commonQuery.trigger({
+            action: 'RETRIEVE',
+            data:{},
+            itemType: 'user'
+        } as CrudPayload)
+        .then(res => dispatch(refreshUser(res as User[])));
     }
 
     useEffect(() => {

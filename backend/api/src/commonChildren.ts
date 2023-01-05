@@ -1,5 +1,5 @@
 import { CrudRequest, ItemType, RequestAction } from "./models/common";
-import { actionHandler, FunctionMap } from "./util/util";
+import { actionHandler, CrudFunctionMap } from "./util/util";
 import { createItem, deleteItem, getItems, updateItem } from "./util/commonDB";
 import moment from "moment";
 import { isEmpty } from "lodash";
@@ -118,7 +118,7 @@ const deleteCommonChild = async (request: CrudRequest) => {
     };
 }
 
-const functionMap: FunctionMap = {
+const functionMap: CrudFunctionMap = {
     [RequestAction.CREATE]: {
         requiredParams: ['uid', 'data', 'itemType'],
         callback: createCommonChild

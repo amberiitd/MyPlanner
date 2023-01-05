@@ -54,7 +54,7 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
     );
 
     return (
-        <div className={`px-3 py-2 bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
+        <div className={`custom-padding bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
             {/*  */}
             {
                 props.href?
