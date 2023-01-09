@@ -9,7 +9,7 @@ const initialState: {
     loaded: false,
 }
 const userSlice = createSlice({
-    name: 'userPref',
+    name: 'users',
     initialState, 
     reducers: {
         refresh: (state, action: PayloadAction<User[]> ) => {

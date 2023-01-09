@@ -1,42 +1,26 @@
+import { label } from 'aws-amplify';
 import { FC, useState } from 'react';
+import { issueTypes } from '../../../pages/Projects/ProjectBoard/Backlog/IssueCreator/IssueTypeSelector/issueTypes';
 import Select from '../../input/Select/Select';
 import './IssueType.css';
 
 interface IssueTypeProps{
-
+    onChange: (type: string) => void;
 }
 
-const IssueType: FC<IssueTypeProps> = () => {
-    const data= [
-        {
-            label: '',
-            items: [
-                {
-                    label: 'Epic',
-                    value: 'value1',
-                },
-                {
-                    label: 'Bug',
-                    value: 'value2',
-                },
-                {
-                    label: 'Story',
-                    value: 'value3',
-                },
-            ]
-        }
-    ];
-    const [selectedIssue, setSelectedIssue] = useState<any>();
-    const [filteredData, setFilteredData] = useState<any>(data);
+const IssueType: FC<IssueTypeProps> = (props) => {
+    const [filteredData, setFilteredData] = useState<any>(issueTypes);
     
     return (
         <div>
             <Select 
                 label='Issue Type'
                 isRequired={true}
-                selectedItem={selectedIssue}
-                data={filteredData}
-                onSelectionChange={()=> {}}
+                data={[{
+                    label: 'Issue Types',
+                    items:  filteredData
+                }]}
+                onSelectionChange={(item)=> {props.onChange(item.value)}}
             />
         </div>
     )

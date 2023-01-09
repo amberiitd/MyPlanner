@@ -13,6 +13,10 @@
     padding-left: 14px !important;
     border-left: 2px solid coral;
 }
+.quote:hover{
+    padding-left: 14px !important;
+    border-left: 2px solid coral;
+}
 
 .text-cut{
     white-space: nowrap;

@@ -53,7 +53,7 @@ const Entities: FC<EntitiesProps> = (props) => {
         const handleClick = (e: any)=>{
             if (emojiRef.current && emojiRef.current.contains(e.target)){
 
-            }else if (e.target.parentNode.id !== 'editor-emoji-toggler'){
+            }else if (e.target.parentNode?.id !== 'editor-emoji-toggler'){
                 setEmojiDropdown(false);
             }
         };

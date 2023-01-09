@@ -117,3 +117,44 @@ export const inviteToProject = (args: {projectId: string; inviteEmails: string[]
 		});
 	});
 }
+
+export const newJoinerCall = (payload: any) => {
+    return Auth.currentSession().then((res) => {
+		return API.post("base_url", "/project-service/newjoiner", {
+			body: {
+                token: payload.token
+            },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: res.getIdToken().getJwtToken(),
+			},
+		});
+	});
+}
+
+export const fetchJoinedProjects = (paload: any) => {
+    return Auth.currentSession().then((res) => {
+		return API.post("base_url", "/project-service/projects", {
+			body: {
+            },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: res.getIdToken().getJwtToken(),
+			},
+		});
+	});
+}
+
+export const fetchProjectPeople = (paload: any) => {
+    return Auth.currentSession().then((res) => {
+		return API.post("base_url", "/project-service/people", {
+			body: {
+                projectId: paload.projectId
+            },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: res.getIdToken().getJwtToken(),
+			},
+		});
+	});
+}

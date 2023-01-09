@@ -1,7 +1,6 @@
 import { isEmpty, toLower } from 'lodash';
 import { FC, useEffect, useRef, useState } from 'react';
 import Button from '../../Button/Button';
-import LinkCard from '../../LinkCard/LinkCard';
 import { SelectCategory } from '../Select/Select';
 import SelectCard from '../SelectCard/SelectCard';
 import './MultiSelect.css';

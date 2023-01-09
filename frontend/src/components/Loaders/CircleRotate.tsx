@@ -1,11 +1,11 @@
 import { FC } from "react";
-
-const CircleRotate: FC<{loading: boolean; onReload?: ()=> void;}> = (props) => {
+import './CircleRotate.css'
+const CircleRotate: FC<{loading: boolean; onReload?: ()=> void; size?: string}> = (props) => {
     return (
         <div className="">
             {
                 props.loading &&
-                <div className="spinner-border text-muted" role="status">
+                <div className={`spinner-${props.size || 'md'} spinner-border text-muted`} role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>
             }

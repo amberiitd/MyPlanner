@@ -41,7 +41,7 @@ const Select: FC<SelectProps> = (props) => {
         }
     }, [])
 
-    const handleSelection = (item: any) => {
+    const handleSelection = useCallback((item: any) => {
         for (let i = 0; i< props.data.length; i++){
             const option = props.data[i].items.find(datum => datum.value === item.value);
             if (!isEmpty(option)){
@@ -49,7 +49,7 @@ const Select: FC<SelectProps> = (props) => {
                 props.onSelectionChange(option);
 
                 // due deligence
-                setDropdown(!dropdown);
+                setDropdown(false);
                 setSearchText('');
                 setFilteredData(props.data);
                 inputRef.current?.blur();
@@ -57,44 +57,49 @@ const Select: FC<SelectProps> = (props) => {
                 return;
             }
         }
-    }
+    }, [props.data])
 
-    const handleSearch = (searchText: string) => {
+    const handleSearch = useCallback((searchText: string) => {
         setFilteredData((props.data || []).map((catg) => (
             {
                 ...catg,
                 items: catg.items.filter(item => toLower(item.label).startsWith(toLower(searchText)))
             }
         )));
-    }
+    }, [props.data])
     
-    const handleCLick = useCallback((event: any)=>{
-        if (!!props.disabled){
-            return;
-        }
-        if(selectFormRef.current && selectFormRef.current.contains(event.target)){
-            if(!(dropDownRef.current && dropDownRef.current.contains(event.target))){
-                inputRef.current?.focus();
-                setActive(true);
-                setDropdown(!dropdown);
-            }
-        }else{
-            setActive(false);
-            setDropdown(false);
-            setSearchText('');
-            setFilteredData(props.data);
-        } 
-    }, [dropdown]);
     useEffect(()=>{
-        
-        document.addEventListener('click', handleCLick, true);
-        return () => {document.removeEventListener('click', handleCLick, true)};
-    }, []);
+        const handleClick = (event: any)=>{
+            if (!!props.disabled){
+                return;
+            }
+            if(selectFormRef.current && selectFormRef.current.contains(event.target)){
+                if(!(dropDownRef.current && dropDownRef.current.contains(event.target))){
+                    inputRef.current?.focus();
+                    setActive(true);
+                    setDropdown(!dropdown);
+                }
+            }else{
+                setActive(false);
+                setDropdown(false);
+                setSearchText('');
+                setFilteredData(props.data);
+            } 
+        }
+        document.addEventListener('click', handleClick, true);
+        return () => {document.removeEventListener('click', handleClick, true)};
+    }, [dropdown, props.data]);
 
     useEffect(()=>{
-        
-        setSelectedItem(props.selectedItem);
-    }, [props]);
+        if (props.selectedItem)
+            setSelectedItem(props.selectedItem);
+    }, [props.selectedItem]);
+
+    useEffect(() =>{
+        setFilteredData(props.data);
+        // handleSearch(searchText);
+    }, [props.data])
+
 
     return (
         <div className='px-1'>
@@ -111,16 +116,6 @@ const Select: FC<SelectProps> = (props) => {
                         value={searchText} 
                         onChange={(e) => {handleSearch(e.target.value); setSearchText(e.target.value)}} 
                         hidden={!!props.disabled}
-                        // onFocus={()=>{
-                        //     setActive(true);
-                        //     setDropdown(!dropdown);
-                        // }}
-                        // onBlur={()=>{
-                        //     // setActive(false);
-                        //     // setDropdown(false);
-                        //     // setSearchText('');
-                        //     // setFilteredData(props.data);
-                        // }}
                     />
 
                     <div hidden={searchText.length > 0}>

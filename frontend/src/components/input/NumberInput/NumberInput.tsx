@@ -13,7 +13,7 @@ const NumberInput: FC<NumberInputProps> =(props) => {
 
     const [active, setActive] = useState(false);
     return (
-        <div className="" data-testid="TextInput">
+        <div className="px-1" data-testid="TextInput">
             <div className='' hidden={!!props.hideLabel}>
                 {props.label}{props.isRequired? '*': ''}
             </div>

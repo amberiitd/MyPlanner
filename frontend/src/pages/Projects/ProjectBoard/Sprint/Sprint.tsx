@@ -7,7 +7,7 @@ import DropdownAction from '../../../../components/DropdownAction/DropdownAction
 import MultiSelect from '../../../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../../../components/input/TextInput/TextInput';
 import ScrumBoard from '../../../../components/ScrumBoard/ScrumBoard';
-import { CrudPayload, Project } from '../../../../model/types';
+import { CrudPayload, Project, User } from '../../../../model/types';
 import { Issue } from '../Backlog/IssueRibbon/IssueRibbon';
 import { Sprint as SprintData } from '../../../../model/types'
 import './Sprint.css';
@@ -23,6 +23,8 @@ import { refreshSprint } from '../../../../app/slices/sprintSlice';
 import { completeSprintModalService } from '../../../../modal.service';
 import InvitePeople from '../InvitePeople/InvitePeople';
 import ButtonCircle from '../../../../components/ButtonCircle/ButtonCircle';
+import ButtonMultiSelect from '../Backlog/ButtonMultiSelect/ButtonMultiSelect';
+import { LinkItem } from '../../../../components/LinkCard/LinkCard';
 
 interface SprintProps{
     project: Project;
@@ -31,6 +33,7 @@ interface SprintProps{
 const Sprint: FC<SprintProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
+    const people = useSelector((state: RootState) => state.users.values);
     const issues = useSelector((state: RootState) => state.issues);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
@@ -38,9 +41,11 @@ const Sprint: FC<SprintProps> = (props) => {
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
+        people: LinkItem[];
     }>({
         searchText: '',
-        issueTypes: []
+        issueTypes: [],
+        people: []
     })
 
     const dispatch = useDispatch();
@@ -102,7 +107,7 @@ const Sprint: FC<SprintProps> = (props) => {
                         <div className='me-2'>
                             <Button 
                                 label='Complete sprint' 
-                                extraClasses='btn-as-thm px-3 py-1'
+                                extraClasses='btn-as-thm py-1'
                                 handleClick={()=>{
                                     completeSprintModalService.setProps({
                                         sprintIds: activeSprints.map(sp => sp.id)
@@ -148,18 +153,17 @@ const Sprint: FC<SprintProps> = (props) => {
                         />
                     </div>
                     <div className='d-flex flex-nowrap'>
-                        {
-                            members.map((item, index)=>(
-                                <div key={`members-${index}`} className='mx-1'>
-                                    <ButtonCircle
-                                        label={item.name.split(' ').map(w => w[0]).join('')}
-                                        showLabel={true}
-                                        onClick={()=>{}}
-                                    />
-                                </div>
-                            ))
-                        }
-                        <div className='mx-2'>
+                    <div className='mx-2'>
+                            <ButtonMultiSelect 
+                                items={people.map(p => ({
+                                    label: p.fullName,
+                                    value: p.email
+                                }))} 
+                                selectedItems={filters.people}
+                                onSelectionChange={(people) => setFilters({...filters, people})}
+                            />
+                        </div>
+                        <div className='me-2'>
                             <InvitePeople />
                         </div>
                     </div>
@@ -199,7 +203,7 @@ const Sprint: FC<SprintProps> = (props) => {
                     <ScrumBoard
                         issues={projectIssues
                             .filter(issue => activeSprints.findIndex(sprint => sprint.id === issue.sprintId) >= 0)
-                            .filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)))}
+                            .filter(issue => (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)) && (isEmpty(filters.people) || filters.people.findIndex(p => p.value === issue.assignee) >= 0))}
                     />
                 </div>
             </div>

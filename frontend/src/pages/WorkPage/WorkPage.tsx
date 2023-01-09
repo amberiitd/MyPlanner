@@ -9,7 +9,7 @@ import InfoCard from '../../components/InfoCard/InfoCard';
 import CircleRotate from '../../components/Loaders/CircleRotate';
 import { useQuery } from '../../hooks/useQuery';
 import { CrudPayload, Project } from '../../model/types';
-import { projectCommonCrud, projectsCrud } from '../../services/api';
+import { fetchJoinedProjects, projectCommonCrud, projectsCrud } from '../../services/api';
 import { Issue } from '../Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon';
 import './WorkPage.css';
 
@@ -21,18 +21,13 @@ const WorkPage: FC<WorkPageProps> = () => {
     const projects = useSelector((state: RootState) => state.projects);
     const issues = useSelector((state: RootState) => state.issues);
     const dispatch = useDispatch();
-    const projectsQuery = useQuery((payload: CrudPayload)=> projectsCrud(payload));
+    const projectsQuery = useQuery((payload: any)=> fetchJoinedProjects(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const userPrefs = useSelector((state: RootState) => state.userPrefs);
     const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
 
     const onRefresh = ()=> {
-        const payload: CrudPayload = {
-            itemType: 'project',
-            action: 'RETRIEVE',
-            data: {}
-        }
-        projectsQuery.trigger(payload)
+        projectsQuery.trigger({})
         .then(res => {
             dispatch(refreshProject(res as Project[]));
             (res as Project[]).forEach(project => {
@@ -46,7 +41,6 @@ const WorkPage: FC<WorkPageProps> = () => {
                 });
             });
         });
-        
     }
 
     useEffect(() => {

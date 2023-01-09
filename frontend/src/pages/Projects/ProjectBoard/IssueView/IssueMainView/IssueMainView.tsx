@@ -17,36 +17,16 @@ import CircleRotate from '../../../../../components/Loaders/CircleRotate';
 import ChildIssue from './../ChildIssue/ChildIssue';
 import { isEmpty } from 'lodash';
 import { updateUserPref } from '../../../../../app/slices/userPrefSlice';
+import { IssueViewContext } from '../IssueView';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
     issue: Issue | undefined;
 }
 
-export const IssueMainViewContext = createContext<{
-    openIssue: Issue | undefined;
-    descEditor: boolean;
-    setDescEditor: (open: boolean) => void;
-    newCommentEditor: boolean;
-    setNewCommentEditor: (open: boolean) => void;
-    commentOnEdit: string | undefined;
-    setCommentOnEdit: (id: string | undefined) => void;
-}>({
-    openIssue: undefined,
-    descEditor: false,
-    setDescEditor: (open: boolean) => {},
-    newCommentEditor: false,
-    setNewCommentEditor: (open: boolean) => {},
-    commentOnEdit: undefined,
-    setCommentOnEdit: (id: string | undefined) => {}
-});
-
 const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
-    const openIssue = useSelector((state: RootState) => state.issues.values.find(issue => issue.id === props.issue?.id));
-    const [descEditor, setDescEditor] = useState(false);
-    const [newCommentEditor, setNewCommentEditor] = useState(false);
-    const [commentOnEdit, setCommentOnEdit] = useState<string | undefined>('');
+    const {openIssue, descEditor, setDescEditor} = useContext(IssueViewContext);
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const userPrefs = useSelector((state: RootState) => state.userPrefs);
     const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
@@ -76,7 +56,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     }, [props.issue, openProject])
 
     return (
-        <IssueMainViewContext.Provider value={{descEditor, setDescEditor, newCommentEditor, setNewCommentEditor, openIssue, commentOnEdit, setCommentOnEdit}}>
+
             <div className='mb-3'>
                 <div className='d-flex flex-nowrap align-items-center '>
                     <div className='h3'>
@@ -139,7 +119,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                     </div>
                 </div>
             </div>
-        </IssueMainViewContext.Provider>
+
     )
 }
 

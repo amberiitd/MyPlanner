@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import Cascader from '../../Cascader/Cascader';
 import NavBarLink from '../NavBarLink/NavBarLink';
 import './NavBarLinkList.css';
@@ -16,8 +16,8 @@ interface NavBarLinkListProps{
 const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
     const [cuttOff, setCuttOff] = useState(0);
     const [moreLinks, setMoreLinks] = useState([]);
-    const resize = () => {
-        const MAX_ALLOWED_WIDTH = 1200;
+    const resize = useCallback(() => {
+        const MAX_ALLOWED_WIDTH = 900;
         const AVG_LINK_WIDTH = 80;
         if (window.innerWidth > MAX_ALLOWED_WIDTH){
             setCuttOff(0);
@@ -27,7 +27,7 @@ const NavBarLinkList: FC<NavBarLinkListProps> = (props) => {
         if (newCutOff !== cuttOff){
             setCuttOff(Math.min(newCutOff, props.items.length));
         }
-    };
+    }, [cuttOff]);
     useEffect(()=>{
         resize();
         window.addEventListener('resize', resize)

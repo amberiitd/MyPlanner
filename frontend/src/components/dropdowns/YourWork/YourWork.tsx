@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { RootState } from '../../../app/store';
 import LinkCard from '../../LinkCard/LinkCard';
 import { NavDropDownContext } from '../../nav/NavBarLink/NavBarLink';
+import { AuthContext } from '../../route/AuthGuardRoute';
 import TabbedCard from '../../Tabbedcard/TabbedCard';
 import './YourWork.css';
 
@@ -20,6 +21,7 @@ const YourWork: FC<YourWorkProps> = (props) => {
     const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
     const issues = useSelector((state: RootState) => state.issues);
     const projects = useSelector((state: RootState) => state.projects);
+    const {authUser} = useContext(AuthContext)
 
     const handleClickOption = (item: any) => {
         setDropdown(false);
@@ -59,10 +61,20 @@ const YourWork: FC<YourWorkProps> = (props) => {
             bodyElement: (
                 <React.Fragment>
                     <LinkCard 
-                        label='Worked on'
+                        label='To Do'
                         showLabel={true}
                         isLoading={false}
-                        linkItems={assignedToMeLinks}
+                        linkItems={issues.values
+                            .filter(issue => issue.assignee === authUser.data?.attributes.email)
+                            .map(issue => ({
+                            label: issue.label,
+                            caption: [
+                                `${issue.projectKey}-${issue.id}`, 
+                                projects.values.find(project => project.key === issue.projectKey)?.name || ''
+                            ],
+                            value: issue.id,
+                            href: `//${window.location.host}/myp/projects/${issue.projectKey}/issue?issueId=${issue.id}`
+                        }))}
                         handleClick={handleClickOption}
                     />
                 </React.Fragment>

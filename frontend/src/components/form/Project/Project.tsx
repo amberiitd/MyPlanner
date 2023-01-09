@@ -1,61 +1,49 @@
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../app/store';
 import Select from '../../input/Select/Select';
 import './Project.css';
 
 interface ProjectProps{
-
+    onChange: (value: {id: string, key: string}) => void;
 }
 
-const Project: FC<ProjectProps> = () => {
-    const data= [
-        {
-            label: 'Recent Projects',
-            items: [
-                {
-                    label: 'Option 1',
-                    value: 'value1',
-                },
-                {
-                    label: 'Value 2',
-                    value: 'value2',
-                },
-                {
-                    label: 'Choice 3',
-                    value: 'value3',
-                },
-            ],
-            showLabel: true
-        },
-        {
-            label: 'All Projects',
-            items: [
-                {
-                    label: 'Option 1',
-                    value: 'value1',
-                },
-                {
-                    label: 'Value 2',
-                    value: 'value2',
-                },
-                {
-                    label: 'Choice 3',
-                    value: 'value3',
-                },
-            ],
-            showLabel: true
-        },
-    ];
-    const [selectedProject, setSelectedProject] = useState<any>();
-    const [filteredData, setFilteredData] = useState<any>(data);
+const Project: FC<ProjectProps> = (props) => {
+    const userPrefs = useSelector((state: RootState) => state.userPrefs);
+    const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
+    const projects = useSelector((state: RootState) => state.projects);
     
     return (
         <div>
             <Select 
                 label='Project'
-                data={filteredData}
+                data={[
+                    {
+                        label: 'Recent Projects',
+                        items: projects.values
+                        .filter(project => (defaultUserPrefs?.recentViewedProjects || []).findIndex(p => p === project.id) >=0 )
+                        .map(project => ({
+                            label: project.name,
+                            caption: [project.key],
+                            value: project.id,
+                        })),
+                        showLabel: true
+                    },
+                    {
+                        label: 'All Projects',
+                        items: projects.values.map(project => ({
+                            label: project.name,
+                            caption: [project.key],
+                            value: project.id,
+                        })),
+                        showLabel: true
+                    },
+                ]}
                 isRequired={true}
-                selectedItem={selectedProject}
-                onSelectionChange={()=> {}}
+                onSelectionChange={(item)=> {
+                    const project = projects.values.find(p => p.id === item.value);
+                    props.onChange({id: project?.id || '', key: project?.key || ''})
+                }}
             />
         </div>
     )

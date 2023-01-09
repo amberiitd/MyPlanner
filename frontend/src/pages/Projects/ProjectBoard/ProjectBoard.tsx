@@ -5,13 +5,14 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import Split from 'react-split';
 import { updateUserPref } from '../../../app/slices/userPrefSlice';
+import { refreshUser } from '../../../app/slices/userSlice';
 import { RootState } from '../../../app/store';
 import BreadCrumb, { BreadCrumbItem } from '../../../components/BreadCrumb/BreadCrumb';
 import MenuCard from '../../../components/MenuCard/MenuCard';
 import PageNotFound from '../../../components/PageNotFound/PageNotFound';
 import { useQuery } from '../../../hooks/useQuery';
-import { CrudPayload, EMPTY_PROJECT, Project, Sprint } from '../../../model/types';
-import { commonCrud, projectCommonCrud } from '../../../services/api';
+import { CrudPayload, EMPTY_PROJECT, Project, Sprint, User } from '../../../model/types';
+import { commonCrud, fetchProjectPeople, projectCommonCrud } from '../../../services/api';
 import Backlog from './Backlog/Backlog';
 import CompleteSprintModal from './Backlog/CompleteSprintModal/CompleteSprintModal';
 import { Issue } from './Backlog/IssueRibbon/IssueRibbon';
@@ -37,6 +38,7 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     const dispatch = useDispatch();
     const [windowSizes, setWindowSizes] = useState<number[]>([20, 80]);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
+    const userQuery = useQuery((payload: any) => fetchProjectPeople(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
 
     const menuViews: BreadCrumbItem[] = [
@@ -109,17 +111,11 @@ const ProjectBoard: FC<ProjectBoardProps> = (props) => {
     }, [view]);
 
     useEffect(()=>{
-        // if (!projects.loaded){
-        //     commonQuery.trigger({
-        //         'action': 'RETRIEVE',
-        //         data: {},
-        //         'itemType': 'project'
-        //     } as CrudPayload)
-        //     .then((res)=>{
-        //         dispatch(refreshProject(res as Project[]));
-        //     })
-        // }
-    }, [])
+        userQuery.trigger({projectId: selectedProject.id})
+        .then(res => {
+            dispatch(refreshUser(res as User[]))
+        })
+    }, [selectedProject])
 
     return (
         <ProjectBoardContext.Provider value={{openProject: selectedProject}}>

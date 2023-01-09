@@ -2,7 +2,9 @@ import { FC, useState } from 'react';
 import TextInput from '../../input/TextInput/TextInput';
 import './Summary.css';
 
-interface SummaryProps{}
+interface SummaryProps{
+    onChange: (text: string) => void;
+}
 
 const Summary: FC<SummaryProps> = (props) => {
     const [value, setValue] = useState('');
@@ -13,7 +15,7 @@ const Summary: FC<SummaryProps> = (props) => {
                 value={value}
                 isRequired={true}
                 hidePlaceholder={true}
-                handleChange={(value: string)=> { setValue(value) }}
+                handleChange={(value: string)=> { setValue(value);  props.onChange(value);}}
             />
         </div>
     )

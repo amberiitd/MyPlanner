@@ -50,7 +50,7 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                 <Button
                     label={(props.selectedStage || NONE).label}
                     rightBsIcon={dropdown? 'chevron-up': 'chevron-down'}
-                    extraClasses='ps-2 btn-as-light rounded'
+                    extraClasses='btn-as-light rounded'
                     handleClick={()=>{setDropdown(!dropdown)}}
                 />
             </div>

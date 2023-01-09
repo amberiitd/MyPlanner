@@ -29,6 +29,7 @@ interface LoginComponentState{
     fullNameInput?: string;
     formError?: {email?: string; password?: string; fullName?: string};
     stageError?: JSX.Element;
+    currentUser?: any;
 }
 class LoginComponent extends React.Component<LoginComponentProps, LoginComponentState>{
     private authServerList = [
@@ -79,7 +80,8 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                 this.setState({...this.state, verificationStatus: 'email-verified'});
                 this.props.setSearchParam({
                     credstage: 'email-verified',
-                    email: this.props.searchParam.get('email')
+                    email: this.props.searchParam.get('email'),
+                    redirect_to: this.props.searchParam.get('redirect_to') || ''
                 });
             }
         },
@@ -92,17 +94,18 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                     this.setState({...this.state, formError: {password: passerror, email: undefined}});
                     return
                 }
-                this.setState({...this.state, formError: {password: undefined, email: undefined}});
                 Auth.signIn(this.state.emailInput, this.state.passwordInput)
                 .then(res => {
                     console.log(res);
-                    this.setState({
-                        ...this.state,
-                        stageError: undefined
-                    });
-                    this.props.navigate('/myp/your-work')
+                    const redirectTo = this.props.searchParam.get('redirect_to');
+                    if (redirectTo){
+                        window.location.href = atob(redirectTo);
+                    }else{
+                        this.props.navigate('/myp/your-work');
+                    }
                 })
                 .catch(err => {
+                    console.log(err);
                     this.setState({
                         ...this.state, 
                         verificationStatus: 'email-not-verified',
@@ -110,8 +113,10 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                     });
                     this.props.setSearchParam({
                         credstage: 'email-not-verified',
-                        email: this.props.searchParam.get('email')
+                        email: this.props.searchParam.get('email'),
+                        redirect_to: this.props.searchParam.get('redirect_to') || ''
                     })
+                    this.setState({...this.state, formError: {password: undefined, email: undefined}});
                 });
             }
         },
@@ -135,7 +140,8 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                         this.setState({...this.state, verificationStatus: 'init', stageError: undefined});
                         this.props.setSearchParam({
                             credstage: 'init',
-                            email: this.props.searchParam.get('email')
+                            email: this.props.searchParam.get('email'),
+                            redirect_to: this.props.searchParam.get('redirect_to') || ''
                         });
                     })
                     .catch(err=>{
@@ -194,11 +200,17 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
     }
 
     componentDidMount(){
-        
+        const email = this.props.searchParam.get('email');
+        const redirectTo = this.props.searchParam.get('redirect_to');
         Auth.currentAuthenticatedUser()
         .then(res => {
-            if( !isEmpty(res) && !isEmpty(res.username) ){
-                this.props.navigate('/myp/home')
+            if (!isEmpty(email) && email !== res.attributes.email){
+                this.setState({...this.state, currentUser: res});
+            }
+            else if( !isEmpty(res) && !isEmpty(res.username) ){
+                if (redirectTo)
+                    window.location.href = atob(redirectTo)
+                else this.props.navigate('/myp/home')
             }
         })
         .catch(err => console.log(err))
@@ -242,8 +254,7 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
     public handleLoginAction(event?: any){
         const emailverfied = this.verifyEmailInput();
         if (emailverfied){
-            this.setState({...this.state, formError: {password: undefined, email: undefined}});
-            this.loginActionLabel[this.state.verificationStatus].action();
+            (this.loginActionLabel[this.state.verificationStatus] || this.loginActionLabel['init']).action();
         }else{
             const emailerror = emailverfied? undefined: 'Invalid email input!';
 
@@ -291,7 +302,8 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                             this.setState({...this.state, emailInput: value});
                             this.props.setSearchParam({
                                 email: value,
-                                credstage: this.props.searchParam.get('credstage') || this.state.verificationStatus
+                                credstage: this.props.searchParam.get('credstage') || this.state.verificationStatus,
+                                redirect_to: this.props.searchParam.get('redirect_to') || ''
                             })
                         }).bind(this)}
                     />
@@ -336,7 +348,7 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                 </div>
                 <div className={yMargin}>
                     <Button
-                        label={this.loginActionLabel[this.state.verificationStatus].btnLabel}
+                        label={(this.loginActionLabel[this.state.verificationStatus] || this.loginActionLabel['init']).btnLabel}
                         handleClick= {this.handleLoginAction.bind(this)}
                         extraClasses='btn-as-thm w-100 px-3 py-1'
                     />
@@ -346,10 +358,22 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                     OR
                 </div>
                 {
+                    this.state.currentUser &&
+                    <div className={yMargin}>
+                        <LoginButton
+                            label={`Continue as: ${this.state.currentUser.username}`}
+                            onClick={()=>{
+                                this.props.navigate('/myp/home');
+                            }}
+                        />
+                    </div>
+                }
+                {
                     this.state.authServers.map( (item, index) => (
                         <div className={yMargin} key = {index}>
                             <LoginButton
                                 {...item}
+                                label={`Continue with ${item.label}`}
                             />
                         </div>
                         
@@ -359,7 +383,7 @@ class LoginComponent extends React.Component<LoginComponentProps, LoginComponent
                 <div className='login-comp-foot position-absolute'>
                     <hr/>
                     <LinkGroup 
-                        links={this.footerLinks[this.state.verificationStatus]}
+                        links={this.footerLinks[this.state.verificationStatus] || this.footerLinks['init']}
                         handleClick={this.handleLinkClick.bind(this)}
                     />
                 </div>

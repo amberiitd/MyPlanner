@@ -44,7 +44,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     const dispatch = useDispatch();
 
     const {openIssue, setOpenIssue} = useContext(BacklogContext);
-
+    const [hovered, setHovered] = useState(false);
     const{openProject}= useContext(ProjectBoardContext);
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [{isDragging, didDrop}, drag] = useDrag(()=>({
@@ -105,7 +105,10 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     }, [props]);
 
     return (
-        <div ref={drag} className='position-relative' style={{opacity: isDragging? 0: 1}}>
+        <div ref={drag} className='position-relative rounded' style={{opacity: isDragging? 0: 1}}
+            onMouseEnter={()=> setHovered(true)}
+            onMouseLeave={()=> setHovered(false)}
+        >
             <div ref={dropInCol} className='w-100 h-100 position-absolute' style={{bottom: '0'}}>
                 <div className={`w-100 pb-1 ${isOverCol? 'bg-thm-2': ''}`}>
 
@@ -148,9 +151,11 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                 </div>
                 <div>
                     <AssigneeSelector
+                        assignee={props.issue.assignee}
+                        issueId={props.issue.id}
                     />
                 </div>
-                <div>
+                <div style={{opacity: (!hovered || isDragging) ? 0: 1}}>
                     <DropdownAction 
                         actionCategory={[
                             {

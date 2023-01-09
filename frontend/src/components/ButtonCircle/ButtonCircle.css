@@ -1,17 +1,43 @@
 .size-md{
-    height: 1.8em;
-    width: 1.8em;
-    font-size: 140%;
+    height: 2.5em;
+    width: 2.5em;
+    font-size: 120%;
+    font-weight: 645;
+}
+
+.size-md-1{
+    height: 2.5em;
+    width: 2.5em;
+    font-size: 100%;
+    font-weight: 645;
 }
 
 .size-sm{
-    height: 1.8em;
-    width: 1.8em;
-    font-size: 90%;
+    height: 2.5em;
+    width: 2.5em;
+    font-size: 70%;
+    font-weight: 645;
+}
+
+.size-sm-2{
+    height: 2.5em;
+    width: 2.5em;
+    font-size: 80%;
+    font-weight: 645;
 }
 
 .size-lg{
     height: 1.8em;
     width: 1.8em;
     font-size: 250%;
+    font-weight: 645;
+}
+
+.focus-outline{
+    outline: 2px solid coral;
+    background-color: white !important;
+}
+
+.cursor-none{
+    cursor: default;
 }

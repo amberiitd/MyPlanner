@@ -84,7 +84,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             if (linkPopupRef.current && linkPopupRef.current.contains(e.target)){
 
             }
-            else if (e.target.parentNode.id === 'editor-link-toggler'){
+            else if (e.target.parentNode?.id === 'editor-link-toggler'){
                 // setLinkPopup({show: !linkPopup.show, position: [0, 0]})
             }
             else{

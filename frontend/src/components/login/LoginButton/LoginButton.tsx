@@ -7,10 +7,11 @@ import './LoginButton.css';
 interface LoginButtonProps {
     id?: string;
     label: string;
-    bsIcon: string;
+    bsIcon?: string;
     extraClasses?: string;
     extraProps?: any;
     configure?: ()=> void;
+    onClick?: () => void;
 }
     
 const LoginButton: FC<LoginButtonProps> = (props) => {
@@ -20,10 +21,10 @@ const LoginButton: FC<LoginButtonProps> = (props) => {
     }, []);
 
     return (
-        <div {...(props.extraProps??{})} className={`${props.extraClasses?? ''} login-button d-block shadow-sm border`} id={props.id}>
+        <div {...(props.extraProps??{})} className={`${props.extraClasses?? ''} login-button d-block shadow-sm border rounded`} id={props.id} onClick={()=> {if(props.onClick) props.onClick();}}>
             <button className='btn form-control text-secondary'>
                 <i className={`bi bi-${props.bsIcon} float-start`}></i>
-                Continue with {props.label}
+                {props.label}
             </button>
 
         </div>

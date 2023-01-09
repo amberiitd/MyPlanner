@@ -50,7 +50,7 @@ export const pathHandler = async (event: any, context: any, functionMap: CrudFun
     const path = event.requestPath.replace('{proxy+}', event.path.proxy);
 
     const returnObj = await functionMap[path].callback({
-        idenity:{uid, email: event.cognitoPoolClaims.email},
+        identity:{uid, email: event.cognitoPoolClaims.email},
         ...body
     })
 

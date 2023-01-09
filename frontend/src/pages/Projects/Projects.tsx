@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import Button from '../../components/Button/Button';
 import MultiSelect from '../../components/input/MultiSelect/MultiSelect';
 import TextInput from '../../components/input/TextInput/TextInput';
@@ -15,7 +15,7 @@ import { API, Auth } from 'aws-amplify';
 import { addProjectBulk, refreshProject, removeProject } from '../../app/slices/projectSlice';
 import { useDispatch } from 'react-redux';
 import { isEmpty } from 'lodash';
-import { commonCrud, projectsCrud } from '../../services/api';
+import { commonCrud, fetchJoinedProjects, newJoinerCall, projectsCrud } from '../../services/api';
 import { useQuery } from '../../hooks/useQuery';
 import CircleRotate from '../../components/Loaders/CircleRotate';
 import { refreshUser } from '../../app/slices/userSlice';
@@ -28,11 +28,12 @@ const Projects: FC<ProjectsProps> = (props) => {
     const projects = useSelector((state: RootState) => state.projects);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const projectsQuery = useQuery((payload: CrudPayload)=> projectsCrud(payload));
-    const commonQuery = useQuery((payload: CrudPayload)=> commonCrud(payload));
+    const projectsQuery = useQuery((payload: any)=> fetchJoinedProjects(payload));
+    const joinerQuery = useQuery((payload: any)=> newJoinerCall(payload));
     const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects.values);
     const [searchText, setSearchText] = useState<string>('');
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const data = [
         {
@@ -98,26 +99,24 @@ const Projects: FC<ProjectsProps> = (props) => {
     ];
 
     const onRefresh = ()=> {
-        const payload: CrudPayload = {
-            itemType: 'project',
-            action: 'RETRIEVE',
-            data: {}
-        }
-        projectsQuery.trigger(payload)
+        projectsQuery.trigger({})
         .then(res => {
             dispatch(refreshProject(res as Project[]))
         });
-        commonQuery.trigger({
-            action: 'RETRIEVE',
-            data:{},
-            itemType: 'user'
-        } as CrudPayload)
-        .then(res => dispatch(refreshUser(res as User[])));
     }
 
     useEffect(() => {
         if (!projects.loaded){
             onRefresh();
+        }
+        const inviteToken = searchParams.get('invite_token');
+        if (inviteToken){
+            joinerQuery.trigger({
+                token: inviteToken
+            })
+            .then((res)=>{
+                onRefresh();
+            })
         }
     }, [])
 

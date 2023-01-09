@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash';
 import { FC } from 'react';
 import { SimpleAction } from '../../model/types';
-import CustomOption from '../CustomOption/CustomOption';
+import CustomOption, { CustomOptionProps } from '../CustomOption/CustomOption';
 import './LinkCard.css';
 
 export interface LinkItem extends SimpleAction{
@@ -17,6 +17,7 @@ interface LinkCardProps{
     selectedLinks?: any[];
     extraClasses?: string;
     emptyElement?: JSX.Element;
+    optionType?: React.FC<CustomOptionProps>, 
     handleClick: (event: any) => void;
 }
 
@@ -27,14 +28,23 @@ const LinkCard: FC<LinkCardProps> = (props) => {
         <div className='w-100 py-1'>
             <div className='p-1 ps-3 label-card' hidden={!props.showLabel}>{props.label}</div>
             {
-                props.linkItems.map((item, index) => {
+                (props.linkItems || []).map((item, index) => {
                     return  (
                         <div id={item.htmlId || ''} key ={`custom-link-${index}`}>
-                            <CustomOption {...item} 
-                                extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
-                                href={item.href}
-                                onClick={(e: MouseEvent) => {e.preventDefault(); props.handleClick(item)}}
-                            />
+                            {
+                                props.optionType ?
+                                <props.optionType 
+                                    {...item} 
+                                    extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
+                                    href={item.href}
+                                    onClick={(e: MouseEvent) => {e.preventDefault(); props.handleClick(item)}}
+                                />:
+                                <CustomOption {...item} 
+                                    extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
+                                    href={item.href}
+                                    onClick={(e: MouseEvent) => {e.preventDefault(); props.handleClick(item)}}
+                                />
+                            }
                         </div>
                     )
                         

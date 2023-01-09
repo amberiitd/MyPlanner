@@ -7,3 +7,12 @@ export const distinct = (list: any[], key: (obj: any) => string) => {
         return true;
     })
 }
+
+export function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}

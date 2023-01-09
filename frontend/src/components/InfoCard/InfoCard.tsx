@@ -79,7 +79,7 @@ const InfoCard: FC<InfoCardProps> = (props) => {
                         handleItemClick={()=>{}}
                         bsIcon={'caret-down'}
                         buttonText={`${props.footerActions?.length} board`}
-                        buttonClass='btn-as-light px-1'
+                        buttonClass='btn-as-light'
                         dropdownClass='right-0 f-75'
                     />
                 </div>

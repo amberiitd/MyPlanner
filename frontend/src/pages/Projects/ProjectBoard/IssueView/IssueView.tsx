@@ -1,4 +1,4 @@
-import { FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import './IssueView.css';
 import Split from 'react-split';
 import SideView from './SideView/SideView';
@@ -17,8 +17,28 @@ import { RootState } from '../../../../app/store';
 interface IssueViewProps{
 
 }
+export const IssueViewContext = createContext<{
+    openIssue: Issue | undefined;
+    descEditor: boolean;
+    setDescEditor: (open: boolean) => void;
+    newCommentEditor: boolean;
+    setNewCommentEditor: (open: boolean) => void;
+    commentOnEdit: string | undefined;
+    setCommentOnEdit: (id: string | undefined) => void;
+}>({
+    openIssue: undefined,
+    descEditor: false,
+    setDescEditor: (open: boolean) => {},
+    newCommentEditor: false,
+    setNewCommentEditor: (open: boolean) => {},
+    commentOnEdit: undefined,
+    setCommentOnEdit: (id: string | undefined) => {}
+});
 
 const IssueView: FC<IssueViewProps> = (props) => {
+    const [descEditor, setDescEditor] = useState(false);
+    const [newCommentEditor, setNewCommentEditor] = useState(false);
+    const [commentOnEdit, setCommentOnEdit] = useState<string | undefined>('');
     const observer = useRef<any>();
     const containerRef = useRef<HTMLDivElement>(null);
     const [viewType, setViewType] = useState<1 | 2>(2);
@@ -67,6 +87,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
 
 
     return (
+        <IssueViewContext.Provider value={{descEditor, setDescEditor, newCommentEditor, setNewCommentEditor, openIssue, commentOnEdit, setCommentOnEdit}}>
             <div ref={onContainerObserve} className='h-100'>
                 <div ref={containerRef} className=' h-100 overflow-auto' style={{minWidth: '350px'}}>
                     {   
@@ -97,6 +118,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
                     }
                 </div>
             </div>
+        </IssueViewContext.Provider>
     )
 }
 

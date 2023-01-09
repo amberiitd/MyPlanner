@@ -7,7 +7,7 @@ import './NavBarMain.css';
 import YourWork from '../../dropdowns/YourWork/YourWork';
 import CreateNew from '../../form/CreateNew/CreateNew';
 import Projects from '../../dropdowns/Projects/Projects';
-import Profile from '../NavBarToolList/Profile/Profile';
+import Profile from './Profile/Profile';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { navItem } from 'aws-amplify';
 
@@ -68,21 +68,15 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
             label: 'notification',
             bsIcon: 'bell-fill'
         },
-        {
-            label: 'help',
-            bsIcon: 'question-circle-fill'
-        },
-        {
-            label: 'settings',
-            bsIcon: 'gear-wide',
+        // {
+        //     label: 'help',
+        //     bsIcon: 'question-circle-fill'
+        // },
+        // {
+        //     label: 'settings',
+        //     bsIcon: 'gear-wide',
 
-        },
-        {
-            label: 'profile',
-            bsIcon: 'person-circle',
-            isDropdown: true,
-            dropdownElement: (<Profile />)
-        }
+        // },
     ])
 
     useEffect(()=>{
@@ -98,15 +92,18 @@ const NavBarMain: FC<NavBarMainProps> = (props)=> {
         <div className='nav-simp d-inline-flex w-100 shadow-sm border'>
             <NavBrand />
             <NavBarLinkList 
-                items={navLinks}
-                selectedItem={selectedNav}
-            />
+                    items={navLinks}
+                    selectedItem={selectedNav}
+                />
             <CreateNew />
-            <div className='ms-auto w-25 me-2'>
+            <div className='ms-auto me-1'>
                 <NavSearch/>
             </div>
-            <div className=''>
+            <div>
                 <NavBarToolList items={toolItems} />
+            </div>
+            <div className='me-2'>
+                <Profile />
             </div>
         </div>
     )

@@ -27,6 +27,10 @@ import { ProjectBoardContext } from '../ProjectBoard';
 import { updateProject } from '../../../../app/slices/projectSlice';
 import IssueMainView from '../IssueView/IssueMainView/IssueMainView';
 import SideView from '../IssueView/SideView/SideView';
+import { LinkItem } from '../../../../components/LinkCard/LinkCard';
+import ButtonMultiSelect from './ButtonMultiSelect/ButtonMultiSelect';
+import ButtonCircle from '../../../../components/ButtonCircle/ButtonCircle';
+import InvitePeople from '../InvitePeople/InvitePeople';
 
 interface BacklogProps{
     project: Project;
@@ -44,13 +48,16 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const sprints = useSelector((state: RootState) => state.sprints);
     const issues = useSelector((state: RootState) => state.issues);
+    const people = useSelector((state: RootState) => state.users.values);
     const [openIssue, setOpenIssue] = useState<Issue | undefined>();
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
+        people: LinkItem[];
     }>({
         searchText: '',
-        issueTypes: []
+        issueTypes: [],
+        people: []
     });
     const projectSprints = useMemo(()=> sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props]);
     const projectIssues = useMemo(()=> issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
@@ -59,10 +66,24 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const dispatch = useDispatch();
     const members = [
         {
-            name: 'Nazish Amber'
+            fullName: 'Nazish Amber',
+            email: 'amberiitd15@gmail.com'
         },
         {
-            name: 'Khalid Safi'
+            fullName: 'Khalid Safi',
+            email: 'value2'
+        },
+        {
+            fullName: 'Mujahid Ali',
+            email: 'value3'
+        },
+        {
+            fullName: 'Abrar Ahmed',
+            email: 'value4'
+        },
+        {
+            fullName: 'Reyan Zafir',
+            email: 'value5'
         }
     ];
 
@@ -136,14 +157,14 @@ const Backlog: FC<BacklogProps>  = (props) => {
     }, [openProject])
 
     const backlogBody = (
-        <div className='overflow-auto backlog-body pe-2' >
+        <div className='backlog-body pe-2' >
             { 
                 projectSprints.map(sprint => (
                     <div key={uniqueId()} className='my-3'>
                         <SprintCard 
                             issueList={
                                 sortBy(
-                                    projectIssues.filter(issue => issue.sprintId === sprint.id && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type))),
+                                    projectIssues.filter(issue => issue.sprintId === sprint.id && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)) && (isEmpty(filters.people) || filters.people.findIndex(p => p.value === issue.assignee) >= 0)),
                                     (issue) => {
                                         const index=  indexOf(sprint?.issueOrder || [], issue.id);
                                         return index >= 0 ? index: 99999;
@@ -164,7 +185,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                 <BacklogCard 
                     issueList={
                         sortBy(
-                            projectIssues.filter(issue => issue.sprintId === 'backlog' && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type))),
+                            projectIssues.filter(issue => issue.sprintId === 'backlog' && (isEmpty(filters.searchText) || issue.label.toLocaleLowerCase().startsWith(filters.searchText.toLocaleLowerCase())) && (isEmpty(filters.issueTypes) || filters.issueTypes.includes(issue.type)) && (isEmpty(filters.people) || filters.people.findIndex(p => p.value === issue.assignee) >= 0)),
                             (issue) => {
                                 const index=  indexOf(openProject?.backlogIssueOrder || [], issue.id);
                                 return index >= 0 ? index: 99999;
@@ -219,25 +240,29 @@ const Backlog: FC<BacklogProps>  = (props) => {
                         />
                     </div>
                     <div className='d-flex flex-nowrap'>
-                        {
+                        {/* {
                             members.map((item, index)=>(
                                 <div key={uniqueId()} className='mx-1'>
                                     <Button
-                                        label={item.name.split(' ').map(w => w[0]).join('')}
+                                        label={item.fullName.split(' ').map(w => w[0]).join('')}
                                         extraClasses='p-1 rounded-circle btn-as-thm'
                                         handleClick={()=>{}}
                                     />
                                 </div>
                             ))
-                        }
+                        } */}
                         <div className='mx-2'>
-                            <Button
-                                label='Add member'
-                                hideLabel={true}
-                                rightBsIcon='person-plus-fill'
-                                extraClasses='btn-as-light p-1 rounded-circle'
-                                handleClick={()=>{}}
+                            <ButtonMultiSelect 
+                                items={people.map(p => ({
+                                    label: p.fullName,
+                                    value: p.email
+                                }))} 
+                                selectedItems={filters.people}
+                                onSelectionChange={(people) => setFilters({...filters, people})}
                             />
+                        </div>
+                        <div className='me-2'>
+                            <InvitePeople />
                         </div>
                     </div>
                     <div className='d-flex flex-nowrap'>
@@ -283,25 +308,27 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 
                                 <div className='h-100 px-3 overflow-auto' >
                                     {/*  */}
-                                    <div className='d-flex'>
+                                    <div style={{minWidth: '30em'}}>
+                                        <div className='d-flex'>
+                                            <div>
+                                                <a className='btn btn-sm shadow-sm btn-outline-secondary' href={`issue?issueId=${openIssue.id}`}>Issue View</a>
+                                            </div>
+                                            <div className='ms-auto'>
+                                                <Button 
+                                                    label={'Cancel'}
+                                                    hideLabel={true}
+                                                    leftBsIcon={'x-lg'} 
+                                                    extraClasses='btn-as-light p-1 px-2'
+                                                    handleClick={() => setOpenIssue(undefined)}
+                                                />
+                                            </div>
+                                            
+                                        </div>
                                         <div>
-                                            <a className='btn btn-sm shadow-sm btn-outline-secondary' href={`issue?issueId=${openIssue.id}`}>Issue View</a>
+                                            <IssueMainView onRefresh={()=>{}} issue={openIssue}/>
                                         </div>
-                                        <div className='ms-auto'>
-                                            <Button 
-                                                label={'Cancel'}
-                                                hideLabel={true}
-                                                leftBsIcon={'x-lg'} 
-                                                extraClasses='ps-2 py-1 btn-as-light'
-                                                handleClick={() => setOpenIssue(undefined)}
-                                            />
-                                        </div>
-                                        
+                                        <div><SideView issue={openIssue}/></div>
                                     </div>
-                                    <div>
-                                        <IssueMainView onRefresh={()=>{}} issue={openIssue}/>
-                                    </div>
-                                    <div><SideView issue={openIssue}/></div>
                                 </div>
                             </Split>
                         ):

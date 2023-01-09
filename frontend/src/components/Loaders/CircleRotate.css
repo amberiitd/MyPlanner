@@ -1,0 +1,9 @@
+.spinner-sm{
+    height: 1.5em !important;
+    width: 1.5em !important;
+}
+
+.spinner-md{
+    height: 2em !important;
+    width: 2em !important;
+}

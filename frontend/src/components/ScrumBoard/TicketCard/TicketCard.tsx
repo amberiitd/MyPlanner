@@ -1,8 +1,11 @@
 import { FC, useRef, useCallback,  useState, useContext } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../app/store';
 import { issueTypeMap } from '../../../pages/Projects/ProjectBoard/Backlog/IssueCreator/IssueTypeSelector/issueTypes';
 import { Issue } from '../../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon';
 import Badge from '../../Badge/Badge';
+import ButtonCircle from '../../ButtonCircle/ButtonCircle';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import { ScrumContext } from '../ScrumBoard';
 import './TicketCard.css';
@@ -25,6 +28,7 @@ const TicketCard: FC<TicketCardProps> = (props) => {
             didDrop: !!monitor.didDrop()
         })
     }))
+    const people = useSelector((state: RootState) => state.users.values);
 
     const [{isOver}, drop] = useDrop(()=> ({
         accept: 'issue',
@@ -65,7 +69,7 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                         />
                     </div>
                 </div>
-                <div className='d-flex flex-nowrap'>
+                <div className='d-flex flex-nowrap align-items-center'>
                     <div>
                         <i className={`bi bi-${ issueTypeMap[props.issue.type].leftBsIcon} me-2`}></i>
                         <span>{`${props.issue.projectKey}-${props.issue.id}`}</span>
@@ -74,6 +78,16 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                         <Badge
                             data={props.issue.storyPoint || '-'}
                             extraClasses='bg-light'
+                        />
+                    </div>
+                    <div className='ms-1'>
+                        <ButtonCircle
+                            label={people.find(p => p.email === props.issue.assignee)?.fullName.split(' ').map(p => p[0]).join('') || 'P'}
+                            showLabel={true}
+                            bsIcon={'person-fill'}
+                            size='sm'
+                            extraClasses='p-1 rounded-circle btn-as-thm'
+                            onClick={()=>{}}
                         />
                     </div>
                 </div>

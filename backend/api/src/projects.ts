@@ -8,7 +8,9 @@ const createProject = async (request: CrudRequest) => {
         ...request.data,
         uid: request.uid,
         gsi_pk_1: `project:${request.data.id}`,
-        gsi_sk_1: 'project'
+        gsi_sk_1: 'project',
+        gsi_pk_2: `project_table`,
+        gsi_sk_2: 'data'
     })
     return {
         statusCode: 200,

@@ -1,36 +1,23 @@
 import { uniqueId } from 'lodash';
 import React from 'react';
 import { FC } from 'react';
-import BinaryAction from '../BinaryAction/BinaryAction';
-import './CustomOption.css';
+import BinaryAction from '../../../../../../../components/BinaryAction/BinaryAction';
+import ButtonCircle from '../../../../../../../components/ButtonCircle/ButtonCircle';
+import { CustomOptionProps } from '../../../../../../../components/CustomOption/CustomOption';
+import './PeopleOption.css';
 
-export interface CustomOptionAction{
-    label: string;
-    value: string;
-    bsIcon: string;
-    flipBsIcon?: string;
-    handleClick: (event: any) => void;
-}
-
-export interface CustomOptionProps{
-    label: string;
-    value: string;
-    href?: string;
-    caption?: string | string[];
-    leftBsIcon?: string;
-    rightBsIcon?: string;
-    extraClasses?: string;
-    actions?: CustomOptionAction[];
-    onClick?: (e: MouseEvent)=> void;
-}
-
-const CustomOption: FC<CustomOptionProps> = (props) => {
+const PeopleOption: FC<CustomOptionProps> = (props) => {
     const innerElem = (
         <React.Fragment>
-            <div className='pe-2' hidden={!props.leftBsIcon}>
-                <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
-            </div>
-            <div>
+            <ButtonCircle
+                label={(props.label || '').split(' ').map(p => p[0]).join('') || 'P'}
+                showLabel={props.value !== 'unassigned'}
+                bsIcon={'person-fill'}
+                size='sm'
+                disabled
+                onClick={()=>{}}
+            />
+            <div className='ms-2'>
                 <div>{props.label}</div>
                 <div className='caption text-cut text-muted'>
                     {
@@ -41,19 +28,11 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
                     }
                     {
                         props.caption && typeof props.caption !== 'string' &&
-                        <React.Fragment>
-                            {
-                                props.caption.slice(0, props.caption.length -1).map(cap => (
-                                    <span key={uniqueId()}>
-                                        {cap}<span className='px-1'>.</span>
-                                    </span>
-                                ))
-                            }
+                        props.caption.map(cap => (
                             <span key={uniqueId()}>
-                                {props.caption[props.caption.length-1]}
+                                {cap}<span className='px-1'>.</span>
                             </span>
-                        </React.Fragment>
-                        
+                        ))
                         
                     }
                 </div>
@@ -66,10 +45,10 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
             {/*  */}
             {
                 props.href?
-                <a className='cursor-pointer me-auto d-flex flex-nowrap w-100 no-link' href={props.href}>
+                <a className='cursor-pointer me-auto ms-1 d-flex flex-nowrap w-100 no-link' href={props.href}>
                     {innerElem}
                 </a> :
-                <div className='cursor-pointer me-auto d-flex flex-nowrap w-100' onMouseDown={(e: any)=> {(props.onClick || (()=>{}))(e)}}>
+                <div className='cursor-pointer me-auto ms-1 d-flex flex-nowrap w-100' onMouseDown={(e: any)=> {(props.onClick || (()=>{}))(e)}}>
                     {innerElem}
                 </div>
             }
@@ -94,4 +73,4 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
     )
 }
 
-export default CustomOption;
+export default PeopleOption;

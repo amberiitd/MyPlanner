@@ -25,7 +25,7 @@ const initialState: {
     loaded: false,
 }
 const userPrefSlice = createSlice({
-    name: 'userPref',
+    name: 'userPrefs',
     initialState, 
     reducers: {
         updateFields: (state, action: PayloadAction<{projectId: string; fieldId: string; data: {fieldCardId: "details" | "pinned"}}> ) =>{
