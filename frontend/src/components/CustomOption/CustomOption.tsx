@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FC } from 'react';
 import BinaryAction from '../BinaryAction/BinaryAction';
 import './CustomOption.css';
@@ -25,10 +25,10 @@ export interface CustomOptionProps{
 }
 
 const CustomOption: FC<CustomOptionProps> = (props) => {
-    const innerElem = (
+    const innerElem = useMemo(() => (
         <React.Fragment>
             <div className='pe-2' hidden={!props.leftBsIcon}>
-                <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '150%'}} ></i>
+                <i className={`bi bi-${props.leftBsIcon}`} style={{fontSize: '100%'}} ></i>
             </div>
             <div>
                 <div>{props.label}</div>
@@ -59,7 +59,7 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
                 </div>
             </div>
         </React.Fragment>
-    );
+    ), [props]);
 
     return (
         <div className={`custom-padding bg-smoke d-flex flex-nowrap ${props.extraClasses}`}>
@@ -69,7 +69,9 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
                 <a className='cursor-pointer me-auto d-flex flex-nowrap w-100 no-link' href={props.href}>
                     {innerElem}
                 </a> :
-                <div className='cursor-pointer me-auto d-flex flex-nowrap w-100' onMouseDown={(e: any)=> {(props.onClick || (()=>{}))(e)}}>
+                <div className='cursor-pointer me-auto d-flex flex-nowrap w-100' 
+                    onClick={(e: any)=> {(props.onClick || (()=>{}))(e);}}
+                >
                     {innerElem}
                 </div>
             }

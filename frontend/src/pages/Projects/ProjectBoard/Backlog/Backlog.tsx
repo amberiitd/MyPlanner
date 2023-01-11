@@ -14,7 +14,7 @@ import { CrudPayload, Project, Sprint } from '../../../../model/types';
 import './Backlog.css';
 import BacklogCard from './BacklogCard/BacklogCard';
 import CompleteSprintModal from './CompleteSprintModal/CompleteSprintModal';
-import { issueTypes } from './IssueCreator/IssueTypeSelector/issueTypes';
+import { CHILD, issueTypes } from './IssueCreator/IssueTypeSelector/issueTypes';
 import { Issue } from './IssueRibbon/IssueRibbon';
 import SprintCard from './SprintCard/SprintCard';
 import SprintModal from './SprintModal/SprintModal';
@@ -31,6 +31,9 @@ import { LinkItem } from '../../../../components/LinkCard/LinkCard';
 import ButtonMultiSelect from './ButtonMultiSelect/ButtonMultiSelect';
 import ButtonCircle from '../../../../components/ButtonCircle/ButtonCircle';
 import InvitePeople from '../InvitePeople/InvitePeople';
+import IssueTypeSelector from './IssueCreator/IssueTypeSelector/IssueTypeSelector';
+import TextCopy from '../../../../components/TextCopy/TextCopy';
+import IssueLink from './IssueLink/IssueLink';
 
 interface BacklogProps{
     project: Project;
@@ -155,6 +158,12 @@ const Backlog: FC<BacklogProps>  = (props) => {
             onRefresh();
         }
     }, [openProject])
+
+    // useEffect(()=>{
+    //     if (!isEmpty(projectIssues)){
+    //         setOpenIssue(projectIssues[0])
+    //     }
+    // }, [projectIssues])
 
     const backlogBody = (
         <div className='backlog-body pe-2' >
@@ -308,10 +317,11 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 
                                 <div className='h-100 px-3 overflow-auto' >
                                     {/*  */}
-                                    <div style={{minWidth: '30em'}}>
-                                        <div className='d-flex'>
-                                            <div>
-                                                <a className='btn btn-sm shadow-sm btn-outline-secondary' href={`issue?issueId=${openIssue.id}`}>Issue View</a>
+                                    <div style={{minWidth: '25em'}}>
+                                        <div className='d-flex flex-nowrap'>
+                                            <div className='d-flex'>
+                                                <span className='ms-1 text-muted'>/</span>
+                                                <IssueLink issue={openIssue}/>
                                             </div>
                                             <div className='ms-auto'>
                                                 <Button 
@@ -322,7 +332,6 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                                     handleClick={() => setOpenIssue(undefined)}
                                                 />
                                             </div>
-                                            
                                         </div>
                                         <div>
                                             <IssueMainView onRefresh={()=>{}} issue={openIssue}/>

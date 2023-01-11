@@ -25,3 +25,7 @@
 .h100-8em{
     height: calc(100% - 8em);
 }
+
+.underline-hover:hover{
+    text-decoration: underline;
+}

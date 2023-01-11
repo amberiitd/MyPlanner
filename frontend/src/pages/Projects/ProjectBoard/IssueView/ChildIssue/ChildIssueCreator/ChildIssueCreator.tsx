@@ -133,7 +133,7 @@ const ChildIssueCreator: FC<ChildIssueCreatorProps> = (props) => {
                 <div className='ms-2'>
                     <Button 
                         label={'Cancel'} 
-                        extraClasses='btn-as-light  p-1 px-3'
+                        extraClasses='btn-as-light  p-1'
                         handleClick={props.onCancel}                        
                     />
                 </div>

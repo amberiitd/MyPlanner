@@ -66,21 +66,21 @@ const Table: FC<TableProps> = (props) => {
             return value;
         }else if (isEmpty(col.aslink?.to)){
             return (
-                <a className='text-decor-none' href={col.aslink?.to}
+                <a className='text-decor-none text-black' href={col.aslink?.to}
                 >
                     {value}
                 </a>
             );
         }else if(isEmpty(col.aslink?.hrefGetter)){
             return (
-                <a className='text-decor-none' href={(col.aslink?.hrefGetter || ((k)=> k))(rowdata.key || '')}
+                <a className='text-decor-none text-black' href={(col.aslink?.hrefGetter || ((k)=> k))(rowdata.key || '')}
                 >
                     {value}
                 </a>
             );
         }else if (isEmpty(col.aslink?.handleClick)){
             return (
-                <a className='text-decor-none' href='#' 
+                <a className='text-decor-none text-black' href='#' 
                     onClick={(e) => {
                         e.preventDefault(); 
                         col.aslink?.handleClick? col.aslink.handleClick(rowdata.key): (()=>{})(); 

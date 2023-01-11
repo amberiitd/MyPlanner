@@ -73,6 +73,7 @@ export interface SimpleAction{
     htmlId?: string;
     label: string;
     value: string;
+    leftBsIcon?: string;
 }
 export type ISSUE_ACTION = 'ASSIGN_SPRINT';
 export type ItemType  = 'project' | 'sprint' | 'issue' | 'userPref' | 'user';
@@ -108,3 +109,5 @@ export interface User{
     email: string;
     fullName: string;
 }
+
+export const linkedIssueCategories = ['isBlokedBy', 'blocks', 'relatedTo'];

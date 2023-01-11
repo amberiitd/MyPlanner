@@ -10,6 +10,7 @@ import { CrudPayload, Project } from '../../../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { Issue } from '../IssueRibbon/IssueRibbon';
 import './IssueCreator.css';
+import { issueTypes } from './IssueTypeSelector/issueTypes';
 import IssueTypeSelector from './IssueTypeSelector/IssueTypeSelector';
 
 interface IssueCreatorProps{
@@ -24,7 +25,7 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [issueType, setIssueType] = useState<any>('bug');
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
-
+    const id = uniqueId();
     const dispatch = useDispatch();
     const handleIssueCreation = useCallback((e: any) => {
         if (e.key === 'Enter'){
@@ -51,20 +52,22 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
         }
     }, [newIssueLabel, issueType]);
 
-    useEffect(() => {
-        const handleWindowClick = (e: any) => {
-            if(compRef && compRef.current && compRef.current.contains(e.target)){
-
+    useEffect(() =>{
+        const handleCreatorClick = (e: any) => {
+            if (compRef.current && compRef.current.contains(e.target)){
+                // console.log('inside creator:', id)
+                setActive(true);
             }else{
+                // console.log('outside creator', id)
                 setActive(false);
             }
         }
-
-        document.addEventListener('click', handleWindowClick, true);
-        return () => {
-            document.removeEventListener('click', handleWindowClick, true)
+        document.addEventListener('click', handleCreatorClick, true);
+        return () =>{
+            document.removeEventListener('click', handleCreatorClick, true);
         }
     }, [])
+
     return (
         <div ref={compRef} className='bg-inherit' >
            {
@@ -75,6 +78,8 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
                             <IssueTypeSelector 
                                 selectedIssueTypeValue={issueType} 
                                 handleSelection={(value: string) => setIssueType(value)}
+                                issueTypes={issueTypes}
+                                chevron
                             />
                         </div>
                         <div className='w-100'>
@@ -91,11 +96,10 @@ const IssueCreator: FC<IssueCreatorProps>  = (props) => {
                     leftBsIcon='plus-lg'
                     extraClasses='btn-as-bg py-2 justify-content-start px-3'
                     handleClick={() => {
-                        setActive(true); 
-                        if (inputRef.current){
-                            inputRef.current?.focus();
-                        }
-                        
+                        // setActive(true); 
+                        // if (inputRef.current){
+                        //     inputRef.current.focus();
+                        // }
                     }} 
                 />
             </div>

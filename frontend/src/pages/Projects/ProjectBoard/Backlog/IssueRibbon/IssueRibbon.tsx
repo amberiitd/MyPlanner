@@ -30,6 +30,8 @@ export interface Issue{
     stage: StageValue;
     comments?: any[];
     parentIssueId?: string;
+    linkedIssues?: {[key: string]: string[]};
+    webLinks?: {href: string; label: string}[];
 }
 
 interface IssueRibbonProps{

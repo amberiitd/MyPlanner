@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../../app/store';
 import { useQuery } from '../../../../../hooks/useQuery';
-import { CrudPayload } from '../../../../../model/types';
+import { CrudPayload, SimpleAction } from '../../../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshIssue, updateIssue } from '../../../../../app/slices/issueSlice';
@@ -18,12 +18,18 @@ import ChildIssue from './../ChildIssue/ChildIssue';
 import { isEmpty } from 'lodash';
 import { updateUserPref } from '../../../../../app/slices/userPrefSlice';
 import { IssueViewContext } from '../IssueView';
+import Button from '../../../../../components/Button/Button';
+import ButtonActionGroup from '../../../../../components/ButtonActionGroup/ButtonActionGroup';
+import LinkedIssue from '../LinkedIssue/LinkedIssue';
+import WebLink from '../WebLink/WebLink';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
     issue: Issue | undefined;
 }
-
+/* 
+TO DO: IssueViewContext needs to be taken on step back in the tree, since the same props will be used in backlog board as well.
+*/
 const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const {openIssue, descEditor, setDescEditor} = useContext(IssueViewContext);
@@ -32,6 +38,12 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const defaultUserPrefs = useMemo(() => userPrefs.values.find(pref => pref.id === 'default'), [userPrefs]);
     const commonQuery = useQuery((payload: CrudPayload) => commonCrud(payload));
     const dispatch = useDispatch();
+    const [addChild, setAddChild] = useState(false);
+    const [linkIssue, setLinkIssue] = useState(false);
+    const [webLink, setWebLink] = useState(false);
+    const linkedIssueCount = useMemo(() =>{
+        return Object.values(openIssue?.linkedIssues || {}).reduce((pre, cur) => pre+ cur.length, 0);
+    }, [openIssue])
 
     useEffect(()=>{
         const newRecent = [...(defaultUserPrefs?.recentViewedIssues || [])];
@@ -56,7 +68,6 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     }, [props.issue, openProject])
 
     return (
-
             <div className='mb-3'>
                 <div className='d-flex flex-nowrap align-items-center '>
                     <div className='h3'>
@@ -82,6 +93,50 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                             handleItemClick={()=>{}}
                         />
                     </div>
+                </div>
+                <div className='d-flex'>
+                    <div>
+                        <Button 
+                            label='Attach'
+                            leftBsIcon='paperclip'
+                            extraClasses='bg-as-light px-1'
+                            handleClick={()=>{}}
+                            dynamicLabel
+                        />
+                    </div>
+                    <div className='mx-2' hidden={props.issue?.type === 'child'}>
+                        <Button 
+                            label='Add child issue'
+                            leftBsIcon='diagram-2'
+                            dynamicLabel
+                            extraClasses='px-1 btn-as-light'
+                            handleClick={()=>{setAddChild(true)}}
+                        />
+                    </div>
+                    <div className='mx-2' style={{width: '20%'}}>
+                        <ButtonActionGroup 
+                            items={[
+                                {
+                                    label: 'Link an issue',
+                                    value: 'link-issue',
+                                    leftBsIcon: 'link-45deg'
+                                },
+                                {
+                                    label: 'Add web link',
+                                    value: 'link-web',
+                                    leftBsIcon: 'globe-asia-australia'
+                                }
+                            ]} 
+                            onClick={(item)=>{
+                                if (item.value === 'link-web'){
+                                    setWebLink(true);
+                                }else if (item.value === 'link-issue'){
+                                    setLinkIssue(true);
+                                }
+                            }}                        
+                    /> 
+                    </div>
+                    
                 </div>
                 
                 <div className='my-2 w-100'>
@@ -111,7 +166,25 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                     {
                         props.issue?.type !== 'child' &&
                         <div className='mb-5'>
-                            <ChildIssue />
+                            <ChildIssue active={addChild}
+                                onToggle={setAddChild}
+                            />
+                        </div>
+                    }
+                    {
+                        (linkedIssueCount > 0 || linkIssue) &&
+                        <div className='mb-5'>
+                            <LinkedIssue active={linkIssue}
+                                onToggle={setLinkIssue}
+                            />
+                        </div>
+                    }
+                    {
+                        (!isEmpty(props.issue?.webLinks) || webLink) &&
+                        <div className='mb-5'>
+                            <WebLink active={webLink}
+                                onToggle={setWebLink}
+                            />
                         </div>
                     }
                     <div className='my-5'>

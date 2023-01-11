@@ -29,7 +29,7 @@ export const CHILD: IssueType = {
     leftBsIcon: 'diagram-2'
 };
 
-export const issueTypes = [STORY, TASK, BUG, CHILD];
+export const issueTypes = [STORY, TASK, BUG];
 
 export const issueTypeMap: {
     [key: string]: any

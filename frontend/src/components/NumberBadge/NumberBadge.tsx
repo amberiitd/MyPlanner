@@ -7,6 +7,7 @@ interface NumberBadgeProps{
     extraClasses?: string;
     inputClasses?: string;
     onValueChange: (value: number) => void;
+    disabled?: boolean;
 }
 
 const NumberBadge: FC<NumberBadgeProps> = (props) => {
@@ -38,7 +39,7 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
     }, [])
     return (
         <div ref={compRef} className='w-100'>
-            <div className={`px-2 rounded-pill ${props.extraClasses} cursor-pointer w-inherit`} onClick={()=> {setActive(true)}} hidden={active}>
+            <div className={`px-2 rounded-pill ${props.extraClasses} ${!props.disabled ? 'cursor-pointer': ''} w-inherit`} onClick={()=> {if (!props.disabled) setActive(true)}} hidden={active}>
                 {value || '-'}
             </div>
             <div className='position-relative' hidden={!active}>
@@ -52,7 +53,7 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
                             label='Save'
                             hideLabel={true}
                             leftBsIcon='check'
-                            extraClasses='ps-2 btn-as-light'
+                            extraClasses='px-1 btn-as-light'
                             handleClick={handleSave}
                         />
                     </div>
@@ -61,7 +62,7 @@ const NumberBadge: FC<NumberBadgeProps> = (props) => {
                             label='Cancel'
                             hideLabel={true}
                             leftBsIcon='x-lg'
-                            extraClasses='ps-2 btn-as-light'
+                            extraClasses='px-1 btn-as-light'
                             handleClick={()=>{
                                 setValue(props.data? parseFloat(props.data.toString()): undefined); setActive(false)
                             }}

@@ -37,7 +37,7 @@ const LinkCard: FC<LinkCardProps> = (props) => {
                                     {...item} 
                                     extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}
                                     href={item.href}
-                                    onClick={(e: MouseEvent) => {e.preventDefault(); props.handleClick(item)}}
+                                    onClick={(e: MouseEvent) => {e.preventDefault(); e.stopPropagation(); props.handleClick(item)}}
                                 />:
                                 <CustomOption {...item} 
                                     extraClasses={props.extraClasses + (props.selectedLinks && props.selectedLinks.map(link => link.value).includes(item.value)? ' quote-static': '')}

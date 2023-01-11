@@ -119,6 +119,10 @@ const Select: FC<SelectProps> = (props) => {
                     />
 
                     <div hidden={searchText.length > 0}>
+                        {
+                            selectedItem?.leftBsIcon &&
+                            <i className={`bi bi-${selectedItem.leftBsIcon} me-1`} style={{fontSize: '100%'}} ></i>
+                        }
                         {selectedItem?.label}
                     </div>
 

@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import { FC, useCallback, useContext, useState } from 'react';
+import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeIssue, updateIssue } from '../../../../../app/slices/issueSlice';
 import { RootState } from '../../../../../app/store';
@@ -20,13 +20,17 @@ import './ChildIssue.css';
 import ChildIssueCreator from './ChildIssueCreator/ChildIssueCreator';
 
 interface ChildIssueProps{
-
+    active?: boolean;
+    onToggle?: (active: boolean) => void;
 }
 
 const ChildIssue: FC<ChildIssueProps> = (props) => {
     const [creator, setCreator] = useState(false);
     const {openIssue} = useContext(IssueViewContext);
     const childIssues = useSelector((state: RootState) => state.issues.values.filter(issue => issue.parentIssueId && (issue.parentIssueId === openIssue?.id)));
+    useEffect(()=>{
+        setCreator(!!props.active);
+    }, [props])
     return (
         <div>
             <div className='d-flex flex-nowrap'>
@@ -39,7 +43,11 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
                         hideLabel={true}
                         rightBsIcon='plus-lg'
                         extraClasses='btn-as-light p-1 ps-2'
-                        handleClick={()=>{ setCreator(true); }}
+                        handleClick={()=>{ setCreator(()=> {
+                                if (props.onToggle) props.onToggle(true);
+                                return true
+                            }); 
+                        }}
                     />
                 </div>
             </div>
@@ -58,7 +66,12 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
                 creator &&
                 <div className='mt-2'>
                     <ChildIssueCreator 
-                        onCancel={() => {setCreator(false);}}
+                        onCancel={() => {
+                            setCreator(() =>{
+                                if (props.onToggle) props.onToggle(false);
+                                return false
+                            }); 
+                        }}
                     />
                 </div>
             }
@@ -130,15 +143,16 @@ const ChildIssueRibbon: FC<{issue: Issue}> = (props) => {
                     extraClasses='bg-light'
                     inputClasses='input-sm'
                     onValueChange={(value: number)=>{
-                        projectCommonQuery.trigger({
-                            action: 'UPDATE',
-                            data: {projectId: openProject?.id, id: props.issue.id, storyPoint: value},
-                            itemType: 'issue'
-                        } as CrudPayload)
-                        .then(()=>{
-                            dispatch(updateIssue({id: props.issue.id, data: { storyPoint: value}}));
-                        })
+                        // projectCommonQuery.trigger({
+                        //     action: 'UPDATE',
+                        //     data: {projectId: openProject?.id, id: props.issue.id, storyPoint: value},
+                        //     itemType: 'issue'
+                        // } as CrudPayload)
+                        // .then(()=>{
+                        //     dispatch(updateIssue({id: props.issue.id, data: { storyPoint: value}}));
+                        // })
                     }}
+                    disabled
                 />
             </div>
             <div className=' ms-2'>
