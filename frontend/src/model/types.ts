@@ -111,3 +111,51 @@ export interface User{
 }
 
 export const linkedIssueCategories = ['isBlokedBy', 'blocks', 'relatedTo'];
+
+export type IssueAttachment = {
+    path: string; 
+    updatedAt: number; 
+    updatedBy: string; 
+    name: string; 
+    type: string;
+    size: number;
+}
+
+export const fileExtentions: {[key: string]: {bsIcon: string};} = {
+    'jpeg': {
+        bsIcon: 'file-earmark-image'
+    },
+    'jpg': {
+        bsIcon: 'file-earmark-image'
+    },
+    'png': {
+        bsIcon: 'file-earmark-image'
+    },
+    'gif': {
+        bsIcon: 'file-earmark-image'
+    },
+    'svg': {
+        bsIcon: 'file-earmark-image'
+    },
+    'html': {
+        bsIcon: 'filetype-html'
+    },
+    'csv':{
+        bsIcon: 'filetype-csv'
+    },
+    'xls': {
+        bsIcon: 'filetype-xls'
+    },
+    'xlsx': {
+        bsIcon: 'filetype-xlsx'
+    },
+    'pdf': {
+        bsIcon: 'filetype-pdf'
+    },
+    'ppt': {
+        bsIcon: 'filetype-ppt'
+    },
+    'txt': {
+        bsIcon: 'filetype-txt'
+    }
+}

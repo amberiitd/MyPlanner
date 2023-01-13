@@ -59,7 +59,7 @@ const WebLink: FC<WebLinkProps> = (props) => {
                         label='Create'
                         hideLabel={true}
                         rightBsIcon='plus-lg'
-                        extraClasses='btn-as-light p-1 ps-2'
+                        extraClasses='btn-as-bg p-1 ps-2'
                         handleClick={()=>{ 
                             if (props.onToggle) {
                                 props.onToggle(true);

@@ -8,7 +8,7 @@ import Badge from '../../../../../components/Badge/Badge';
 import DropdownAction from '../../../../../components/DropdownAction/DropdownAction';
 import NumberBadge from '../../../../../components/NumberBadge/NumberBadge';
 import { useQuery } from '../../../../../hooks/useQuery';
-import { CrudPayload, EMPTY_PROJECT } from '../../../../../model/types';
+import { CrudPayload, EMPTY_PROJECT, IssueAttachment } from '../../../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
 import { BacklogContext } from '../Backlog';
@@ -32,6 +32,7 @@ export interface Issue{
     parentIssueId?: string;
     linkedIssues?: {[key: string]: string[]};
     webLinks?: {href: string; label: string}[];
+    attachments?: IssueAttachment[];
 }
 
 interface IssueRibbonProps{

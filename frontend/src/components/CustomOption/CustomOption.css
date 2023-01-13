@@ -1,7 +1,7 @@
-.bg-smoke{
+.bg-smoke-hover{
 }
 
-.bg-smoke:hover{
+.bg-smoke-hover:hover{
     background-color: whitesmoke;
 }
 .custom-padding{

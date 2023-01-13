@@ -13,7 +13,7 @@ interface SelectOptionProps{
 
 const SelectOption: FC<SelectOptionProps> = (props)=> {
     return (
-        <div className={`custom-padding bg-smoke cursor-pointer d-flex flex-nowrap ${props.extraClasses}`}>
+        <div className={`custom-padding bg-smoke-hover cursor-pointer d-flex flex-nowrap ${props.extraClasses}`}>
             <div className='ms-1 me-2'>
                 <input 
                     className="form-check-input cursor-pointer" 

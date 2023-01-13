@@ -22,6 +22,7 @@ import Button from '../../../../../components/Button/Button';
 import ButtonActionGroup from '../../../../../components/ButtonActionGroup/ButtonActionGroup';
 import LinkedIssue from '../LinkedIssue/LinkedIssue';
 import WebLink from '../WebLink/WebLink';
+import Attachment from '../Attachment/Attachment';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
@@ -41,6 +42,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const [addChild, setAddChild] = useState(false);
     const [linkIssue, setLinkIssue] = useState(false);
     const [webLink, setWebLink] = useState(false);
+    const [attach, setAttach] = useState(false);
     const linkedIssueCount = useMemo(() =>{
         return Object.values(openIssue?.linkedIssues || {}).reduce((pre, cur) => pre+ cur.length, 0);
     }, [openIssue])
@@ -100,7 +102,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                             label='Attach'
                             leftBsIcon='paperclip'
                             extraClasses='bg-as-light px-1'
-                            handleClick={()=>{}}
+                            handleClick={()=>{setAttach(true)}}
                             dynamicLabel
                         />
                     </div>
@@ -160,6 +162,12 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                                     dispatch(updateIssue({id: props.issue?.id || '', data: {description: value}}))
                                 })
                             }}
+                        />
+                    </div>
+                    <div className='mb-5'>
+                        <Attachment 
+                            active={attach}
+                            onToggle={setAttach}
                         />
                     </div>
 

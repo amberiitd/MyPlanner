@@ -106,7 +106,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
                             className='h-100 d-flex flex-nowrap font-thm'
                             // onDrag={(sizes) => {setWindowSizes(sizes)}}
                         >
-                            <div className='overflow-auto' style={{minWidth: '400px'}}>
+                            <div className='overflow-auto pe-3' style={{minWidth: '400px'}}>
                                 {<IssueMainView onRefresh={onRefresh} issue={openIssue}/>}
                             </div>
                             <div className='ps-3 overflow-auto' style={{minWidth: '300px'}}>

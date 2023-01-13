@@ -21,11 +21,13 @@ export interface ColDef{
         to?: string;
         hrefGetter?: (key: string) => string;
         handleClick?: (e: any) => void;
-    }
+    },
+    extraClasses?: string;
+    className?: string;
 }
 
 export interface RowAction{
-    items: SimpleAction[];
+    items: (SimpleAction & {buttonClasses?: string; bsIcon?: string; hideLabel?: boolean})[];
     layout?: 'button' | 'dropdown';
     handleAction: (rowdata: any, event: any) => void;
 }
@@ -33,7 +35,8 @@ export interface RowAction{
 interface TableProps{
     colDef?: ColDef[];
     data: any[];
-    actions?: RowAction
+    actions?: RowAction;
+    rowClickable?: boolean;
 }
 
 const Table: FC<TableProps> = (props) => {
@@ -98,13 +101,13 @@ const Table: FC<TableProps> = (props) => {
     }, [props.data])
     return (
         <div>
-            <table className='table table-hover'>
+            <table className='table'>
                 <thead>
                     <tr>
                         {
                             (props.colDef || defaultColDef).map((col, index) => (
                                 <th className={`col-header ${col.sortable? 'col-header-hover': ''}`} key={`header-${index}`} scope="col">
-                                    <div className='d-flex flex-nowrap'>
+                                    <div className='d-flex flex-nowrap align-items-center '>
                                         <div>
                                             {col.hideLabel? '': col.label}
                                         </div>
@@ -129,10 +132,19 @@ const Table: FC<TableProps> = (props) => {
                 <tbody>
                     {
                         props.data.map((rowdata, indexi)=>(
-                            <tr key={`row-data-${indexi}`}>
+                            <tr key={`row-data-${indexi}`} 
+                                className={`bg-smoke-hover ${props.rowClickable ? 'cursor-pointer': ''}`}
+                                onClick={()=>{
+                                    if (props.rowClickable && props.actions){
+                                        props.actions.handleAction(rowdata, {value: 'row-click'});
+                                    }
+                                }}
+                            >
                                 {
                                     (props.colDef || defaultColDef).map((col, indexj) => (
-                                        <td key={`cell-data-${indexi}${indexj}`}>
+                                        <td key={`cell-data-${indexi}${indexj}`}
+                                            className={col.className?? (col.extraClasses?? '')}
+                                        >
                                             {innerCellRender(rowdata, col)}
                                         </td>
                                     ))
@@ -143,10 +155,12 @@ const Table: FC<TableProps> = (props) => {
                                             <div className='d-flex '>
                                                 {
                                                     props.actions?.items.map((action, indexb)=> (
-                                                        <div className='me-1' key={`action-button-${indexi}${indexb}`}>
+                                                        <div className='me-1' key={`action-button-${indexi}${indexb}`} style={{zIndex: 100}}>
                                                             <Button
                                                                 label={action.label}
-                                                                extraClasses='btn-as-bg shadow-sm px-2 py-1'
+                                                                hideLabel={action.hideLabel}
+                                                                extraClasses={action.buttonClasses??`btn-as-bg shadow-sm p-1 px-2`}
+                                                                leftBsIcon={action.bsIcon}
                                                                 handleClick={()=> {props.actions?.handleAction(rowdata, action)}}
                                                             />
                                                         </div>
@@ -155,7 +169,7 @@ const Table: FC<TableProps> = (props) => {
                                                 }
                                             </div>
                                         ):(
-                                            <div className='action-dropdown'>
+                                            <div className='action-dropdown' style={{zIndex: 1000}}>
                                                 <DropdownAction 
                                                     actionCategory={[
                                                         {

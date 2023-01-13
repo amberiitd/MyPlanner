@@ -42,11 +42,9 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
                         label='Create'
                         hideLabel={true}
                         rightBsIcon='plus-lg'
-                        extraClasses='btn-as-light p-1 ps-2'
-                        handleClick={()=>{ setCreator(()=> {
-                                if (props.onToggle) props.onToggle(true);
-                                return true
-                            }); 
+                        extraClasses='btn-as-bg p-1 ps-2'
+                        handleClick={()=>{ 
+                            if (props.onToggle) props.onToggle(true);
                         }}
                     />
                 </div>
@@ -67,10 +65,7 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
                 <div className='mt-2'>
                     <ChildIssueCreator 
                         onCancel={() => {
-                            setCreator(() =>{
-                                if (props.onToggle) props.onToggle(false);
-                                return false
-                            }); 
+                            if (props.onToggle) props.onToggle(false);
                         }}
                     />
                 </div>

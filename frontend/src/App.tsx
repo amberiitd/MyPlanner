@@ -19,10 +19,11 @@ import { store } from './app/store';
 
 const awsConfig = {
     Auth: {
+      region: 'ap-south-1',
+    //   authenticationFlowType: 'CUSTOM_AUTH',
       userPoolId: process.env.REACT_APP_USER_POOL_ID,
       userPoolWebClientId: process.env.REACT_APP_USER_POOL_CLIENT_ID,
       identityPoolId: process.env.REACT_APP_IDENTITY_POOL_ID,
-      region: 'ap-south-1',
     },
     API: {
       endpoints: [
@@ -33,6 +34,12 @@ const awsConfig = {
         }
       ],
     },
+    Storage: {
+        AWSS3: {
+            bucket: 'myplanner-test', //REQUIRED -  Amazon S3 bucket name
+            region: 'ap-south-1', //OPTIONAL -  Amazon service region,
+        }
+    }
 };
   
 Amplify.configure(awsConfig);

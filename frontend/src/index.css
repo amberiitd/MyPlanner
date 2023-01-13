@@ -21,6 +21,9 @@ code {
 .f-85{
     font-size: 85%;
 }
+.fw-645{
+    font-weight: 645;
+}
 
 .hover-underline:hover{
     text-decoration: underline;
