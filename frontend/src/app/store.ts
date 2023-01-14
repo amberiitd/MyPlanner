@@ -1,5 +1,6 @@
 
 import { configureStore } from '@reduxjs/toolkit'
+import { globalStateReducer } from './slices/globalStateSlice';
 import { issueReducer } from './slices/issueSlice';
 import { projectReducer } from './slices/projectSlice'
 import { sprintReducers } from './slices/sprintSlice';
@@ -12,7 +13,8 @@ export const store = configureStore({
         sprints: sprintReducers,
         issues: issueReducer,
         userPrefs: userPrefReducers,
-        users: userReducers
+        users: userReducers,
+        globalState: globalStateReducer
     }
 })
 
