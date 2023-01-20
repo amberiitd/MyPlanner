@@ -1,7 +1,7 @@
 import { CompositeDecorator } from 'draft-js';
 import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 import { uniqueId } from 'lodash';
-import { FC, useContext, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SimpleAction } from '../../../../model/types';
 import Button from '../../../Button/Button';
 import DropdownAction from '../../../DropdownAction/DropdownAction';
@@ -23,6 +23,7 @@ const Entities: FC<EntitiesProps> = (props) => {
     const textContainerWidth = useContext(TextEditorContext).containerWidth;
     const [emojiDropdown, setEmojiDropdown] = useState(false);
     const emojiRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const insertList: Insert[] =[
         {
             label: 'Link',
@@ -51,7 +52,7 @@ const Entities: FC<EntitiesProps> = (props) => {
 
     useEffect(() => {
         const handleClick = (e: any)=>{
-            if (emojiRef.current && emojiRef.current.contains(e.target)){
+            if (emojiRef.current?.contains(e.target) || dropdownRef.current?.contains(e.target)){
 
             }else if (e.target.parentNode?.id !== 'editor-emoji-toggler'){
                 setEmojiDropdown(false);
@@ -61,7 +62,7 @@ const Entities: FC<EntitiesProps> = (props) => {
         return () => { window.removeEventListener('click', handleClick)};
     }, [])
 
-    const interceptInsert = (insert: Insert) => {
+    const interceptInsert = useCallback((insert: Insert) => {
         switch(insert.value){
             case 'link':
                 props.onSelect(insert);
@@ -72,9 +73,9 @@ const Entities: FC<EntitiesProps> = (props) => {
             default:
                 break
         }
-    }
+    }, [props])
 
-    const onInsertEmoji = (emoji: EmojiClickData) => {
+    const onInsertEmoji = useCallback((emoji: EmojiClickData) => {
         const entity = {
             type: 'EMOJI',
             mutability: 'IMMUTABLE',
@@ -85,7 +86,7 @@ const Entities: FC<EntitiesProps> = (props) => {
             }
         }
         props.onEmojiInput(entity);
-    }
+    }, [props])
 
     return (
         <div className='dropdown dropend d-flex flex-nowrap'>
@@ -99,26 +100,28 @@ const Entities: FC<EntitiesProps> = (props) => {
                             handleClick={() =>{interceptInsert(insert)}}
                             disabled={(insert.value === 'link' && props.linkPopup)}
                             tooltip={insert.label}
-                            extraClasses={`ps-2 py-1 ${"btn-as-bg"}`}
+                            extraClasses={`p-1 px-2 ${"btn-as-bg"}`}
                         />
                     </div>
                 ))
             }
-            <div className='ms-1 me-2' unselectable="on" title={'Inserts'}>
+            <div ref={dropdownRef} className='ms-1 me-2' unselectable="on" title={'Inserts'}>
                 <DropdownAction 
                     actionCategory={[{
                         label: 'Inserts',
                         value: 'inserts',
                         items: insertList.slice(offset)
                     }]} 
-                    
+                    bsIcon='three-dots'
+                    buttonClass='btn-as-bg p-1 ps-2'
                     handleItemClick={(event) => {interceptInsert(event.item as Insert)}}
+                    onToggle={(value: boolean) => {if (value) setEmojiDropdown(false)}}
                 />
             </div>
                 
             {
                 emojiDropdown &&
-                <div ref={emojiRef} className={`position-absolute rounded-3 p-0 end-0 top-100 show`}>
+                <div ref={emojiRef} className={`dropdown-menu position-absolute rounded-3 p-0 end-0 top-100 show`}>
                     <EmojiPicker 
                         onEmojiClick={onInsertEmoji}
                     />

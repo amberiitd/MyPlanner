@@ -39,14 +39,14 @@ const TextColors: FC<TextColorsProps> = (props) => {
                     hideLabel={true}
                     leftBsIcon={'type'}
                     rightBsIcon={'caret-down'}
-                    extraClasses={'btn-as-light p-1 ps-2'}
+                    extraClasses={`${showMenu? 'btn-as-light': 'btn-as-bg'} p-1 ps-2`}
                     handleClick={()=>{}}
                     tooltip={'Text Color'}
                 />
                 <div style={{height: '2px', backgroundColor: props.selectedColor.value}}></div>
             </div>
             <div className={`dropdown-menu bg-light ${showMenu? 'show': ''} shadow-sm`} style={{left: 0}}>
-                <div className='d-flex px-3'>
+                <div className='d-flex px-2'>
                     {
                         props.textColorList.map(color => (
                             <div className='rounded-3 border me-1 text-center cursor-pointer ' 

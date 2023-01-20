@@ -36,14 +36,14 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
             
             {
                 props.formatList.slice(0, offset).map(format => (
-                    <div className='ms-1' key={uniqueId()}>
+                    <div className='' key={uniqueId()}>
                         <Button 
                             label={format.label} 
                             hideLabel={true}
                             leftBsIcon={format.bsIcon}
                             handleClick={() =>{props.onToggle(format)}}
                             tooltip={format.label}
-                            extraClasses={`ps-2 py-1 ${props.currentStyles.includes(format.style)? "btn-as-thm":"btn-as-bg"}`}
+                            extraClasses={`p-1 px-2 ${props.currentStyles.includes(format.style)? "btn-as-thm":"btn-as-bg"}`}
                         />
                         {/* <button type="button" id="paste" value="" unselectable="on" onClick={() =>{props.onChange(format)}}> Paste HTML</button> */}
                     </div>
@@ -58,7 +58,8 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                         items: props.formatList.slice(offset),
                         selectedItems: props.formatList.slice(offset).filter(item => props.currentStyles.includes(item.style))
                     }]} 
-                    buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm  p-1 ps-2': undefined}
+                    buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm p-1 ps-2': 'btn-as-bg p-1 ps-2'}
+                    bsIcon='three-dots'
                     handleItemClick={(event) => {props.onToggle(event.item as Format)}}
                 />
             </div>

@@ -13,6 +13,7 @@ interface DropdownActionProps{
     buttonClass?: string;
     extraClasses?: string;
     dropdownClass?: string;
+    onToggle?: (value: boolean) => void;
 }
 
 const DropdownAction: FC<DropdownActionProps> = (props) => {
@@ -23,9 +24,12 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
             return;
         }
         if (toggleRef.current && toggleRef.current.contains(event.target)){
-            setShowMenu(!showMenu);
+            const toggle = !showMenu;
+            setShowMenu(toggle);
+            if (props.onToggle) props.onToggle(toggle);
         }else{
             setShowMenu(false);
+            if (props.onToggle) props.onToggle(false);
         }
     }, [props, toggleRef, showMenu]);
     

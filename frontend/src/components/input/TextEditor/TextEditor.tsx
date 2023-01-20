@@ -1,5 +1,5 @@
 import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw } from 'draft-js';
-import React, { createContext, FC, useCallback, useEffect, useRef, useState } from 'react';
+import React, { createContext, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SimpleAction } from '../../../model/types';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import './TextEditor.css';
@@ -26,18 +26,136 @@ export interface BlockType extends SimpleAction {
     category: 'text' | 'list';
 }
 
+
+const formatList: Format[] = [
+    {
+        label: 'Bold',
+        value: 'bold',
+        style: 'BOLD',
+        bsIcon: 'type-bold'
+    },
+    {
+        label: 'Italic',
+        value: 'italic',
+        style: 'ITALIC',
+        bsIcon: 'type-italic'
+    },
+    {
+        label: 'Underline',
+        value: 'underline',
+        style: 'UNDERLINE',
+        bsIcon: 'type-underline'
+    },
+    {
+        label: 'Strikethrough',
+        value: 'strikethrough',
+        style: 'STRIKETHROUGH',
+        bsIcon: 'type-strikethrough'
+    },
+    {
+        label: 'code',
+        value: 'code',
+        style: 'CODE',
+        bsIcon: 'type-code'
+    },
+    {
+        label: 'Subscript',
+        value: 'subscript',
+        style: 'SUBSCRIPT',
+        bsIcon: 'type-subscript'
+    },
+    {
+        label: 'Superscript',
+        value: 'superscript',
+        style: 'SUPERSCRIPT',
+        bsIcon: 'type-superscript'
+    },
+];
+
+const textblockStyles: BlockType[] = [
+    {
+        label: 'Normal',
+        value: 'unstyle',
+        category: 'text'
+    },
+    {
+        label: 'Header 1',
+        value: 'header-one',
+        category: 'text'
+    },
+    {
+        label: 'Header 2',
+        value: 'header-two',
+        category: 'text'
+    }
+];
+
+const textColorStyles: TextColor[] = [
+    {
+        label: 'Normal',
+        value: 'black',
+        style: 'TEXT_NORMAL'
+    },
+    {
+        label: 'Red',
+        value: 'red',
+        style: 'TEXT_RED'
+    },
+    {
+        label: 'Orange',
+        value: 'orange',
+        style: 'TEXT_ORANGE'
+    }
+];
+
+const listStyles: ListStyle[] = [
+    {
+        label: 'Bulleted list',
+        value: 'unordered-list-item',
+        rightBsIcon: 'list-ul',
+        category: 'list'
+    },
+    {
+        label: 'Numbered list',
+        value: 'ordered-list-item',
+        rightBsIcon: 'list-ol',
+        category: 'list'
+    }
+];
+
+const textColorMap = {
+    'TEXT_RED': {
+        color: 'red'
+    },
+    'TEXT_ORANGE': {
+        color: 'orange'
+    }
+}
+
+export type LinkPopupOptions = {mode: 'edit' | 'create'; entityKey?: string, url?: string; label?: string; disableLabelEdit?: boolean;};
+type LinkPopup = {show: boolean; options?: LinkPopupOptions;};
+
 export const TextEditorContext = createContext<{
     containerWidth: number | undefined;
-}>({containerWidth: undefined});
+    linkPopup: LinkPopup;
+    setLinkPopup: React.Dispatch<React.SetStateAction<LinkPopup>>;
+    handleLinkEntity: (entity: any) => void;
+}>({
+    containerWidth: undefined,
+    linkPopup: {show: false},
+    setLinkPopup: ()=>{},
+    handleLinkEntity: () =>{}
+});
 
 const TextEditor: FC<TextEditorProps> = (props) => {
     const observer = useRef<any>();
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState(!!props.open);
     const linkPopupRef = useRef<HTMLDivElement>(null);
+    const entityRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number | undefined>();
-    const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0]});
-    const [linkPopup, setLinkPopup] = useState({show: false, position: [0, 0]});
+    const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0], searchText: ''});
+    const [linkPopup, setLinkPopup] = useState<LinkPopup>({show: false});
     const [lastSelection, setLastSelection] = useState<Selection | null>();
 
     const decorator = new CompositeDecorator([
@@ -81,14 +199,14 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
     useEffect(() => {
         const handleClick = (e: any)=>{
-            if (linkPopupRef.current && linkPopupRef.current.contains(e.target)){
+            if (linkPopupRef.current && (linkPopupRef.current.contains(e.target) || entityRef.current?.contains(e.target))){
 
             }
             else if (e.target.parentNode?.id === 'editor-link-toggler'){
                 // setLinkPopup({show: !linkPopup.show, position: [0, 0]})
             }
             else{
-                setLinkPopup({show: false, position: [0, 0]})
+                setLinkPopup({show: false})
             }
         };
 
@@ -98,113 +216,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         }
     }, [])
 
-    const formatList: Format[] = [
-        {
-            label: 'Bold',
-            value: 'bold',
-            style: 'BOLD',
-            bsIcon: 'type-bold'
-        },
-        {
-            label: 'Italic',
-            value: 'italic',
-            style: 'ITALIC',
-            bsIcon: 'type-italic'
-        },
-        {
-            label: 'Underline',
-            value: 'underline',
-            style: 'UNDERLINE',
-            bsIcon: 'type-underline'
-        },
-        {
-            label: 'Strikethrough',
-            value: 'strikethrough',
-            style: 'STRIKETHROUGH',
-            bsIcon: 'type-strikethrough'
-        },
-        {
-            label: 'code',
-            value: 'code',
-            style: 'CODE',
-            bsIcon: 'type-code'
-        },
-        {
-            label: 'Subscript',
-            value: 'subscript',
-            style: 'SUBSCRIPT',
-            bsIcon: 'type-subscript'
-        },
-        {
-            label: 'Superscript',
-            value: 'superscript',
-            style: 'SUPERSCRIPT',
-            bsIcon: 'type-superscript'
-        },
-    ];
-
-    const textblockStyles: BlockType[] = [
-        {
-            label: 'Normal',
-            value: 'unstyle',
-            category: 'text'
-        },
-        {
-            label: 'Header 1',
-            value: 'header-one',
-            category: 'text'
-        },
-        {
-            label: 'Header 2',
-            value: 'header-two',
-            category: 'text'
-        }
-    ];
-
-    const textColorStyles: TextColor[] = [
-        {
-            label: 'Normal',
-            value: 'black',
-            style: 'TEXT_NORMAL'
-        },
-        {
-            label: 'Red',
-            value: 'red',
-            style: 'TEXT_RED'
-        },
-        {
-            label: 'Orange',
-            value: 'orange',
-            style: 'TEXT_ORANGE'
-        }
-    ];
-
-    const listStyles: ListStyle[] = [
-        {
-            label: 'Bulleted list',
-            value: 'unordered-list-item',
-            rightBsIcon: 'list-ul',
-            category: 'list'
-        },
-        {
-            label: 'Numbered list',
-            value: 'ordered-list-item',
-            rightBsIcon: 'list-ol',
-            category: 'list'
-        }
-    ];
-
-    // const blockRenderMap = Immutable.Map({
-    //     'header-one': {
-    //         element: 'h1'
-    //     },
-    //     'header-two': {
-    //         element: 'h2'
-    //     },
-    //     'unstyled': {
-    //         element: 'p'
-    //     }
-    // });
     const contentRef = useRef<Editor>(null);
 
     const handleFormatToggle = useCallback((format: Format) => {
@@ -231,7 +242,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     }, [editorState]);
 
     const getPopupPosition =  useCallback(() => {
-        containerRef.current?.focus();
         var position = [0, 0];
         const selRect = lastSelection?.rangeCount &&  lastSelection?.rangeCount > 0 ? lastSelection?.getRangeAt(0).getBoundingClientRect(): undefined;
         const editorRect =  containerRef.current?.getBoundingClientRect();
@@ -243,69 +253,126 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         }else if (editorRect){
             position = [editorRect.bottom - 50, editorRect.left+ 100]
         }
-        containerRef.current?.focus();
         return position;
     }, [containerRef, lastSelection]);
+
+    const popupPosition = useMemo(() => getPopupPosition(), [linkPopup]);
 
     const handleEntityToggle = useCallback((insert: Insert)=>{
         switch(insert.value){
             case 'link':
-                setLinkPopup({show: true, position: getPopupPosition()});
+                setLinkPopup({show: true});
                 break;
         }
     }, [editorState])
 
     // TO DO: use draft-js-plugin/mention instead 
+
+    const removeEntity = useCallback((entity: any) =>{
+        const sel = editorState.getSelection();
+        let newContent = editorState.getCurrentContent();
+
+        if (entity.entityKey){
+            const contentBlock = newContent.getBlockForKey(sel.getAnchorKey());
+            contentBlock.findEntityRanges(
+                (character) => {
+                    return entity.entityKey === character.getEntity();
+                },
+                (start: number, end: number) => {
+                    const oldLabelSel = sel.merge({
+                        anchorOffset: start,
+                        focusOffset: end
+                    })
+                    newContent = Modifier.applyEntity(newContent, oldLabelSel,  null);
+                    newContent = Modifier.replaceText(newContent, oldLabelSel, '', undefined, undefined);
+                    // console.log(newContent.getEntity(entity.entityKey));
+                }
+            );
+        }
+
+        return newContent;
+    }, [editorState])
+
     const handleMentionEntity = useCallback((entity: any) => {
         if (!entity){
-            setMentionPopup({show: false, position: [0, 0]})
+            setMentionPopup({show: false, position: [0, 0], searchText: ''})
             return;
         }
         const contentState = editorState.getCurrentContent();
         const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
         const sel = editorState.getSelection();
-        // const contentStateWithLink = Modifier.applyEntity(
-        //     contentStateWithEntity,
-        //     editorState.getSelection(),
-        //     entityKey,
-        // );
+
         const blockText = contentState.getBlockForKey(sel.getStartKey()).getText();
         const beforeSelectionText = blockText.slice(0, sel.getStartOffset()) ;
         const words = beforeSelectionText.split(" ");
-        const lastWord = words[words.length-1]
+        const lastWord = words[words.length-1];
+
         let newSelection = sel.merge({
             anchorOffset: sel.getStartOffset() -lastWord.length,
             focusOffset: sel.getStartOffset()
         });
-
-        let newContent = Modifier.replaceText(contentState, newSelection, entity.data.label, undefined, entityKey);
+        let newContent = Modifier.replaceText(contentStateWithEntity, newSelection, entity.data.label, undefined, entityKey);
         let newState = EditorState.push(editorState, newContent, 'insert-characters');
+        setEditorState(newState);
 
-        newSelection = newState.getSelection();
-        newContent = Modifier.insertText(newState.getCurrentContent(), newSelection, " ");
- 
-        // const newEditorState = EditorState.set(editorState, {
-        //     currentContent: contentStateWithLink,
-        // });
+        // newSelection = newState.getSelection();
+        newContent = Modifier.insertText(newContent, newState.getSelection(), " ");
         setEditorState(EditorState.push(newState, newContent, 'insert-characters'));
-        setMentionPopup({show: false, position: [0, 0]})
+
+        setMentionPopup({show: false, position: [0, 0], searchText: ''})
     }, [editorState])
 
     const handleLinkEntity = useCallback((entity: any) => {
         if (!entity){
-            setLinkPopup({show: false, position: [0, 0]})
+            setLinkPopup({show: false})
             return;
         }
-        const contentState = editorState.getCurrentContent();
-        const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
-        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-        const sel = editorState.getSelection();
+        let contentState = editorState.getCurrentContent();
+        let sel = editorState.getSelection();
+        let newContent: ContentState;
+        let newState = editorState;
 
-        let newContent = Modifier.insertText(contentState, sel, entity.data.label || entity.data.url, undefined, entityKey);
-        setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
-        setLinkPopup({show: false, position: [0, 0]})
-    }, [editorState])
+        if (entity.mode === 'edit' && entity.entityKey){
+            newContent = contentState.mergeEntityData(entity.entityKey, {
+                ...entity.data
+            });
+
+            const contentBlock = contentState.getBlockForKey(sel.getAnchorKey());
+            contentBlock.findEntityRanges(
+                (character) => {
+                    return entity.entityKey === character.getEntity();
+                },
+                (start: number, end: number) => {
+                    const oldLabelSel = sel.merge({
+                        anchorOffset: start,
+                        focusOffset: end
+                    })
+                    newContent = Modifier.replaceText(newContent, oldLabelSel, entity.data.label || entity.data.url, undefined, entity.entityKey);
+                }
+            );
+        }
+        else if (entity.mode === 'delete' && entity.entityKey){
+            newContent = removeEntity(entity);
+        }
+        else{
+            const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
+            const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+            newContent = Modifier.insertText(contentState, sel, entity.data.label || entity.data.url, undefined, entityKey);
+            newState = EditorState.push(editorState, newContent, 'insert-characters');
+    
+            sel = newState.getSelection();
+            newContent = Modifier.insertText(newState.getCurrentContent(), sel, " ");
+        }
+        newState = EditorState.push(newState, newContent, 'insert-characters');
+        sel = newState.getSelection();
+
+        setLinkPopup({show: false});
+
+        setTimeout(()=>{
+            setEditorState(EditorState.forceSelection(newState, sel));
+        }, 200);
+    }, [editorState, contentRef])
 
     const handleEmojiEntity = useCallback((entity: any) => {
         if (!entity){
@@ -320,41 +387,24 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
     }, [editorState])
 
-    const textColorMap = {
-        'TEXT_RED': {
-            color: 'red'
-        },
-        'TEXT_ORANGE': {
-            color: 'orange'
-        }
-    }
-
-    // const myBlockStyleFn= (contentBlock: ContentBlock) => {
-    //     const type = contentBlock.getType();
-    //     if (type === 'blockquote') {
-    //         return 'superFancyBlockquote';
-    //     }
-    //     editorState.
-    // }
-
-    useEffect(() => {
-        const sel = editorState.getSelection();
+    const handleNewState = useCallback((newState: EditorState) =>{
+        const sel = newState.getSelection();
         if (window.getSelection()){
             setLastSelection(window.getSelection());
         }
         // inline text format
-        setCurrentStyles(editorState.getCurrentInlineStyle().toArray());
+        setCurrentStyles(newState.getCurrentInlineStyle().toArray());
 
         // block list styling
-        const blockType = editorState.getCurrentContent().getBlockForKey(sel.getAnchorKey()).getType();
+        const blockType = newState.getCurrentContent().getBlockForKey(sel.getAnchorKey()).getType();
         setCurrentBlockType(textblockStyles.find(item => item.value == blockType) || listStyles.find(item => item.value == blockType));
 
         // inline color styling
-        const textColor = editorState.getCurrentInlineStyle().toArray().find(color => color.startsWith('TEXT_'));
+        const textColor = newState.getCurrentInlineStyle().toArray().find(color => color.startsWith('TEXT_'));
         setCurrentTextColor(textColorStyles.find(color => color.style === textColor));
 
         // handle @mention popup
-        const blockText = editorState.getCurrentContent().getBlockForKey(sel.getStartKey()).getText()
+        const blockText = newState.getCurrentContent().getBlockForKey(sel.getStartKey()).getText()
         const beforeSelectionText = blockText.slice(0, sel.getStartOffset()) ;
         const words = beforeSelectionText.split(" ");
         const lastWord = words[words.length-1]
@@ -364,29 +414,29 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             && lastWord.startsWith('@')
             && (isEmpty(afterSelectionChar) || afterSelectionChar == " ")
         ){
-            if (!mentionPopup.show){
-                
-                setMentionPopup({show: true, position: getPopupPosition()});
-            }
+            setMentionPopup({show: true, position: getPopupPosition(), searchText: lastWord.slice(1, lastWord.length-1)});
         }
         else {
-            setMentionPopup({show: false, position: [0, 0]});
+            setMentionPopup({show: false, position: [0, 0], searchText: ''});
         }
-        
+    }, [])
+
+    useEffect(() => {
+        handleNewState(editorState);
     }, [editorState])
     
     return (
-        <TextEditorContext.Provider value={{containerWidth}}>
+        <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity}}>
             <div>
                { 
                     !active &&
                     <div className={`${props.bannerClassName?? 'rounded border text-muted p-2 bg-light'}`}
                         onClick={()=>{
-                            setActive(()=>{
-                                (props.onToggle||(()=>{}))(true);
-                                return true;
-                            });
-                            containerRef.current?.focus();
+                            setActive(true);
+                            (props.onToggle||(()=>{}))(true);
+                            // containerRef.current?.focus();
+                            // contentRef.current?.focus();
+                            setEditorState(EditorState.moveFocusToEnd(editorState));
                         }}
                     >
                         {/* <input className='p-2 w-100' type='text' disabled={true} placeholder={props.placeholder??'Help others understand about this isse.'}/> */}
@@ -402,8 +452,8 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                     </div>
                 }
                 {
-                    active &&
-                    <div ref={onContainerObserve}>
+                    // active &&
+                    <div ref={onContainerObserve} hidden={!active}>
                         <div ref={containerRef} className='border rounded'>
                             <div className='p-2 border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
                                 <div className='border-end' title='Text Styles'>
@@ -420,6 +470,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         buttonText={(currentBlockType && currentBlockType.category === 'text') ? currentBlockType.label: 'Normal'}
                                         extraClasses='toggle-md mx-2'
                                         dropdownClass='start-0'
+                                        buttonClass='p-1'
                                         disabled={currentBlockType?.category === 'list'}
                                         handleItemClick={(event)=> handleBlockToggle(event.item as BlockType)} 
                                     />
@@ -445,7 +496,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         onChange={handleBlockToggle}
                                     />
                                 </div>
-                                <div className='border-end'>
+                                <div ref={entityRef} className='border-end'>
                                     <Entities 
                                         linkPopup={linkPopup.show} 
                                         onSelect={handleEntityToggle} 
@@ -453,14 +504,12 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                     />
                                 </div>
                             </div>
-                            <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus()}}>
+                            <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus();}}>
                                 <Editor
                                     ref={contentRef}
                                     editorState={editorState}
                                     onChange={(newState)=>{
-                                        setEditorState(()=>{
-                                            return newState;
-                                        })
+                                        setEditorState(newState);
                                     }}
                                     customStyleMap={{...textColorMap}}
                                     placeholder={'Write a description for for this issue...'}
@@ -474,6 +523,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                 >
                                         <Mention 
                                             onSelect={handleMentionEntity}
+                                            searchText={mentionPopup.searchText}
                                         />
                                 </div>
                             }
@@ -482,10 +532,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                 <div
                                     ref={linkPopupRef}
                                     className='position-absolute' 
-                                    style={{top: linkPopup.position[0], left: linkPopup.position[1], zIndex: 100}}
+                                    style={{top: popupPosition[0], left: popupPosition[1], zIndex: 100}}
                                 >
                                     <Link 
                                         onInput={handleLinkEntity}
+                                        options={linkPopup.options}
                                     />
                                 </div>
                             }
@@ -499,11 +550,9 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         extraClasses="btn-as-thm p-1 px-2"
                                         handleClick={()=>{
                                             (props.onSave || (()=>{}))(JSON.stringify(convertToRaw(editorState.getCurrentContent())));
-                                            setActive(()=>{
-                                                (props.onToggle||(()=>{}))(false);
-                                                return false;
-                                            });
-                                            setEditorState(EditorState.createEmpty(decorator));
+                                            setActive(false);
+                                            (props.onToggle||(()=>{}))(false);
+                                            // setEditorState(EditorState.createEmpty(decorator));
                                             // EditorState.create
                                         }}
                                     />
@@ -516,10 +565,8 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         label={'Cancel'} 
                                         extraClasses="btn-as-light p-1 px-2"
                                         handleClick={()=>{
-                                            setActive(()=>{
-                                                (props.onToggle||(()=>{}))(false);
-                                                return false;
-                                            });
+                                            setActive(false);
+                                            (props.onToggle||(()=>{}))(false);
                                         }}
                                     />
                                 </div>
@@ -535,9 +582,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
 const MentionSpan: FC<any> = (props)=>{
     const contentState: ContentState = props.contentState;
-    const entity = contentState.getEntity(props.entityKey)
+    const entity = contentState.getEntity(props.entityKey);
+    const entityData = entity.getData();
+    
     return (
-        <span {...entity.getData()} unselectable='on' className='rounded-pill bg-primary p-1 text-white'>
+        <span unselectable='on' className='bg-grey1 rounded-pill px-1'>
             {props.children}
         </span>
     )
@@ -547,11 +596,11 @@ function getInsertStrategy(type: 'MENTION' | 'LINK'){
     return (contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState) => {
         contentBlock.findEntityRanges(
             (character) => {
-            const entityKey = character.getEntity();
-            return (
-                entityKey !== null &&
-                contentState.getEntity(entityKey).getType() === type
-            );
+                const entityKey = character.getEntity();
+                return (
+                    entityKey !== null &&
+                    contentState.getEntity(entityKey).getType() === type
+                );
             },
             callback
         );
@@ -561,14 +610,19 @@ function getInsertStrategy(type: 'MENTION' | 'LINK'){
 function findMentionEntity(contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState){
     contentBlock.findEntityRanges(
         (character) => {
-        const entityKey = character.getEntity();
-        return (
-            entityKey !== null &&
-            contentState.getEntity(entityKey).getType() === "MENTION"
-        );
+            const entityKey = character.getEntity();
+            return (
+                entityKey !== null &&
+                contentState.getEntity(entityKey).getType() === "MENTION"
+            );
         },
         callback
     );
 }
+
+function removeEntity(entityKey: string, contentBlock: ContentBlock, contentState: ContentState){
+    
+}
+
 
 export default TextEditor;
