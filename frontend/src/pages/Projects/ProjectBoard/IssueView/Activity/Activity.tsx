@@ -120,7 +120,7 @@ const CommentSection: FC = () => {
                 element={(
                     <TextEditor 
                         open={newCommentEditor}
-                        value={newCommentValue}
+                        value={openIssue?.id ? {id: openIssue.id, state: newCommentValue}: undefined}
                         onToggle={(open: boolean)=> setNewCommentEditor(open)}
                         onSave={(value: string) => {
                             if (!openIssue) return;
@@ -185,7 +185,7 @@ const Comment: FC<{
                 <TextEditor 
                     open={commentOnEdit === props.comment.id}
                     bannerClassName='bg-light px-2'
-                    value={props.comment.description}
+                    value={props.comment.id ? {id: props.comment.id, state: props.comment.description} : undefined}
                     onToggle={(open: boolean)=> setCommentOnEdit(open? props.comment.id: undefined)}
                     onSave={(value: string)=> props.onEdit(props.currentIndex, value)}
                 />

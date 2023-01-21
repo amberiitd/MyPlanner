@@ -11,3 +11,23 @@
 .DraftEditor-root{
     position: relative;
 }
+
+.code-block{
+}
+
+.public-DraftStyleDefault-pre{
+    background-color: rgb(218, 218, 218);
+    padding: 1rem;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+}
+
+.info-block{
+    background-color: azure;
+    border-radius: 3px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin-top: 0.5rem;
+}

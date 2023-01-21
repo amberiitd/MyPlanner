@@ -19,16 +19,17 @@ interface IssueViewProps{
 }
 export const IssueViewContext = createContext<{
     openIssue: Issue | undefined;
-    descEditor: boolean;
-    setDescEditor: (open: boolean) => void;
+    descEditor: {open: boolean; value: string | undefined;};
+    setDescEditor: (data: {open: boolean; value: string | undefined;}) => void;
     newCommentEditor: boolean;
     setNewCommentEditor: (open: boolean) => void;
     commentOnEdit: string | undefined;
     setCommentOnEdit: (id: string | undefined) => void;
+
 }>({
     openIssue: undefined,
-    descEditor: false,
-    setDescEditor: (open: boolean) => {},
+    descEditor: {open: false, value: undefined},
+    setDescEditor: () => {},
     newCommentEditor: false,
     setNewCommentEditor: (open: boolean) => {},
     commentOnEdit: undefined,
@@ -36,7 +37,7 @@ export const IssueViewContext = createContext<{
 });
 
 const IssueView: FC<IssueViewProps> = (props) => {
-    const [descEditor, setDescEditor] = useState(false);
+    const [descEditor, setDescEditor] = useState<{open: boolean; value: string | undefined}>({open: false, value: undefined});
     const [newCommentEditor, setNewCommentEditor] = useState(false);
     const [commentOnEdit, setCommentOnEdit] = useState<string | undefined>('');
     const observer = useRef<any>();
@@ -85,6 +86,10 @@ const IssueView: FC<IssueViewProps> = (props) => {
         }
     }, [openProject]);
 
+    useEffect(()=>{
+        setDescEditor({...descEditor, value: undefined});
+    },[openIssue])
+
 
     return (
         <IssueViewContext.Provider value={{descEditor, setDescEditor, newCommentEditor, setNewCommentEditor, openIssue, commentOnEdit, setCommentOnEdit}}>
@@ -93,13 +98,13 @@ const IssueView: FC<IssueViewProps> = (props) => {
                     {   
                         viewType === 2 ?
                         <Split 
-                            sizes={[60, 40]}
+                            // sizes={[60, 40]}
                             // minSize={[300, 300]}
                             // maxSize={[Infinity, 600]}
                             expandToMin={false}
                             gutterSize={10}
                             gutterAlign="center"
-                            snapOffset={30}
+                            // snapOffset={30}
                             dragInterval={1}
                             direction="horizontal"
                             cursor="col-resize"
@@ -107,7 +112,7 @@ const IssueView: FC<IssueViewProps> = (props) => {
                             // onDrag={(sizes) => {setWindowSizes(sizes)}}
                         >
                             <div className='overflow-auto pe-3' style={{minWidth: '400px'}}>
-                                {<IssueMainView onRefresh={onRefresh} issue={openIssue}/>}
+                                {<IssueMainView key='issue-main-view' onRefresh={onRefresh} issue={openIssue}/>}
                             </div>
                             <div className='ps-3 overflow-auto' style={{minWidth: '300px'}}>
                                 <SideView issue={openIssue}/>
@@ -116,6 +121,30 @@ const IssueView: FC<IssueViewProps> = (props) => {
                         : 
                         <IssueMainView onRefresh={onRefresh} issue={openIssue}/>
                     }
+                    {/* {
+                        <Split 
+                        sizes={[60, 40]}
+                        // minSize={[300, 300]}
+                        // maxSize={[Infinity, 600]}
+                        expandToMin={false}
+                        gutterSize={10}
+                        gutterAlign="center"
+                        // snapOffset={30}
+                        dragInterval={1}
+                        direction="horizontal"
+                        cursor="col-resize"
+                        className='h-100 d-flex flex-nowrap font-thm'
+                        collapsed={viewType === 1? 1: undefined}
+                        // onDrag={(sizes) => {setWindowSizes(sizes)}}
+                    >
+                        <div className='overflow-auto pe-3 w-100' style={{minWidth: '400px'}}>
+                            {<IssueMainView key='issue-main-view' onRefresh={onRefresh} issue={openIssue}/>}
+                        </div>
+                        <div className='ps-3 overflow-auto' style={viewType === 2?{width: 0}: {}}>
+                            <SideView issue={openIssue}/>
+                        </div>
+                    </Split>
+                    } */}
                 </div>
             </div>
         </IssueViewContext.Provider>

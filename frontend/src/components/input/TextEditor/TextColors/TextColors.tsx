@@ -33,7 +33,7 @@ const TextColors: FC<TextColorsProps> = (props) => {
     
     return (
         <div className='dropdown'>
-            <div ref={toggleRef} className='mx-2'>
+            <div ref={toggleRef} className='mx-1'>
                 <Button 
                     label={'Text Color'}
                     hideLabel={true}

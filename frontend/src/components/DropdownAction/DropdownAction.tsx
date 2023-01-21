@@ -44,7 +44,7 @@ const DropdownAction: FC<DropdownActionProps> = (props) => {
                 <Button 
                     label={props.buttonText??'Create Menu'}
                     hideLabel={!props.buttonText}
-                    rightBsIcon={props.bsIcon??'three-dots-vertical'}
+                    leftBsIcon={props.bsIcon??'three-dots-vertical'}
                     extraClasses={`${props.buttonClass??'btn-as-light p-1 ps-2'} ${showMenu? 'btn-as-light': ''} `}
                     disabled={!!props.disabled}
                     handleClick={()=>{}}

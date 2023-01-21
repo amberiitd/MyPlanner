@@ -22,46 +22,51 @@ const ListStyles: FC<ListStylesProps> = (props) => {
 
     useEffect(() => {
         if (textContainerWidth && textContainerWidth > 450){
-            setOffset(2)
+            setOffset(3)
         }else{
             setOffset(0)
         }
     }, [textContainerWidth])
     return (
-        <div>
-            <div className='d-flex flex-nowrap mx-2'>
-                {
-                    offset > 0 &&
-                    props.styleList.map(item => (
-                        <Button 
-                            key={uniqueId()}
-                            label={item.label} 
-                            hideLabel={true}
-                            rightBsIcon={item.rightBsIcon}
-                            disabled={props.selectedStyle.category === 'text' && props.selectedStyle.value !== 'unstyle'}
-                            extraClasses={`${props.selectedStyle.value === item.value ? 'btn-as-thm':'btn-as-bg'} pe-1 ps-2 py-1 mx-1`}
-                            tooltip={item.label}
-                            handleClick={()=>{props.onChange(item)}}
-                        />
-                    ))
-                }
-                {
-                    offset < props.styleList.length && 
-                    <div title='Lists'>
-                        <DropdownAction 
-                            actionCategory={[{
-                                label: 'Lists',
-                                value: 'lists',
-                                items: props.styleList.slice(offset),
-                                selectedItems: [props.selectedStyle]
-                            }]} 
-                            bsIcon={'caret-down'}
-                            buttonClass={props.selectedStyle.category === 'list'? 'btn-as-thm  p-1 ps-2': undefined}
-                            handleItemClick={(event) => {props.onChange(event.item as ListStyle)}}
-                        />
-                    </div>
-                }
-            </div>
+        <div className='d-flex flex-nowrap'>
+            {
+                offset > 0 &&
+                <div className='d-flex flex-nowrap me-1'>
+                    {
+                        props.styleList.slice(0, offset).map(item => (
+                            <div className='' key={uniqueId()}>
+                                <Button 
+                                    label={item.label} 
+                                    hideLabel={true}
+                                    leftBsIcon={item.rightBsIcon}
+                                    disabled={props.selectedStyle.category === 'text' && props.selectedStyle.value !== 'unstyle'}
+                                    extraClasses={`${props.selectedStyle.value === item.value ? 'btn-as-thm':'btn-as-bg'} p-1`}
+                                    tooltip={item.label}
+                                    handleClick={()=>{props.onChange(item)}}
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+                
+            }
+            
+            {
+                offset < props.styleList.length && 
+                <div title='Lists'>
+                    <DropdownAction 
+                        actionCategory={[{
+                            label: 'Lists',
+                            value: 'lists',
+                            items: props.styleList.slice(offset),
+                            selectedItems: [props.selectedStyle]
+                        }]} 
+                        bsIcon={'three-dots'}
+                        buttonClass={props.styleList.slice(offset).map(item => item.value).includes(props.selectedStyle.value)? 'btn-as-thm  p-1': 'btn-as-bg p-1'}
+                        handleItemClick={(event) => {props.onChange(event.item as ListStyle)}}
+                    />
+                </div>
+            }
         </div>
     )
 }

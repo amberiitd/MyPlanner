@@ -91,33 +91,42 @@ const Entities: FC<EntitiesProps> = (props) => {
     return (
         <div className='dropdown dropend d-flex flex-nowrap'>
             {
-                insertList.slice(0, offset).map(insert => (
-                    <div className='ms-1' key={uniqueId()}>
-                        <Button 
-                            label={insert.label} 
-                            hideLabel={true}
-                            leftBsIcon={insert.bsIcon}
-                            handleClick={() =>{interceptInsert(insert)}}
-                            disabled={(insert.value === 'link' && props.linkPopup)}
-                            tooltip={insert.label}
-                            extraClasses={`p-1 px-2 ${"btn-as-bg"}`}
-                        />
-                    </div>
-                ))
+                offset > 0 &&
+                <div className='me-1 d-flex flex-nowrap'>
+                    {
+                        insertList.slice(0, offset).map(insert => (
+                            <div className='' key={uniqueId()}>
+                                <Button 
+                                    label={insert.label} 
+                                    hideLabel={true}
+                                    leftBsIcon={insert.bsIcon}
+                                    handleClick={() =>{interceptInsert(insert)}}
+                                    disabled={(insert.value === 'link' && props.linkPopup)}
+                                    tooltip={insert.label}
+                                    extraClasses={`p-1 btn-as-bg`}
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+                
             }
-            <div ref={dropdownRef} className='ms-1 me-2' unselectable="on" title={'Inserts'}>
-                <DropdownAction 
-                    actionCategory={[{
-                        label: 'Inserts',
-                        value: 'inserts',
-                        items: insertList.slice(offset)
-                    }]} 
-                    bsIcon='three-dots'
-                    buttonClass='btn-as-bg p-1 ps-2'
-                    handleItemClick={(event) => {interceptInsert(event.item as Insert)}}
-                    onToggle={(value: boolean) => {if (value) setEmojiDropdown(false)}}
-                />
-            </div>
+            {
+                offset < insertList.length && 
+                <div ref={dropdownRef} className='' unselectable="on" title={'Inserts'}>
+                    <DropdownAction 
+                        actionCategory={[{
+                            label: 'Inserts',
+                            value: 'inserts',
+                            items: insertList.slice(offset)
+                        }]} 
+                        bsIcon='plus-lg'
+                        buttonClass='btn-as-bg p-1'
+                        handleItemClick={(event) => {interceptInsert(event.item as Insert)}}
+                        onToggle={(value: boolean) => {if (value) setEmojiDropdown(false)}}
+                    />
+                </div>
+            }
                 
             {
                 emojiDropdown &&

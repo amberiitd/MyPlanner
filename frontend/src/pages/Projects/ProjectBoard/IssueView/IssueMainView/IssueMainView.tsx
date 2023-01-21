@@ -145,9 +145,9 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                     <div className='mb-5'>
                         <h6>Description</h6>
                         <TextEditor 
-                            value={props.issue?.description}
-                            open={descEditor}
-                            onToggle={(open: boolean)=> setDescEditor(open)}
+                            value={props.issue?.id? {id: props.issue?.id, state: descEditor.value || props.issue?.description}: undefined}
+                            open={descEditor.open}
+                            onToggle={(open: boolean)=> setDescEditor({...descEditor, open})}
                             onSave={(value: string)=>{
                                 projectCommonQuery.trigger({
                                     action: 'UPDATE',
@@ -161,6 +161,9 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                                 .then(()=>{
                                     dispatch(updateIssue({id: props.issue?.id || '', data: {description: value}}))
                                 })
+                            }}
+                            onChange={(data: any)=>{
+                                setDescEditor(data);
                             }}
                         />
                     </div>

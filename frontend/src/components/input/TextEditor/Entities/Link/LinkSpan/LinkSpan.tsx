@@ -41,7 +41,7 @@ const LinkSpan: FC<any> = (props) => {
     
     return (
         <div className='dropdown d-inline-block'>
-            <div ref={toggleRef} unselectable='on' className='rounded border shadow-sm px-1 cursor-pointer'
+            <div ref={toggleRef} unselectable='on' className='rounded border shadow-sm px-1 cursor-pointer  bg-white'
             >
                 {/* <span className='text-cut' style={{width: 0, height: 0}}>
                     
@@ -49,7 +49,7 @@ const LinkSpan: FC<any> = (props) => {
                 <i className='bi bi-link-45deg text-primary'></i>
                 <a href={entityData.url.startsWith('http')? entityData.url: `https://${entityData.url}`} className='ms-1 no-decor text-primary underline-hover' role='button'>{props.children}</a>
             </div>
-            <div ref={dropdownRef} className={`dropdown-menu p-1 rounded shadow-sm border f-90 ${drop? 'show': ''}`} style={{left: '-50%'}} contentEditable='false' suppressContentEditableWarning={true}>
+            <div ref={dropdownRef} className={`dropdown-menu p-1 rounded shadow-sm border f-90 bg-white ${drop? 'show': ''}`} style={{left: '-50%', zIndex: 100}} contentEditable='false' suppressContentEditableWarning={true}>
             <div className='d-flex'>
                 <div>
                     <Button 

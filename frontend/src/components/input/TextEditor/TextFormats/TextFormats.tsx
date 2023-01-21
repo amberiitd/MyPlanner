@@ -33,36 +33,45 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
 
     return (
         <div className='d-flex flex-nowrap'>
-            
             {
-                props.formatList.slice(0, offset).map(format => (
-                    <div className='' key={uniqueId()}>
-                        <Button 
-                            label={format.label} 
-                            hideLabel={true}
-                            leftBsIcon={format.bsIcon}
-                            handleClick={() =>{props.onToggle(format)}}
-                            tooltip={format.label}
-                            extraClasses={`p-1 px-2 ${props.currentStyles.includes(format.style)? "btn-as-thm":"btn-as-bg"}`}
-                        />
-                        {/* <button type="button" id="paste" value="" unselectable="on" onClick={() =>{props.onChange(format)}}> Paste HTML</button> */}
-                    </div>
-                    
-                ))
+                offset > 0 &&
+                <div className='me-1 d-flex flex-nowrap'>
+                    {
+                        props.formatList.slice(0, offset).map(format => (
+                            <div className='' key={uniqueId()}>
+                                <Button 
+                                    label={format.label} 
+                                    hideLabel={true}
+                                    leftBsIcon={format.bsIcon}
+                                    handleClick={() =>{props.onToggle(format)}}
+                                    tooltip={format.label}
+                                    extraClasses={`p-1 ${props.currentStyles.includes(format.style)? "btn-as-thm":"btn-as-bg"}`}
+                                />
+                                {/* <button type="button" id="paste" value="" unselectable="on" onClick={() =>{props.onChange(format)}}> Paste HTML</button> */}
+                            </div>
+                            
+                        ))
+                    }
+                </div>
+                
             }
-            <div className='ms-1 me-2' unselectable="on" title={'Formats'}>
-                <DropdownAction 
-                    actionCategory={[{
-                        label: 'Formats',
-                        value: 'formats',
-                        items: props.formatList.slice(offset),
-                        selectedItems: props.formatList.slice(offset).filter(item => props.currentStyles.includes(item.style))
-                    }]} 
-                    buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm p-1 ps-2': 'btn-as-bg p-1 ps-2'}
-                    bsIcon='three-dots'
-                    handleItemClick={(event) => {props.onToggle(event.item as Format)}}
-                />
-            </div>
+            {
+                offset < props.formatList.length &&
+                <div className='' unselectable="on" title={'Formats'}>
+                    <DropdownAction 
+                        actionCategory={[{
+                            label: 'Formats',
+                            value: 'formats',
+                            items: props.formatList.slice(offset),
+                            selectedItems: props.formatList.slice(offset).filter(item => props.currentStyles.includes(item.style))
+                        }]} 
+                        buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm p-1': 'btn-as-bg p-1'}
+                        bsIcon='caret-down'
+                        handleItemClick={(event) => {props.onToggle(event.item as Format)}}
+                    />
+                </div>
+            }
+            
             
         </div>
     )

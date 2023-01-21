@@ -1,4 +1,4 @@
-import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw } from 'draft-js';
+import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, EditorBlock, AtomicBlockUtils, DraftHandleValue, BlockMap, SelectionState } from 'draft-js';
 import React, { createContext, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SimpleAction } from '../../../model/types';
 import DropdownAction from '../../DropdownAction/DropdownAction';
@@ -6,24 +6,28 @@ import './TextEditor.css';
 import TextFormats, { Format } from './TextFormats/TextFormats';
 import TextColors, { TextColor } from './TextColors/TextColors';
 import ListStyles, { ListStyle } from './ListStyles/ListStyles';
-import { isEmpty, max } from 'lodash';
+import { isEmpty, max, uniqueId } from 'lodash';
 import Mention from './Entities/Mention/Mention';
 import Entities, { Insert } from './Entities/Entities';
 import Link from './Entities/Link/Link';
 import LinkSpan from './Entities/Link/LinkSpan/LinkSpan';
 import Button from '../../Button/Button';
+import { Iterable, List, OrderedMap } from 'immutable';
+import { VerticalBreak } from '../../VerticalBreak/VerticalBreak';
+import {getDefaultKeyBinding, KeyBindingUtil} from 'draft-js';
 
 interface TextEditorProps{
     bannerClassName?: string;
     placeholder?: string;
     open?: boolean;
-    value?: string;
+    value?: {id: string; state: string | undefined;};
     onToggle?: (open: boolean) => void;
+    onChange?: (data: {open: boolean; value: string;}) => void;
     onSave?: (state: string) => void;
 }
 
 export interface BlockType extends SimpleAction {
-    category: 'text' | 'list';
+    category: 'text' | 'list' | 'block';
 }
 
 
@@ -120,6 +124,18 @@ const listStyles: ListStyle[] = [
         value: 'ordered-list-item',
         rightBsIcon: 'list-ol',
         category: 'list'
+    },
+    {
+        label: 'Code block',
+        value: 'code-block',
+        rightBsIcon: 'code',
+        category: 'block'
+    },
+    {
+        label: 'Info block',
+        value: 'info-block',
+        rightBsIcon: 'info-circle',
+        category: 'block'
     }
 ];
 
@@ -157,7 +173,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0], searchText: ''});
     const [linkPopup, setLinkPopup] = useState<LinkPopup>({show: false});
     const [lastSelection, setLastSelection] = useState<Selection | null>();
-
+    const [prevVal, setPrevVal]= useState<{id: string; state: string | undefined} | undefined>();
     const decorator = new CompositeDecorator([
         {
             strategy: findMentionEntity,
@@ -168,9 +184,8 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             component: LinkSpan,
         },
     ]);
-    const state = EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value): {blocks: [], entityMap: {}}), decorator);
 
-    const [editorState, setEditorState] = useState<EditorState>(state);
+    const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty(decorator));
     
     const [currentStyles, setCurrentStyles] = useState<string[]>([]);
     const [currentBlockType, setCurrentBlockType] = useState<BlockType | undefined>();
@@ -191,11 +206,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         });
         if (node) observer.current.observe(node);
     };
-
-    useEffect(()=>{
-        const state = EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value): {blocks: [], entityMap: {}}), decorator);
-        setEditorState(state);
-    }, [props.value])
 
     useEffect(() => {
         const handleClick = (e: any)=>{
@@ -218,18 +228,47 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
     const contentRef = useRef<Editor>(null);
 
+    const handleKeyCommand:(command: string) => DraftHandleValue = useCallback((command) => {
+        let sel = editorState.getSelection();
+        let newContent = editorState.getCurrentContent();
+        let block = newContent.getBlockForKey(sel.getAnchorKey())
+        if (block.getType() === 'info-block' && command === 'custom-enter') {
+            if (sel.getAnchorOffset() === sel.getFocusOffset()){
+                newContent = Modifier.insertText(newContent, sel, "\n");
+            }
+            else{
+                newContent = Modifier.replaceText(newContent, sel, "\n");
+            }
+            setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
+            return 'handled';
+        }
+        return 'not-handled';
+    }, [editorState]);
+
     const handleFormatToggle = useCallback((format: Format) => {
         setEditorState(RichUtils.toggleInlineStyle(editorState, format.style));
     }, [editorState])
 
     const handleBlockToggle = useCallback((block: BlockType) => {
+        let sel = editorState.getSelection();
+        let newContent = editorState.getCurrentContent();
         if (block.value === currentBlockType?.value){
-            setEditorState(RichUtils.toggleBlockType(editorState, textblockStyles[0].value));
+            if (block.value === 'info-block'){
+                setEditorState(addEmptyBlockAtSelection(editorState));
+            }else{
+                setEditorState(EditorState.forceSelection(RichUtils.toggleBlockType(editorState, textblockStyles[0].value), sel));
+            }
         }
         else{
-            setEditorState(RichUtils.toggleBlockType(editorState, block.value)); 
+            let contentState =  editorState.getCurrentContent();
+            const blockAfter = contentState.getBlockAfter(sel.getAnchorKey());
+            if (!blockAfter){
+                setEditorState(RichUtils.toggleBlockType(addEmptyBlockAtEnd(editorState), block.value)); 
+            }else{
+                setEditorState(EditorState.forceSelection(RichUtils.toggleBlockType(editorState, block.value), sel));
+            }
         }
-    }, [editorState])
+    }, [editorState, currentBlockType])
 
     const handleTextColorToggle = useCallback((color: TextColor) => {
         if (currentTextColor && currentTextColor.style !== 'TEXT_NORMAL'){
@@ -424,6 +463,18 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     useEffect(() => {
         handleNewState(editorState);
     }, [editorState])
+
+    useEffect(()=>{
+        // each value is tagged with its ID, same ID signifies the fact that the change will be uppended and "selectionState" will be maintained. Changing id means the entire content will renewed to given value and selection will be lost (or not set properly).
+        if (props.value?.state && (!prevVal || !prevVal.state || prevVal.id !== props.value.id)){
+            setEditorState(
+                EditorState.moveFocusToEnd(
+                    EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value.state): {blocks: [], entityMap: {}}), decorator)
+                )
+            );
+        }
+        setPrevVal(props.value);
+    }, [props.value])
     
     return (
         <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity}}>
@@ -439,13 +490,14 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                             setEditorState(EditorState.moveFocusToEnd(editorState));
                         }}
                     >
-                        {/* <input className='p-2 w-100' type='text' disabled={true} placeholder={props.placeholder??'Help others understand about this isse.'}/> */}
                         {
                             <Editor
                                 editorState={editorState}
                                 onChange={(newState)=>{}}
                                 customStyleMap={{...textColorMap}}
                                 placeholder={props.placeholder??'Help others understand about this isse.'}
+                                blockStyleFn={myBlockStyleFn}
+                                blockRendererFn={myBlockRenderer}
                                 readOnly
                             />
                         }
@@ -456,7 +508,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                     <div ref={onContainerObserve} hidden={!active}>
                         <div ref={containerRef} className='border rounded'>
                             <div className='p-2 border-bottom d-flex flex-nowrap' style={{userSelect: 'none'}}>
-                                <div className='border-end' title='Text Styles'>
+                                <div className='' title='Text Styles'>
                                     <DropdownAction 
                                         actionCategory={[
                                             {
@@ -468,50 +520,65 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         ]}
                                         bsIcon={'caret-down'}
                                         buttonText={(currentBlockType && currentBlockType.category === 'text') ? currentBlockType.label: 'Normal'}
-                                        extraClasses='toggle-md mx-2'
+                                        extraClasses='toggle-md'
                                         dropdownClass='start-0'
-                                        buttonClass='p-1'
+                                        buttonClass='p-1 btn-as-bg'
                                         disabled={currentBlockType?.category === 'list'}
                                         handleItemClick={(event)=> handleBlockToggle(event.item as BlockType)} 
                                     />
                                 </div>
-                                <div className='border-end'>
+                                {VerticalBreak}
+                                <div className=''>
                                     <TextFormats 
                                         formatList={formatList}
                                         currentStyles={currentStyles}
                                         onToggle={handleFormatToggle}
                                     />
                                 </div>
-                                <div className='border-end'>
+                                {VerticalBreak}
+                                <div className=''>
                                     <TextColors 
                                         textColorList={textColorStyles} 
                                         selectedColor={currentTextColor || textColorStyles[0]}
                                         onChange={handleTextColorToggle}
                                     />
                                 </div>
-                                <div className='border-end'>
+                                {VerticalBreak}
+                                <div className=''>
                                     <ListStyles 
                                         styleList={listStyles} 
                                         selectedStyle={(currentBlockType || textblockStyles[0]) as ListStyle}
                                         onChange={handleBlockToggle}
                                     />
                                 </div>
-                                <div ref={entityRef} className='border-end'>
+                                {VerticalBreak}
+                                <div ref={entityRef} className=''>
                                     <Entities 
                                         linkPopup={linkPopup.show} 
                                         onSelect={handleEntityToggle} 
                                         onEmojiInput={handleEmojiEntity}                        
                                     />
                                 </div>
+                                {VerticalBreak}
                             </div>
                             <div id="editor" className='p-5 editor-container' onClick={() => {contentRef.current?.focus();}}>
                                 <Editor
                                     ref={contentRef}
                                     editorState={editorState}
                                     onChange={(newState)=>{
+                                        if (props.onChange){
+                                            props.onChange({open: active, value: JSON.stringify(convertToRaw(newState.getCurrentContent()))});
+                                        }
+                                        // else{
+                                        //     setEditorState(newState);
+                                        // }
                                         setEditorState(newState);
                                     }}
                                     customStyleMap={{...textColorMap}}
+                                    blockStyleFn={myBlockStyleFn}
+                                    blockRendererFn={myBlockRenderer}
+                                    keyBindingFn={myKeyBindingFn}
+                                    handleKeyCommand={handleKeyCommand}
                                     placeholder={'Write a description for for this issue...'}
                                 />
                             </div>
@@ -592,6 +659,21 @@ const MentionSpan: FC<any> = (props)=>{
     )
 }
 
+const InfoBlock: FC<any> = (props) => {
+    return (
+        <div className='info-block d-flex'>
+            <div className='me-2' contentEditable='false' suppressContentEditableWarning>
+                <i className='bi bi-info-circle'></i>
+            </div>
+            <div className='w-100'>
+                <EditorBlock {...props}>
+                    <i className='bi bi-info-circle'></i>
+                </EditorBlock>
+            </div>
+        </div>
+    )
+}
+
 function getInsertStrategy(type: 'MENTION' | 'LINK'){
     return (contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState) => {
         contentBlock.findEntityRanges(
@@ -620,9 +702,102 @@ function findMentionEntity(contentBlock: ContentBlock, callback: (start: number,
     );
 }
 
-function removeEntity(entityKey: string, contentBlock: ContentBlock, contentState: ContentState){
-    
+function myBlockStyleFn(contentBlock: ContentBlock) {
+    const type = contentBlock.getType();
+    if (type === 'code-block') {
+      return 'code-block';
+    }
+    // else if(type === 'info-block'){
+    //     return 'info-block'
+    // }
+    return ''
 }
 
+function addEmptyBlockAtEnd(editorState: EditorState): EditorState {
+    let contentState =  editorState.getCurrentContent();
+    let sel = editorState.getSelection();
+
+    const newBlock = new ContentBlock({
+        key: uniqueId(),
+        type: 'unstyled',
+        text: '',
+        characterList: List()
+    });
+    
+    const newBlockMap = contentState.getBlockMap().set(newBlock.getKey(), newBlock)
+
+    let newState = EditorState.push(
+        editorState,
+        ContentState.createFromBlockArray(newBlockMap.toArray()),
+        'split-block'
+    );
+    return EditorState.forceSelection(newState, sel);
+}
+
+function addEmptyBlockAtSelection(editorState: EditorState, blockType?: string): EditorState {
+    let contentState =  editorState.getCurrentContent();
+    let sel = editorState.getSelection();
+
+    const newBlock = new ContentBlock({
+        key: uniqueId(),
+        type: blockType || 'unstyled',
+        text: '',
+        characterList: List()
+    });
+    
+    let blockMap = contentState.getBlockMap();
+    const newBlockMap = OrderedMap<string, ContentBlock>().withMutations(map => {
+        blockMap.forEach((v, k)=>{
+            if (!k || !v) return;
+            map.set(k, v);
+    
+            if (sel.getAnchorKey() === k) {
+              map.set(newBlock.getKey(), newBlock);
+            }
+        })
+    });
+
+    let blockArray: ContentBlock[] = [];
+    const iter = newBlockMap.values();
+    let nextVal = iter.next();
+    do{
+        blockArray.push(nextVal.value);
+        nextVal = iter.next();
+    }while(!nextVal.done);
+    
+    return EditorState.forceSelection(
+        EditorState.push(
+            editorState,
+            ContentState
+                .createFromBlockArray(blockArray)
+                .set('selectionBefore', contentState.getSelectionBefore())
+                .set('selectionAfter', contentState.getSelectionAfter()) as ContentState,
+            'insert-fragment'
+        ),
+        SelectionState.createEmpty(newBlock.getKey())
+    )
+}
+
+function myBlockRenderer(contentBlock: ContentBlock) {
+    const type = contentBlock.getType();
+    
+    if (type === 'info-block') {
+      return {
+        component: InfoBlock,
+        editable: true,
+        props: {
+            text: contentBlock.getText(),
+        },
+      };
+    }
+}
+
+const {hasCommandModifier} = KeyBindingUtil;
+function myKeyBindingFn(e: any): string | null {
+  if (e.keyCode === 13 /* `Enter` key */) {
+    return 'custom-enter';
+  }
+  return getDefaultKeyBinding(e);
+}
 
 export default TextEditor;
