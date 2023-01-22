@@ -232,15 +232,19 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         let sel = editorState.getSelection();
         let newContent = editorState.getCurrentContent();
         let block = newContent.getBlockForKey(sel.getAnchorKey())
-        if (block.getType() === 'info-block' && command === 'custom-enter') {
-            if (sel.getAnchorOffset() === sel.getFocusOffset()){
-                newContent = Modifier.insertText(newContent, sel, "\n");
+        if (command === 'split-block') {
+            if (block.getType() === 'info-block'){
+                if (sel.getAnchorOffset() === sel.getFocusOffset()){
+                    newContent = Modifier.insertText(newContent, sel, "\n");
+                }
+                else{
+                    newContent = Modifier.replaceText(newContent, sel, "\n");
+                }
+                setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
+                return 'handled';
+            }else{
+                return 'not-handled'
             }
-            else{
-                newContent = Modifier.replaceText(newContent, sel, "\n");
-            }
-            setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
-            return 'handled';
         }
         return 'not-handled';
     }, [editorState]);
@@ -794,9 +798,9 @@ function myBlockRenderer(contentBlock: ContentBlock) {
 
 const {hasCommandModifier} = KeyBindingUtil;
 function myKeyBindingFn(e: any): string | null {
-  if (e.keyCode === 13 /* `Enter` key */) {
-    return 'custom-enter';
-  }
+//   if (e.keyCode === 13 /* `Enter` key */) {
+//     return 'custom-enter';
+//   }
   return getDefaultKeyBinding(e);
 }
 
