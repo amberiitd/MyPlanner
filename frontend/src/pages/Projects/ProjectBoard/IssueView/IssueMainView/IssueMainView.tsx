@@ -23,6 +23,7 @@ import ButtonActionGroup from '../../../../../components/ButtonActionGroup/Butto
 import LinkedIssue from '../LinkedIssue/LinkedIssue';
 import WebLink from '../WebLink/WebLink';
 import Attachment from '../Attachment/Attachment';
+import TextEditInput from '../../../../../components/TextEditInput/TextEditInput';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
@@ -71,15 +72,19 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
 
     return (
             <div className='mb-3'>
-                <div className='d-flex flex-nowrap align-items-center '>
-                    <div className='h3'>
-                        {props.issue?.label}
+                <div className='d-flex flex-nowrap align-items-center mb-2'>
+                    <div className='h3 w-100 m-0 me-2'>
+                        {/* {props.issue?.label} */}
+                        <TextEditInput 
+                            value={props.issue?.label || ''}
+                            onValueChange={()=>{}}                        
+                        />
                     </div>
-                    <div className='mx-2'>
+                    {/* <div className='mx-2'>
                         <CircleRotate loading={projectCommonQuery.loading}
                             onReload={props.onRefresh}
                         />
-                    </div>
+                    </div> */}
                     <div className='ms-auto'>
                         <DropdownAction 
                             actionCategory={[
@@ -91,6 +96,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                                     ]
                                 }
                             ]}
+                            buttonClass='btn-as-bg p-1 px-2'
                             bsIcon='three-dots'
                             handleItemClick={()=>{}}
                         />

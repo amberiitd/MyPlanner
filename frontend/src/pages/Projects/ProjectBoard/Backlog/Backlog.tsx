@@ -233,6 +233,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                                 }
                             ]}
                             bsIcon='three-dots'
+                            buttonClass='btn-as-bg p-1 px-2'
                             handleItemClick={()=>{}}
                         />
                     </div>

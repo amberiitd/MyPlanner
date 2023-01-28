@@ -57,7 +57,7 @@ const ButtonActionGroup: FC<ButtonActionGroupProps> = (props) => {
                                 value: 'action',
                                 items: props.items.slice(offset),
                             }]} 
-                            buttonClass={'ps-1 btn-as-light'}
+                            buttonClass={'px-1 btn-as-light'}
                             dropdownClass='start-0'
                             bsIcon={offset=== 0 ? 'cursor': 'caret-down'}
                             handleItemClick={(event) => {props.onClick(event.item)}}

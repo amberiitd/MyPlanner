@@ -197,6 +197,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
                                 showLabel: true
                             }
                         ]} 
+                        buttonClass='btn-as-bg p-1 px-2'
                         bsIcon='three-dots'
                         handleItemClick={handleAction}
                     />

@@ -65,6 +65,7 @@ const TicketCard: FC<TicketCardProps> = (props) => {
                                 }
                             ]}
                             bsIcon='three-dots'
+                            buttonClass='btn-as-bg p-1 px-2'
                             handleItemClick={(menuevent: any)=>{}}
                         />
                     </div>

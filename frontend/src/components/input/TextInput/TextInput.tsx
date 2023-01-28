@@ -14,6 +14,7 @@ interface TextInputProps {
   error?: string;
   onBlur?: (e: any)=> void;
   handleChange: (value: string)=> void;
+  onKeyEvent?: (e: any) => void;
 }
 
 const TextInput: FC<TextInputProps> = (props) => {
@@ -40,6 +41,7 @@ const TextInput: FC<TextInputProps> = (props) => {
           onChange={(e)=> props.handleChange(e.target.value)} 
           onFocus={()=> {setActive(true)}}
           onBlur={(e)=> {setActive(false); (props.onBlur|| (()=> {}))(e)}}
+          onKeyUp={(e)=> {if(props.onKeyEvent) props.onKeyEvent(e);}}
         />
         <div className='py-auto ms-auto'>
             <i className={`bi bi-${props.rightBsIcon}`} hidden={isEmpty(props.rightBsIcon)} style={{fontSize: '70%'}}></i>

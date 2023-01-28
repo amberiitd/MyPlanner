@@ -136,6 +136,7 @@ const Sprint: FC<SprintProps> = (props) => {
                                     ]
                                 }
                             ]}
+                            buttonClass='btn-as-bg p-1 px-2'
                             bsIcon='three-dots'
                             handleItemClick={()=>{}}
                         />

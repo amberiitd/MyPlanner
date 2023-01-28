@@ -248,6 +248,7 @@ const TicketStage: FC<TicketStageProps> = (props) => {
                                     }
                                 ]}
                                 bsIcon='three-dots'
+                                buttonClass='btn-as-bg p-1 px-2'
                                 handleItemClick={handleAction}                    />
                         </div>
                     </div>

@@ -153,7 +153,7 @@ const Attachment: FC<AttachmentProps> = (props) => {
                             ]
                         }]} 
                         bsIcon='three-dots'
-                        buttonClass='btn-as-bg p-1 ps-2'
+                        buttonClass='btn-as-bg p-1 px-2'
                         handleItemClick={(action)=>{
                             if (action.item.value === 'switch'){
                                 setViewType(viewType === 'card'? 'list': 'card')

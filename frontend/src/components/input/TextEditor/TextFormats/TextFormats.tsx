@@ -65,7 +65,7 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                             items: props.formatList.slice(offset),
                             selectedItems: props.formatList.slice(offset).filter(item => props.currentStyles.includes(item.style))
                         }]} 
-                        buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm p-1': 'btn-as-bg p-1'}
+                        buttonClass={props.formatList.slice(offset).some(f => props.currentStyles.includes(f.style))? 'btn-as-thm p-1 px-2': 'btn-as-bg p-1'}
                         bsIcon='caret-down'
                         handleItemClick={(event) => {props.onToggle(event.item as Format)}}
                     />

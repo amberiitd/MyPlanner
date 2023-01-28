@@ -36,6 +36,16 @@ const Entities: FC<EntitiesProps> = (props) => {
             value: 'emoji',
             bsIcon: 'emoji-smile',
             htmlId: 'editor-emoji-toggler'
+        },
+        {
+            label: 'Date',
+            value: 'date',
+            bsIcon: 'calendar-date',
+        },
+        {
+            label: 'Status',
+            value: 'status',
+            bsIcon: 'check-square',
         }
     ]
     useEffect(() => {
@@ -67,8 +77,14 @@ const Entities: FC<EntitiesProps> = (props) => {
             case 'link':
                 props.onSelect(insert);
                 break;
+            case 'date':
+                props.onSelect(insert);
+                break;
             case 'emoji':
                 setEmojiDropdown(true);
+                break;
+            case 'status':
+                props.onSelect(insert)
                 break;
             default:
                 break

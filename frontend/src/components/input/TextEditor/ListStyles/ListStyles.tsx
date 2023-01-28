@@ -62,7 +62,7 @@ const ListStyles: FC<ListStylesProps> = (props) => {
                             selectedItems: [props.selectedStyle]
                         }]} 
                         bsIcon={'three-dots'}
-                        buttonClass={props.styleList.slice(offset).map(item => item.value).includes(props.selectedStyle.value)? 'btn-as-thm  p-1': 'btn-as-bg p-1'}
+                        buttonClass={props.styleList.slice(offset).map(item => item.value).includes(props.selectedStyle.value)? 'btn-as-thm  p-1 px-2': 'btn-as-bg p-1'}
                         handleItemClick={(event) => {props.onChange(event.item as ListStyle)}}
                     />
                 </div>

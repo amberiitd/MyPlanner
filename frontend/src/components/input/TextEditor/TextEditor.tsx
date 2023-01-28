@@ -15,6 +15,11 @@ import Button from '../../Button/Button';
 import { Iterable, List, OrderedMap } from 'immutable';
 import { VerticalBreak } from '../../VerticalBreak/VerticalBreak';
 import {getDefaultKeyBinding, KeyBindingUtil} from 'draft-js';
+import DateSpan from './Entities/Date/DateSpan';
+import DatePicker from './Entities/Date/Date';
+import moment from 'moment';
+import StatusSpan from './Entities/Status/StatusSpan';
+import Status from './Entities/Status/Status';
 
 interface TextEditorProps{
     bannerClassName?: string;
@@ -148,19 +153,35 @@ const textColorMap = {
     }
 }
 
-export type LinkPopupOptions = {mode: 'edit' | 'create'; entityKey?: string, url?: string; label?: string; disableLabelEdit?: boolean;};
+export type PopOptions = {mode: 'edit' | 'create'; entityKey?: string; label?: string;};
+export type LinkPopupOptions = PopOptions & {url?: string; disableLabelEdit?: boolean;};
+export type DatePopupOptions = PopOptions & {timestamp: number;};
+export type StatusPopupOptions = PopOptions & {color?: string};
 type LinkPopup = {show: boolean; options?: LinkPopupOptions;};
+type DatePopup = {show: boolean; options?: DatePopupOptions;};
+type StatusPopup = {show: boolean; options?: StatusPopupOptions;};
 
 export const TextEditorContext = createContext<{
     containerWidth: number | undefined;
     linkPopup: LinkPopup;
     setLinkPopup: React.Dispatch<React.SetStateAction<LinkPopup>>;
+    datePopup: DatePopup;
+    setDatePopup: React.Dispatch<React.SetStateAction<DatePopup>>;
+    statusPopup: StatusPopup;
+    setStatusPopup: React.Dispatch<React.SetStateAction<StatusPopup>>;
     handleLinkEntity: (entity: any) => void;
+    handleDateEntity: (entity: any) => void;
 }>({
     containerWidth: undefined,
     linkPopup: {show: false},
     setLinkPopup: ()=>{},
-    handleLinkEntity: () =>{}
+    datePopup: {show: false},
+    setDatePopup: ()=>{},
+    statusPopup: {show: false},
+    setStatusPopup: () => {},
+    handleLinkEntity: () =>{},
+    handleDateEntity: () =>{},
+
 });
 
 const TextEditor: FC<TextEditorProps> = (props) => {
@@ -168,10 +189,14 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState(!!props.open);
     const linkPopupRef = useRef<HTMLDivElement>(null);
+    const datePopupRef = useRef<HTMLDivElement>(null);
+    const statusPopRef = useRef<HTMLDivElement>(null);
     const entityRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number | undefined>();
     const [mentionPopup, setMentionPopup] = useState({show: false, position: [0, 0], searchText: ''});
     const [linkPopup, setLinkPopup] = useState<LinkPopup>({show: false});
+    const [datePopup, setDatePopup] = useState<DatePopup>({show: false});
+    const [statusPopup, setStatusPopup] = useState<StatusPopup>({show: false});
     const [lastSelection, setLastSelection] = useState<Selection | null>();
     const [prevVal, setPrevVal]= useState<{id: string; state: string | undefined} | undefined>();
     const decorator = new CompositeDecorator([
@@ -182,6 +207,14 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         {
             strategy: getInsertStrategy('LINK'),
             component: LinkSpan,
+        },
+        {
+            strategy: getInsertStrategy('DATE'),
+            component: DateSpan,
+        },
+        {
+            strategy: getInsertStrategy('STATUS'),
+            component: StatusSpan,
         },
     ]);
 
@@ -209,14 +242,16 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
     useEffect(() => {
         const handleClick = (e: any)=>{
-            if (linkPopupRef.current && (linkPopupRef.current.contains(e.target) || entityRef.current?.contains(e.target))){
+            if (linkPopupRef.current?.contains(e.target) || entityRef.current?.contains(e.target) || datePopupRef.current?.contains(e.target) || statusPopRef.current?.contains(e.target)){
 
             }
             else if (e.target.parentNode?.id === 'editor-link-toggler'){
                 // setLinkPopup({show: !linkPopup.show, position: [0, 0]})
             }
             else{
-                setLinkPopup({show: false})
+                setLinkPopup({show: false});
+                setDatePopup({show: false});
+                setStatusPopup({show: false});
             }
         };
 
@@ -306,6 +341,12 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             case 'link':
                 setLinkPopup({show: true});
                 break;
+            case 'date':
+                handleDateEntity({mode: 'create'})
+                break;
+            case 'status':
+                handleStatusEntity({mode: 'create'})
+                break;
         }
     }, [editorState])
 
@@ -334,6 +375,49 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         }
 
         return newContent;
+    }, [editorState])
+
+    const editEntity = useCallback((entity: any)=>{
+        let sel = editorState.getSelection();
+        let newContent: ContentState = editorState.getCurrentContent();
+        if (entity.mode === 'edit' && entity.entityKey){
+            newContent = newContent.mergeEntityData(entity.entityKey, {
+                ...entity.data
+            });
+
+            const contentBlock = newContent.getBlockForKey(sel.getAnchorKey());
+            contentBlock.findEntityRanges(
+                (character) => {
+                    return entity.entityKey === character.getEntity();
+                },
+                (start: number, end: number) => {
+                    const oldLabelSel = sel.merge({
+                        anchorOffset: start,
+                        focusOffset: end
+                    })
+                    newContent = Modifier.replaceText(newContent, oldLabelSel, entity.data.label, undefined, entity.entityKey);
+                }
+            );
+        }
+        return newContent;
+    },[editorState])
+
+    const createEntity = useCallback((entity: any)=>{
+        let contentState = editorState.getCurrentContent();
+        let sel = editorState.getSelection();
+        let newContent: ContentState;
+        let newState = editorState;
+
+        if(sel.getAnchorOffset() !== sel.getFocusOffset()) return {contentState, entityKey: undefined};
+
+        const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
+        const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+        newContent = Modifier.insertText(contentState, sel, entity.data.label || entity.data.url, undefined, entityKey);
+        newState = EditorState.push(editorState, newContent, 'insert-characters');
+
+        sel = newState.getSelection();
+
+        return { contentState: Modifier.insertText(newState.getCurrentContent(), sel, " "), entityKey} ;
     }, [editorState])
 
     const handleMentionEntity = useCallback((entity: any) => {
@@ -371,47 +455,24 @@ const TextEditor: FC<TextEditorProps> = (props) => {
             setLinkPopup({show: false})
             return;
         }
-        let contentState = editorState.getCurrentContent();
         let sel = editorState.getSelection();
         let newContent: ContentState;
         let newState = editorState;
 
         if (entity.mode === 'edit' && entity.entityKey){
-            newContent = contentState.mergeEntityData(entity.entityKey, {
-                ...entity.data
-            });
-
-            const contentBlock = contentState.getBlockForKey(sel.getAnchorKey());
-            contentBlock.findEntityRanges(
-                (character) => {
-                    return entity.entityKey === character.getEntity();
-                },
-                (start: number, end: number) => {
-                    const oldLabelSel = sel.merge({
-                        anchorOffset: start,
-                        focusOffset: end
-                    })
-                    newContent = Modifier.replaceText(newContent, oldLabelSel, entity.data.label || entity.data.url, undefined, entity.entityKey);
-                }
-            );
+            newContent = editEntity({...entity, label: entity.data.label || entity.data.url});
         }
         else if (entity.mode === 'delete' && entity.entityKey){
             newContent = removeEntity(entity);
         }
         else{
-            const contentStateWithEntity = contentState.createEntity(entity.type, entity.mutability, entity.data);
-            const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-            newContent = Modifier.insertText(contentState, sel, entity.data.label || entity.data.url, undefined, entityKey);
-            newState = EditorState.push(editorState, newContent, 'insert-characters');
-    
-            sel = newState.getSelection();
-            newContent = Modifier.insertText(newState.getCurrentContent(), sel, " ");
+            const createResp = createEntity({...entity, label: entity.data.label || entity.data.url});
+            newContent = createResp.contentState;
         }
+
         newState = EditorState.push(newState, newContent, 'insert-characters');
         sel = newState.getSelection();
-
         setLinkPopup({show: false});
-
         setTimeout(()=>{
             setEditorState(EditorState.forceSelection(newState, sel));
         }, 200);
@@ -428,6 +489,81 @@ const TextEditor: FC<TextEditorProps> = (props) => {
 
         let newContent = Modifier.insertText(contentState, sel, entity.data.label, undefined, entityKey);
         setEditorState(EditorState.push(editorState, newContent, 'insert-characters'));
+    }, [editorState])
+
+    const handleDateEntity = useCallback((entity: any)=>{
+        if (!entity){
+            return;
+        }
+        let sel = editorState.getSelection();
+        let newContent: ContentState;
+        let newState = editorState;
+
+        if (entity.mode === 'edit' && entity.entityKey){
+            newContent = editEntity(entity);
+            setDatePopup({show: false});
+        }
+        else if (entity.mode === 'delete' && entity.entityKey){
+            newContent = removeEntity(entity);
+            setDatePopup({show: false});
+        }
+        else{
+            entity= {
+                ...entity, 
+                type: 'DATE',
+                mutability: 'IMMUTABLE', 
+                data:{ 
+                    label: moment().format('YYYY-MM-DD'), 
+                    timestamp: moment().unix() 
+                }
+            };
+            const createResp = createEntity(entity);
+            newContent = createResp.contentState;
+            setDatePopup({show: true, options: {mode: 'edit', entityKey: createResp.entityKey, label: entity.data.label, timestamp: entity.data.timestamp}});
+        }
+
+        newState = EditorState.push(newState, newContent, 'insert-characters');
+        sel = newState.getSelection();
+        setTimeout(()=>{
+            setEditorState(EditorState.forceSelection(newState, sel));
+        }, 200);
+    }, [editorState])
+
+    const handleStatusEntity = useCallback((entity: any)=>{
+        if (!entity){
+            return;
+        }
+        let sel = editorState.getSelection();
+        let newContent: ContentState;
+        let newState = editorState;
+
+        if (entity.mode === 'edit' && entity.entityKey){
+            newContent = editEntity(entity);
+            setStatusPopup({show: false});
+        }
+        else if (entity.mode === 'delete' && entity.entityKey){
+            newContent = removeEntity(entity);
+            setStatusPopup({show: false});
+        }
+        else{
+            entity= {
+                ...entity, 
+                type: 'STATUS',
+                mutability: 'IMMUTABLE', 
+                data:{ 
+                    label: 'STATUS'
+                }
+            };
+            const createResp = createEntity(entity);
+            newContent = createResp.contentState;
+            setStatusPopup({show: true, options: {mode: 'edit', entityKey: createResp.entityKey, label: entity.data.label, color: entity.data.color}});
+        }
+
+        newState = EditorState.push(newState, newContent, 'insert-characters');
+        sel = newState.getSelection();
+        setTimeout(()=>{
+            setEditorState(EditorState.forceSelection(newState, sel));
+        }, 200);
     }, [editorState])
 
     const handleNewState = useCallback((newState: EditorState) =>{
@@ -481,11 +617,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     }, [props.value])
     
     return (
-        <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity}}>
+        <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity, datePopup, setDatePopup, handleDateEntity, statusPopup, setStatusPopup}}>
             <div>
                { 
                     !active &&
-                    <div className={`${props.bannerClassName?? 'rounded border text-muted p-2 bg-light'}`}
+                    <div className={`${props.bannerClassName?? 'rounded border text-muted p-2 bg-smoke-hover'}`}
                         onClick={()=>{
                             setActive(true);
                             (props.onToggle||(()=>{}))(true);
@@ -526,7 +662,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                         buttonText={(currentBlockType && currentBlockType.category === 'text') ? currentBlockType.label: 'Normal'}
                                         extraClasses='toggle-md'
                                         dropdownClass='start-0'
-                                        buttonClass='p-1 btn-as-bg'
+                                        buttonClass='p-1 px-2 btn-as-bg'
                                         disabled={currentBlockType?.category === 'list'}
                                         handleItemClick={(event)=> handleBlockToggle(event.item as BlockType)} 
                                     />
@@ -611,6 +747,32 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                     />
                                 </div>
                             }
+                            {
+                                datePopup.show && 
+                                <div
+                                    ref={datePopupRef}
+                                    className='position-absolute' 
+                                    style={{top: popupPosition[0], left: popupPosition[1], zIndex: 100}}
+                                >
+                                    <DatePicker 
+                                        onInput={handleDateEntity}
+                                        options={datePopup.options}
+                                    />
+                                </div>
+                            }
+                            {
+                                statusPopup.show && 
+                                <div
+                                    ref={statusPopRef}
+                                    className='position-absolute' 
+                                    style={{top: popupPosition[0], left: popupPosition[1], zIndex: 100}}
+                                >
+                                    <Status 
+                                        onInput={handleStatusEntity}
+                                        options={statusPopup.options}
+                                    />
+                                </div>
+                            }
                         </div>
                         <div className='d-flex flex-nowrap mt-2'>
                             {
@@ -678,7 +840,7 @@ const InfoBlock: FC<any> = (props) => {
     )
 }
 
-function getInsertStrategy(type: 'MENTION' | 'LINK'){
+function getInsertStrategy(type: 'MENTION' | 'LINK' | 'DATE' | 'STATUS'){
     return (contentBlock: ContentBlock, callback: (start: number, end: number)=> void, contentState: ContentState) => {
         contentBlock.findEntityRanges(
             (character) => {

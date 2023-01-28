@@ -61,7 +61,7 @@ const ButtonSelect: FC<ButtonSelectProps> = (props) => {
                                 selectedItems: props.items.slice(offset).filter(item => item.value== props.currentSelection.value)
                             }]} 
                             buttonText={props.currentSelection.label}
-                            buttonClass={props.items.slice(offset).some(item => props.currentSelection.value === item.value)? 'btn-as-thm  p-1 px-2': undefined}
+                            buttonClass={props.items.slice(offset).some(item => props.currentSelection.value === item.value)? 'btn-as-thm p-1 px-2': undefined}
                             dropdownClass='start-0'
                             bsIcon='caret-down'
                             handleItemClick={(event) => {props.onToggle(event.item)}}
