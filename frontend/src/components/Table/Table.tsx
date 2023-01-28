@@ -1,4 +1,4 @@
-import { isEmpty, startCase } from 'lodash';
+import { isEmpty, startCase, uniqueId } from 'lodash';
 import { FC, useEffect, useState } from 'react';
 import { Type } from 'typescript';
 import { SimpleAction } from '../../model/types';
@@ -37,10 +37,16 @@ interface TableProps{
     data: any[];
     actions?: RowAction;
     rowClickable?: boolean;
+    selectable?: boolean;
+    multiselect?: boolean; 
+    onSelectionChange?: (rows: any[]) => void;
 }
 
 const Table: FC<TableProps> = (props) => {
     const [defaultColDef, setDefaultColDef] = useState<ColDef[]>([]);
+    const [indexedData, setIndexedData] = useState<any[]>([]);
+    const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
     const getDefaultColDef = (data: any[]) => {
         let coldefMap: {
             [key: string]: ColDef;
@@ -98,6 +104,9 @@ const Table: FC<TableProps> = (props) => {
     useEffect(()=>{
         if (isEmpty(props.colDef))
             setDefaultColDef(getDefaultColDef(props.data));
+        
+        setIndexedData(props.data.map(row => ({...row, _id: uniqueId()})));
+        setSelectedRows([]);
     }, [props.data])
     return (
         <div>
@@ -131,12 +140,26 @@ const Table: FC<TableProps> = (props) => {
                 </thead>
                 <tbody>
                     {
-                        props.data.map((rowdata, indexi)=>(
+                        indexedData.map((rowdata, indexi)=>(
                             <tr key={`row-data-${indexi}`} 
-                                className={`bg-smoke-hover ${props.rowClickable ? 'cursor-pointer': ''}`}
+                                className={`${props.rowClickable ? 'cursor-pointer': ''} ${selectedRows.findIndex(row => row._id === rowdata._id) >= 0? 'bg-select': 'bg-smoke-hover'}`}
                                 onClick={()=>{
                                     if (props.rowClickable && props.actions){
                                         props.actions.handleAction(rowdata, {value: 'row-click'});
+                                    }
+                                    if (props.selectable){
+                                        let newSelection: any[] = [];
+                                        if (selectedRows.findIndex(row => rowdata._id === row._id) >=0 ){
+                                            newSelection = selectedRows.filter(row => row._id !== rowdata._id);
+                                        }else{
+                                            if (props.multiselect){
+                                                newSelection = [...selectedRows, rowdata];
+                                            }else{
+                                                newSelection = [rowdata];
+                                            }
+                                        }
+                                        setSelectedRows(newSelection);
+                                        if(props.onSelectionChange) props.onSelectionChange(newSelection);
                                     }
                                 }}
                             >

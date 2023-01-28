@@ -421,7 +421,7 @@ const Attachment: FC<AttachmentProps> = (props) => {
 
 export default Attachment;
 
-const AttachCard: FC<IssueAttachment & {loading?: boolean; progress?: number; onAction: (action: {attachPath: string; actionType: string;}) => void;}> = (props) => {
+export const AttachCard: FC<IssueAttachment & {loading?: boolean; progress?: number; onAction: (action: {attachPath: string; actionType: string;}) => void;}> = (props) => {
     const [hover, setHover] = useState(false);
     return (
         <div 

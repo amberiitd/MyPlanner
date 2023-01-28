@@ -24,6 +24,7 @@ import LinkedIssue from '../LinkedIssue/LinkedIssue';
 import WebLink from '../WebLink/WebLink';
 import Attachment from '../Attachment/Attachment';
 import TextEditInput from '../../../../../components/TextEditInput/TextEditInput';
+import { Modal } from 'react-bootstrap';
 
 interface IssueMainViewProps{
     onRefresh: () => void;

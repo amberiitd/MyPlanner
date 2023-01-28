@@ -1,5 +1,5 @@
 import { CompositeDecorator, ContentBlock, ContentState, Editor, EditorState, Modifier, RichUtils, convertFromRaw, convertToRaw, EditorBlock, AtomicBlockUtils, DraftHandleValue, BlockMap, SelectionState } from 'draft-js';
-import React, { createContext, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { SimpleAction } from '../../../model/types';
 import DropdownAction from '../../DropdownAction/DropdownAction';
 import './TextEditor.css';
@@ -20,6 +20,9 @@ import DatePicker from './Entities/Date/Date';
 import moment from 'moment';
 import StatusSpan from './Entities/Status/StatusSpan';
 import Status from './Entities/Status/Status';
+import { Modal } from 'react-bootstrap';
+import AttachmentEntity from './Entities/Attachment/AttachmentEntity';
+import { AttachCard } from '../../../pages/Projects/ProjectBoard/IssueView/Attachment/Attachment';
 
 interface TextEditorProps{
     bannerClassName?: string;
@@ -141,6 +144,12 @@ const listStyles: ListStyle[] = [
         value: 'info-block',
         rightBsIcon: 'info-circle',
         category: 'block'
+    },
+    {
+        label: 'Block quote',
+        value: 'custom-blockquote',
+        rightBsIcon: 'quote',
+        category: 'block'
     }
 ];
 
@@ -171,6 +180,7 @@ export const TextEditorContext = createContext<{
     setStatusPopup: React.Dispatch<React.SetStateAction<StatusPopup>>;
     handleLinkEntity: (entity: any) => void;
     handleDateEntity: (entity: any) => void;
+    editorState: EditorState | undefined;
 }>({
     containerWidth: undefined,
     linkPopup: {show: false},
@@ -181,7 +191,7 @@ export const TextEditorContext = createContext<{
     setStatusPopup: () => {},
     handleLinkEntity: () =>{},
     handleDateEntity: () =>{},
-
+    editorState: undefined
 });
 
 const TextEditor: FC<TextEditorProps> = (props) => {
@@ -197,6 +207,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     const [linkPopup, setLinkPopup] = useState<LinkPopup>({show: false});
     const [datePopup, setDatePopup] = useState<DatePopup>({show: false});
     const [statusPopup, setStatusPopup] = useState<StatusPopup>({show: false});
+    const [attachmentModal, setAttachmentModal] = useState<{show: boolean;}>({show: false});
     const [lastSelection, setLastSelection] = useState<Selection | null>();
     const [prevVal, setPrevVal]= useState<{id: string; state: string | undefined} | undefined>();
     const decorator = new CompositeDecorator([
@@ -268,7 +279,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         let newContent = editorState.getCurrentContent();
         let block = newContent.getBlockForKey(sel.getAnchorKey())
         if (command === 'split-block') {
-            if (block.getType() === 'info-block'){
+            if (['info-block', 'custom-blockquote'].includes(block.getType())){
                 if (sel.getAnchorOffset() === sel.getFocusOffset()){
                     newContent = Modifier.insertText(newContent, sel, "\n");
                 }
@@ -291,12 +302,17 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     const handleBlockToggle = useCallback((block: BlockType) => {
         let sel = editorState.getSelection();
         let newContent = editorState.getCurrentContent();
+        const blockType = editorState.getCurrentContent().getBlockForKey(sel.getAnchorKey()).getType();
+
         if (block.value === currentBlockType?.value){
-            if (block.value === 'info-block'){
+            if (['info-block', 'custom-blockquote'].includes(block.value)){
                 setEditorState(addEmptyBlockAtSelection(editorState));
             }else{
                 setEditorState(EditorState.forceSelection(RichUtils.toggleBlockType(editorState, textblockStyles[0].value), sel));
             }
+        }
+        else if (blockType === 'attachment'){
+            setEditorState(addEmptyBlockAtSelection(editorState));
         }
         else{
             let contentState =  editorState.getCurrentContent();
@@ -346,6 +362,9 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                 break;
             case 'status':
                 handleStatusEntity({mode: 'create'})
+                break;
+            case 'attachment':
+                setAttachmentModal({show: true})
                 break;
         }
     }, [editorState])
@@ -566,6 +585,24 @@ const TextEditor: FC<TextEditorProps> = (props) => {
         }, 200);
     }, [editorState])
 
+    const handleAttachment = useCallback((entity: any)=>{
+        let newEditorState = editorState;
+        let sel = editorState.getSelection();
+        let contentState = editorState.getCurrentContent();
+        const contentBlock = contentState.getBlockForKey(sel.getAnchorKey());
+        // if (!isEmpty(contentBlock.getText())){
+        // }else{
+        //     newEditorState = RichUtils.toggleBlockType(addEmptyBlockAtEnd(newEditorState), 'attachment')
+        // }
+        newEditorState = addEmptyBlockAtSelection(addEmptyBlockAtEnd(newEditorState), 'attachment');
+        
+        sel = newEditorState.getSelection();
+        contentState =  Modifier.setBlockData(newEditorState.getCurrentContent(), sel, entity.data);
+        setEditorState(EditorState.push(newEditorState, contentState, 'change-block-data'));
+        // contentRef.current?.focus();
+        // EditorState.push(newEditorState, contentState, 'insert-characters')
+    }, [editorState])
+
     const handleNewState = useCallback((newState: EditorState) =>{
         const sel = newState.getSelection();
         if (window.getSelection()){
@@ -617,7 +654,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
     }, [props.value])
     
     return (
-        <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity, datePopup, setDatePopup, handleDateEntity, statusPopup, setStatusPopup}}>
+        <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity, datePopup, setDatePopup, handleDateEntity, statusPopup, setStatusPopup, editorState}}>
             <div>
                { 
                     !active &&
@@ -773,6 +810,11 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                                     />
                                 </div>
                             }
+                            <AttachmentEntity 
+                                show={attachmentModal.show}
+                                onInput={handleAttachment}
+                                onToggle={(value)=> setAttachmentModal({show: value})}
+                            />
                         </div>
                         <div className='d-flex flex-nowrap mt-2'>
                             {
@@ -808,7 +850,6 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                     </div>
                 }
             </div>
-            
         </TextEditorContext.Provider>
     )
 }
@@ -831,9 +872,67 @@ const InfoBlock: FC<any> = (props) => {
             <div className='me-2' contentEditable='false' suppressContentEditableWarning>
                 <i className='bi bi-info-circle'></i>
             </div>
-            <div className='w-100'>
+            <div className=''
+                style={{width: 'calc(100% - 2em)'}}
+            >
                 <EditorBlock {...props}>
-                    <i className='bi bi-info-circle'></i>
+                    {/* <i className='bi bi-info-circle'></i> */}
+                </EditorBlock>
+            </div>
+        </div>
+    )
+}
+
+const BlockQuote: FC<any> = (props) => {
+    return (
+        <div className='custom-blockquote d-flex'>
+            <div className='me-2 bg-grey1' contentEditable='false' suppressContentEditableWarning
+                style={{width: '4px'}}
+            ></div>
+            <div className='w-100 py-2'>
+                <EditorBlock {...props}>
+                    {/* <i className='bi bi-info-circle'></i> */}
+                </EditorBlock>
+            </div>
+        </div>
+    )
+}
+
+const AttachemntBlock: FC<any> = (props) => {
+    const editRef = useRef<HTMLDivElement>();
+    // const { editorState } = useContext(TextEditorContext);
+    // const active = useMemo(()=>{
+    //     if (!editorState) return;
+    //     const sel = editorState.getSelection();
+    //     const contentBlock = editorState.getCurrentContent().getBlockForKey(sel.getAnchorKey());
+    //     console.log(contentBlock.getEntityAt(0));
+    //     return contentBlock.getKey() === props.block.getKey();
+    // }, [editorState])
+    // const entity = props.block.getEntityAt(0);
+    // ${active? 'border-primary': ''}
+    const data = useMemo(()=> (props.block as ContentBlock).getData(), [props]);
+    return (
+        <div className={`rounded attachment d-flex border `}
+        >
+            <div className='me-2' contentEditable='false' suppressContentEditableWarning>
+                <AttachCard 
+                    path={data.get('path')} 
+                    updatedAt={data.get('updatedAt')} 
+                    updatedBy={""} 
+                    name={data.get('name')} 
+                    type={data.get('type')}
+                    loading={data.get('loading')}
+                    progress={data.get('progress')}
+                    size={data.get('size')}
+                    onAction={()=>{}}
+                />
+            </div>
+            
+            <div className=''
+                style={{width: 'calc(100% - 14em)'}}
+            >
+                <EditorBlock ref={editRef} {...props}>
+                    
                 </EditorBlock>
             </div>
         </div>
@@ -955,6 +1054,22 @@ function myBlockRenderer(contentBlock: ContentBlock) {
             text: contentBlock.getText(),
         },
       };
+    }else if(type === 'custom-blockquote'){
+        return {
+            component: BlockQuote,
+            editable: true,
+            props: {
+                text: contentBlock.getText(),
+            },
+        };
+    }else if(type === 'attachment'){
+        return {
+            component: AttachemntBlock,
+            editable: true,
+            props: {
+                text: contentBlock.getText(),
+            },
+        };
     }
 }
 

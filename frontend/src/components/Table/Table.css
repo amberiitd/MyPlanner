@@ -13,3 +13,7 @@
 .col-header-hover:hover{
     background-color: whitesmoke;
 }
+
+.bg-select{
+    background-color: lightblue;
+}

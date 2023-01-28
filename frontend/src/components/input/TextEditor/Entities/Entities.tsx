@@ -46,6 +46,11 @@ const Entities: FC<EntitiesProps> = (props) => {
             label: 'Status',
             value: 'status',
             bsIcon: 'check-square',
+        },
+        {
+            label: 'Attachment',
+            value: 'attachment',
+            bsIcon: 'paperclip',
         }
     ]
     useEffect(() => {
@@ -84,6 +89,9 @@ const Entities: FC<EntitiesProps> = (props) => {
                 setEmojiDropdown(true);
                 break;
             case 'status':
+                props.onSelect(insert)
+                break;
+            case 'attachment':
                 props.onSelect(insert)
                 break;
             default:
@@ -134,7 +142,7 @@ const Entities: FC<EntitiesProps> = (props) => {
                         actionCategory={[{
                             label: 'Inserts',
                             value: 'inserts',
-                            items: insertList.slice(offset)
+                            items: insertList.slice(offset).map(item => ({...item, rightBsIcon: item.bsIcon}))
                         }]} 
                         bsIcon='plus-lg'
                         buttonClass='btn-as-bg p-1'
