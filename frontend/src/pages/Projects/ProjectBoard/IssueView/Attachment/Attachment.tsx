@@ -15,6 +15,7 @@ import { AuthContext } from "../../../../../components/route/AuthGuardRoute";
 import DropdownAction from "../../../../../components/DropdownAction/DropdownAction";
 import Table, { ColDef } from "../../../../../components/Table/Table";
 import CircleRotate from "../../../../../components/Loaders/CircleRotate";
+import { IssueMainViewContext } from "../IssueMainView/IssueMainView";
 
 
 export interface Attach{
@@ -57,7 +58,7 @@ const colDef: ColDef[] = [
 const Attachment: FC<AttachmentProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const {authUser} = useContext(AuthContext);
-    const {openIssue} = useContext(IssueViewContext);
+    const {openIssue} = useContext(IssueMainViewContext);
     const inputRef = useRef<HTMLInputElement>(null);
     const [confirmModal, setConfirmModal] = useState(false);
     const [previewModal, setPreviewModal] = useState(false);

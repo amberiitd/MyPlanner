@@ -3,29 +3,18 @@ import { FC, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProjectBoardContext } from "../../pages/Projects/ProjectBoard/ProjectBoard";
 import BinaryAction from "../BinaryAction/BinaryAction";
-import IndentedMenuCard from "./IndentedMenuCard";
+import { MenuCardProps } from "./MenuCard";
 import "./MenuCard.css";
 import MenuOption from "./MenuOption/MenuOption";
 
-export interface MenuCardProps {
-	label: string;
-	showLabel?: boolean;
-	menuItems: any[];
-	selectedItem?: any;
-	collapsable?: boolean;
-	itemClass?: string;
-	itemType?: string;
-	handleClick: (event: any) => void;
-}
-
-const MenuCard: FC<MenuCardProps> = (props) => {
-    const navigate = useNavigate();
+const IndentedMenuCard: FC<MenuCardProps> = (props) => {
+	const navigate = useNavigate();
 	const { openProject } = useContext(ProjectBoardContext);
 	const [showMenu, setShowMenu] = useState(true);
 	return (
 		<div className="">
-			<div className="d-flex flex-nowrap">
-				<div className="" hidden={!props.collapsable}>
+			<MenuOption label={props.label} extraClasses="option-hover-thm" optionType="option-2">
+				<div className="" hidden={!props.collapsable} >
 					<BinaryAction
 						label="Expand"
 						bsIcon0="chevron-down"
@@ -35,15 +24,9 @@ const MenuCard: FC<MenuCardProps> = (props) => {
 						}}
 					/>
 				</div>
-				<div
-					className="py-1 card-label ms-1 f-80 fw-645"
-					hidden={!props.showLabel}
-				>
-					{props.label}
-				</div>
-			</div>
+			</MenuOption>
 
-			<div hidden={!showMenu}>
+			<div hidden={!showMenu} className="mx-3">
 				{props.menuItems.map((item, index) =>
 					item.navigateTo ? (
 						<a
@@ -99,4 +82,4 @@ const MenuCard: FC<MenuCardProps> = (props) => {
 	);
 };
 
-export default MenuCard;
+export default IndentedMenuCard;

@@ -212,7 +212,7 @@ const Projects: FC<ProjectsProps> = (props) => {
         <div className='h-100c'>
             <Routes>
                 <Route path='/' element={projectRoot} />
-                <Route path='/:projectKey/:view/*' element={ <ProjectBoard /> } />
+                <Route path='/:projectKey/*' element={ <ProjectBoard /> } />
                 <Route path='*' element={<Navigate to='/'/>} />
             </Routes>
         </div>

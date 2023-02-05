@@ -33,6 +33,8 @@ interface IssueMainViewProps{
 /* 
 TO DO: IssueViewContext needs to be taken on step back in the tree, since the same props will be used in backlog board as well.
 */
+export const IssueMainViewContext = createContext<{openIssue?: Issue}>({});
+
 const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const {openIssue, descEditor, setDescEditor} = useContext(IssueViewContext);
@@ -72,6 +74,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     }, [props.issue, openProject])
 
     return (
+        <IssueMainViewContext.Provider value={{openIssue: props.issue}}>
             <div className='mb-3'>
                 <div className='d-flex flex-nowrap align-items-center mb-2'>
                     <div className='h3 w-100 m-0 me-2'>
@@ -210,7 +213,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                     </div>
                 </div>
             </div>
-
+        </IssueMainViewContext.Provider>
     )
 }
 

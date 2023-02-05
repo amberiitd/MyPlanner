@@ -12,6 +12,7 @@ import { CrudPayload } from "../../../../../model/types";
 import { projectCommonCrud } from "../../../../../services/api";
 import { Issue } from "../../Backlog/IssueRibbon/IssueRibbon";
 import { ProjectBoardContext } from "../../ProjectBoard";
+import { IssueMainViewContext } from "../IssueMainView/IssueMainView";
 import { IssueViewContext } from "../IssueView";
 import LinkedIssueCreator from "./LinkedIssueCreator";
 import LinkedIssueRibbon from "./LinkedIssueRibbon";
@@ -25,7 +26,7 @@ const LinkedIssue: FC<LinkedIssueProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const [confirmModal, setConfirmModal] = useState(false);
     const [creator, setCreator] = useState(false);
-    const {openIssue} = useContext(IssueViewContext);
+    const {openIssue} = useContext(IssueMainViewContext);
     const issues =  useSelector((state: RootState) => state.issues.values);
     const linkedIssues = useMemo(()=> Object.entries(openIssue?.linkedIssues || {}).map(e => ({
         label: e[0],

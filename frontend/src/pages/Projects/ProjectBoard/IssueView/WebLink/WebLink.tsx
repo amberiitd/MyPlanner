@@ -8,6 +8,7 @@ import { useQuery } from "../../../../../hooks/useQuery";
 import { CrudPayload } from "../../../../../model/types";
 import { projectCommonCrud } from "../../../../../services/api";
 import { ProjectBoardContext } from "../../ProjectBoard";
+import { IssueMainViewContext } from "../IssueMainView/IssueMainView";
 import { IssueViewContext } from "../IssueView";
 import WebLinkCreator from "./WebLinkCreator";
 import WebLinkRibbon from "./WebLinkRibbon";
@@ -21,7 +22,7 @@ const WebLink: FC<WebLinkProps> = (props) => {
     const {openProject} = useContext(ProjectBoardContext);
     const [confirmModal, setConfirmModal] = useState(false);
     const [creator, setCreator] = useState(false);
-    const {openIssue} = useContext(IssueViewContext);
+    const {openIssue} = useContext(IssueMainViewContext);
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [linkOnStage, setLinkOnStage] = useState<{href: string; label: string} | undefined>(undefined);
     const dispatch = useDispatch();
