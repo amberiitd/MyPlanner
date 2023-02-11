@@ -1,6 +1,6 @@
 import { CrudRequest, ItemType, RequestAction } from "./models/common";
 import { actionHandler, CrudFunctionMap } from "./util/util";
-import { createItem, deleteItem, getItems, updateItem } from "./util/commonDB";
+import { createItem, deleteItem, getItem, getItems, updateItem } from "./util/commonDB";
 
 const create = async (request: CrudRequest) => {
     await createItem(`project:${request.data.projectId}`, `${request.itemType}:${request.data.id}`, {
@@ -28,6 +28,18 @@ const getAll = async (request: CrudRequest) => {
         body: JSON.stringify({
             'message': 'success',
             'data': items
+        })
+    }
+}
+
+const getOne = async (request: CrudRequest) => {
+    const item = await getItem(`project:${request.data.projectId}`, `${request.itemType}:${request.data.id}`)
+    
+    return {
+        statusCode: 200,
+        body: JSON.stringify({
+            'message': 'success',
+            'data': item
         })
     }
 }
@@ -64,6 +76,10 @@ const functionMap: CrudFunctionMap = {
     [RequestAction.RETRIEVE]: {
         requiredParams: ['uid', 'itemType'],
         callback: getAll
+    },
+    [RequestAction.RETRIEVE_ITEM]: {
+        requiredParams: ['uid', 'itemType', 'id'],
+        callback: getOne
     },
     [RequestAction.UPDATE]: {
         requiredParams: ['uid', 'itemType'],

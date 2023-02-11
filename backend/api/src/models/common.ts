@@ -71,6 +71,7 @@ export interface HandlerResponse{
 export const RequestAction = {
     CREATE: 'CREATE',
     RETRIEVE: 'RETRIEVE',
+    RETRIEVE_ITEM: 'RETRIEVE_ITEM',
     DELETE: 'DELETE',
     UPDATE: 'UPDATE',
     Issue: {

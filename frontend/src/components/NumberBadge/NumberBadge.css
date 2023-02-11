@@ -2,6 +2,10 @@
     border: 2px solid coral;
 }
 
+.input-focus-transparent{
+    border: 2px solid transparent;
+}
+
 .input-sm{
     width: 5em;
 }

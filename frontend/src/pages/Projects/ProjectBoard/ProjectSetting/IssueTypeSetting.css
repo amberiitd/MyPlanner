@@ -1,0 +1,8 @@
+.drop-accept-container{
+    border: 2px dashed rgb(255, 162, 131);
+    background-color: rgb(253, 218, 206);
+}
+
+.drop-container{
+    border: 2px solid transparent;
+}

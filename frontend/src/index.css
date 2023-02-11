@@ -15,7 +15,7 @@ code {
 }
 
 .f-80{
-    font-size: 80%;
+    font-size: 80% !important;
 }
 
 .f-85{

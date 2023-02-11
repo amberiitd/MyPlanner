@@ -4,7 +4,7 @@ import Split from 'react-split';
 import { BreadCrumbItem } from "../../../../../components/BreadCrumb/BreadCrumb";
 import BreadCrumb2 from "../../../../../components/BreadCrumb/BreadCrumb2";
 import { ProjectBoardContext } from "../../ProjectBoard";
-import IssueTypeSetting from "../../ProjectSetting/IssueTypeSetting";
+import IssueTypeSettingComponent from "../../ProjectSetting/IssueTypeSetting";
 import ProjectSettingSideMenu from "../../SideMenus/ProjectSettingSideMenu";
 
 const IssueTypeSettingWrap: FC = () => {
@@ -57,7 +57,7 @@ const IssueTypeSettingWrap: FC = () => {
                     <ProjectSettingSideMenu menuViews={menuViews} />
                 </div>
                 <div className='h-100'>
-                    <IssueTypeSetting />
+                    <IssueTypeSettingComponent />
                 </div>
             </Split>
         </div>

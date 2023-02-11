@@ -26,7 +26,7 @@ const IndentedMenuCard: FC<MenuCardProps> = (props) => {
 				</div>
 			</MenuOption>
 
-			<div hidden={!showMenu} className="mx-3">
+			<div hidden={!showMenu} className="ms-3">
 				{props.menuItems.map((item, index) =>
 					item.navigateTo ? (
 						<a
