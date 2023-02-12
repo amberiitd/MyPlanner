@@ -29,6 +29,7 @@ export const actionHandler = async (event: any, context: any, functionMap: CrudF
         return functionMap[action].callback({
             uid,
             data: body.data,
+            action,
             itemType: body.itemType
         })
     }

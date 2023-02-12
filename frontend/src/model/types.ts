@@ -79,7 +79,7 @@ export type ISSUE_ACTION = 'ASSIGN_SPRINT';
 export type ItemType  = 'project' | 'sprint' | 'issue' | 'userPref' | 'user' | 'issueTypeSetting';
 export interface CrudPayload{
     itemType: ItemType;
-    action: 'CREATE' | 'RETRIEVE' | 'RETRIEVE_ITEM' | 'UPDATE' | 'DELETE' | ISSUE_ACTION;
+    action: 'CREATE' | 'RETRIEVE' | 'RETRIEVE_ITEM' | 'UPDATE' | 'INSERT' | 'DELETE' | ISSUE_ACTION;
     data: any;
 }
 
@@ -163,7 +163,7 @@ export const fileExtentions: {[key: string]: {bsIcon: string};} = {
 export interface IssueField{
     label: string;
     id: string;
-    type: 'text' | 'number';
+    fieldType: 'text' | 'number';
     category: string;
     description?: string;
     defaultValue?: string | number;

@@ -61,7 +61,14 @@ const updateCommonChild = async (request: CrudRequest) => {
         ...request.data
     }
     const path = !isEmpty(request.data.subPath) ? (request.data.subPath+ '.'): '';
-    const [updateExpSuffix, attributeValues] = parseParams(data, `${path}${request.data.itemType}[${request.data.childCurrentIndex}]`);
+    let [updateExpSuffix, attributeValues] = ['', {}];
+    if (request.action === 'INSERT'){
+        [updateExpSuffix, attributeValues] = [`, ${path}${request.data.itemType}[${request.data.childCurrentIndex}] = :newItem`, {
+            ':newItem': data
+        }]
+    }else{
+        [updateExpSuffix, attributeValues] = parseParams(data, `${path}${request.data.itemType}[${request.data.childCurrentIndex}]`);
+    } 
     const UpdateExpression = 'SET updatedAt= :updatedAt '+ updateExpSuffix;
     const ExpressionAttributeValues = {
         ':updatedAt': updatedAt,
@@ -124,6 +131,10 @@ const functionMap: CrudFunctionMap = {
         callback: createCommonChild
     },
     [RequestAction.UPDATE]: {
+        requiredParams: ['uid', 'data', 'itemType'],
+        callback: updateCommonChild
+    },
+    [RequestAction.INSERT]: {
         requiredParams: ['uid', 'data', 'itemType'],
         callback: updateCommonChild
     },

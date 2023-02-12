@@ -25,6 +25,7 @@ import {
 	Draggable,
 	DragStart,
 	Droppable,
+	DropResult,
 } from "react-beautiful-dnd";
 import "./IssueTypeSetting.css";
 import { Issue } from "../Backlog/IssueRibbon/IssueRibbon";
@@ -34,7 +35,9 @@ import {
 	projectCommonCrud,
 } from "../../../../services/api";
 import IssueFieldGroup from "./IssueField/IssueFieldGroup";
-import { indexOf, sortBy } from "lodash";
+import { indexOf, sortBy, uniqueId } from "lodash";
+import FieldTemplate, { fieldTemplates } from "./IssueField/FieldTemplate";
+import { generateUID } from "../../../../util/method";
 
 export const IssueTypeSettingContext = createContext<{
 	dragStart: DragStart | undefined;
@@ -99,7 +102,148 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 			}, {}),
 		[issueTypeSetting]
 	);
+	const handleFieldDragend = useCallback(
+		(res: DropResult) => {
+			setDragStart(undefined);
+			if (
+				res.destination === undefined ||
+				res.destination === null ||
+				res.destination.index === undefined ||
+				(res.destination?.droppableId === res.source.droppableId &&
+					res.destination.index === res.source.index)
+			)
+				return;
+			let orderMap: { [key: string]: string[] } = Object.entries(
+				issueFieldGroupMap
+			).reduce((pre: any, cur) => {
+				pre[cur[0]] = cur[1].map((f) => f.id);
+				return pre;
+			}, {});
 
+			// process the source dep
+			let draggedId: string;
+			const alreadyExist = !res.source.droppableId.startsWith("template");
+			if (alreadyExist) {
+				draggedId = orderMap[res.source.droppableId].splice(
+					res.source.index,
+					1
+				)[0];
+			} else {
+				draggedId = generateUID();
+			}
+
+			// process the destination dep
+			const beingRemoved = res.destination.droppableId === "trash";
+			if (!beingRemoved) {
+				orderMap[res.destination.droppableId].splice(
+					res.destination.index,
+					0,
+					draggedId
+				);
+			} else {
+				orderMap[res.source.droppableId].splice(
+					res.destination.index,
+					1
+				);
+			}
+
+			const newOrder = Object.values(orderMap).flat();
+			if (res.destination.droppableId !== res.source.droppableId) {
+				let newFieldList;
+				let newIndex;
+				let updateData = {};
+				let action = "UPDATE";
+
+				if (beingRemoved) {
+					newIndex =
+						issueFieldGroupMap[res.source.droppableId][
+							res.source.index
+						].index;
+					action = "DELETE";
+					newFieldList = issueTypeSetting.fieldList.filter(
+						(f) => f.id !== draggedId
+					);
+				} else if (alreadyExist) {
+					newIndex =
+						issueFieldGroupMap[res.source.droppableId][
+							res.source.index
+						].index;
+					updateData = {
+						category: res.destination.droppableId,
+					};
+
+					newFieldList = issueTypeSetting.fieldList.map((f) =>
+						f.id === draggedId
+							? {
+									...f,
+									category:
+										res.destination?.droppableId ||
+										"context",
+							  }
+							: f
+					);
+				} else {
+					newIndex = issueTypeSetting.fieldList.length;
+					updateData = {
+						label: "",
+						id: draggedId,
+						fieldType: fieldTemplates[res.source.index].id,
+						category: res.destination?.droppableId || "context",
+					};
+					action = "INSERT";
+
+					newFieldList = issueTypeSetting.fieldList.concat([
+						updateData as IssueField,
+					]);
+					setActiveField(draggedId);
+				}
+
+				projectCommonChildQuery.trigger({
+					action,
+					data: {
+						projectId: openProject?.id,
+						parentId: issueTypeId,
+						childCurrentIndex: newIndex,
+						...updateData,
+						itemType: "fieldList",
+					},
+					itemType: "issueTypeSetting",
+				} as CrudPayload);
+
+				setIssueTypeSetting({
+					...issueTypeSetting,
+					fieldList: newFieldList,
+					fieldOrder: newOrder,
+				});
+			} else {
+				setIssueTypeSetting({
+					...issueTypeSetting,
+					fieldOrder: newOrder,
+				});
+			}
+			projectCommonQuery
+				.trigger({
+					action: "UPDATE",
+					data: {
+						projectId: openProject?.id,
+						id: issueTypeId,
+						fieldOrder: newOrder,
+					},
+					itemType: "issueTypeSetting",
+				} as CrudPayload)
+				.then(() => {});
+			// console.log("end", res);
+			// console.log("old order", issueTypeSetting.fieldOrder);
+			// console.log("new order", newOrder);
+		},
+		[
+			projectCommonQuery,
+			openProject,
+			issueTypeId,
+			issueTypeSetting,
+			issueFieldGroupMap,
+		]
+	);
 	const onRefresh = useCallback(() => {
 		projectCommonQuery
 			.trigger({
@@ -134,100 +278,14 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 		>
 			<DragDropContext
 				onDragStart={(start, provided) => {
-					console.log("start", start);
+					// console.log("start", start);
 					setDragStart(start);
 				}}
 				onDragEnd={(res, provided) => {
-					console.log("end", res);
-					setDragStart(undefined);
-					if (
-						res.destination === undefined ||
-						res.destination === null ||
-						res.destination.index === undefined ||
-						(res.destination?.droppableId ===
-							res.source.droppableId &&
-							res.destination.index === res.source.index)
-					)
-						return;
-					let orderMap: { [key: string]: string[] } = Object.entries(
-						issueFieldGroupMap
-					).reduce((pre: any, cur) => {
-						pre[cur[0]] = cur[1].map((f) => f.id);
-						return pre;
-					}, {});
-
-					const draggedId = orderMap[res.source.droppableId].splice(
-						res.source.index,
-						1
-					)[0];
-					orderMap[res.destination.droppableId].splice(
-						res.destination.index,
-						0,
-						draggedId
-					);
-					const newOrder = Object.values(orderMap).flat();
-					if (
-						res.destination.droppableId !== res.source.droppableId
-					) {
-						const newFieldList = issueTypeSetting.fieldList.map(
-							(f) =>
-								f.id === draggedId
-									? {
-											...f,
-											category:
-												res.destination?.droppableId ||
-												"context",
-									  }
-									: f
-						);
-						if (
-							issueFieldGroupMap[res.source.droppableId][
-								res.source.index
-							].index
-						) {
-							projectCommonChildQuery.trigger({
-								action: "UPDATE",
-								data: {
-									projectId: openProject?.id,
-									parentId: issueTypeId,
-									childCurrentIndex:
-										issueFieldGroupMap[
-											res.source.droppableId
-										][res.source.index].index,
-									category: res.destination.droppableId,
-									itemType: "fieldList",
-								},
-								itemType: "issueTypeSetting",
-							} as CrudPayload);
-						}
-
-						setIssueTypeSetting({
-							...issueTypeSetting,
-							fieldList: newFieldList,
-							fieldOrder: newOrder,
-						});
-					} else {
-						setIssueTypeSetting({
-							...issueTypeSetting,
-							fieldOrder: newOrder,
-						});
-					}
-					projectCommonQuery
-						.trigger({
-							action: "UPDATE",
-							data: {
-								projectId: openProject?.id,
-								id: issueTypeId,
-								fieldOrder: newOrder,
-							},
-							itemType: "issueTypeSetting",
-						} as CrudPayload)
-						.then(() => {});
-					console.log("old order", issueTypeSetting.fieldOrder);
-					console.log("new order", newOrder);
+					handleFieldDragend(res);
 				}}
 			>
-				<div className="h-100 d-flex flex-nowrap px-0">
+				<div className="h-100 d-flex flex-nowrap px-0 overflow-auto">
 					<div
 						className="h-100 w-100 ps-4"
 						style={{ minWidth: "40em" }}
@@ -309,9 +367,11 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 						)}
 					</div>
 					<div
-						className="h-100 border-start overflow-auto"
-						style={{ width: "40em" }}
-					></div>
+						className="h-100 border-start bg-light"
+						style={{ minWidth: "375px" }}
+					>
+						<FieldTemplate />
+					</div>
 				</div>
 			</DragDropContext>
 		</IssueTypeSettingContext.Provider>

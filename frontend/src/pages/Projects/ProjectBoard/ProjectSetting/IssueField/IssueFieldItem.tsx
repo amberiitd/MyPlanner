@@ -17,7 +17,7 @@ import { projectCommonChildCrud } from "../../../../../services/api";
 
 interface IssueFieldItemProps {
 	label: string;
-	type: string;
+	fieldType: string;
 	id: string;
 	description?: string;
 	defaultValue?: string | number;
@@ -67,7 +67,7 @@ const IssueFieldItem: FC<IssueFieldItemProps> = (props) => {
 				}}
 			>
 				<div>
-					<i className={`bi bi-${bsIconMap[props.type]} me-2`}></i>
+					<i className={`bi bi-${fieldBsIconMap[props.fieldType]} me-2`}></i>
 				</div>
 				{activeField === props.id ? (
 					<Controller
@@ -202,7 +202,7 @@ const CustomToggle: FC<{ children: any; eventKey: string }> = ({
 	);
 };
 
-const bsIconMap: { [key: string]: string } = {
+export const fieldBsIconMap: { [key: string]: string } = {
 	text: "type",
 	number: "123",
 };

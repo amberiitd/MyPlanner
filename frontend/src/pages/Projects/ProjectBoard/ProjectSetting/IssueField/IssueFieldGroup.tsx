@@ -1,4 +1,4 @@
-import { indexOf, isEmpty, sortBy } from "lodash";
+import { indexOf, isEmpty, sortBy, uniqueId } from "lodash";
 import {
 	FC,
 	useCallback,
@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import Button from "../../../../../components/Button/Button";
+import DropdownInfo from "../../../../../components/DropdownInfo/DropdownInfo";
 import { IssueField } from "../../../../../model/types";
 import { IssueTypeSettingContext } from "../IssueTypeSetting";
 import IssueFieldItem from "./IssueFieldItem";
@@ -23,51 +24,19 @@ const IssueFieldGroup: FC<IssueFieldGroupProps> = (props) => {
 	const { issueTypeId, issueTypeSetting, dragStart, issueFieldGroupMap } = useContext(
 		IssueTypeSettingContext
 	);
-	const [info, setInfo] = useState(false);
-	const infoRef = useRef<HTMLDivElement>(null);
-	const handleWindowClick = useCallback((e: any) => {
-		if (infoRef?.current?.contains(e.target)) {
-		} else {
-			setInfo(false);
-		}
-	}, []);
 
-	useEffect(() => {
-		window.addEventListener("click", handleWindowClick);
-		return () => {
-			window.removeEventListener("click", handleWindowClick);
-		};
-	}, []);
 	return (
 		<div>
 			<div className="px-1 d-flex align-items-center">
 				<div className="fw-645">{props.label}</div>
 				{props.description && (
-					<div ref={infoRef} className="dropend mx-2">
-						<Button
-							label={"Info"}
-							hideLabel
-							extraClasses="btn-as-bg p-1 px-2 "
-							leftBsIcon="info-circle"
-							handleClick={() => {
-								setInfo(!info);
-							}}
-						/>
-						<div
-							className={`dropdown-menu border shadow-sm p-2 ${
-								info ? "show" : ""
-							} f-80`}
-							style={{ left: "100%", bottom: 0 }}
-						>
-							{props.description}
-						</div>
-					</div>
+					<DropdownInfo text={props.description} />
 				)}
 			</div>
 			<div
 				className={`p-1 mb-3 rounded ${
 					dragStart &&
-					["context", "description"].includes(
+					["context", "description", 'template-0', 'template-1'].includes(
 						dragStart?.source.droppableId
 					)
 						? "drop-accept-container"
@@ -83,9 +52,9 @@ const IssueFieldGroup: FC<IssueFieldGroupProps> = (props) => {
 						>
 							{(issueFieldGroupMap[props.id]).map((f, index) => (
 								<Draggable
-									key={`${props.id}-${f.label}`}
+									key={`${props.id}-${f.id || uniqueId()}`}
 									index={index}
-									draggableId={`${props.id}-${f.label}`}
+									draggableId={`${props.id}-${f.id || uniqueId()}`}
 								>
 									{(provided, snapshot, rubric) => (
 										<div

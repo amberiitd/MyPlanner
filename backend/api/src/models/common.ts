@@ -55,6 +55,7 @@ export interface CrudRequest{
         subPath?: string;
         deepData?: any;
     };
+    action?: string;
     itemType: string;
 }
 
@@ -74,6 +75,7 @@ export const RequestAction = {
     RETRIEVE_ITEM: 'RETRIEVE_ITEM',
     DELETE: 'DELETE',
     UPDATE: 'UPDATE',
+    INSERT: 'INSERT',
     Issue: {
         ASSIGN_SPRINT: 'ASSIGN_SPRINT'
     }
