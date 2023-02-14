@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import { isEmpty, uniqueId } from 'lodash';
 import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeIssue, updateIssue } from '../../../../../app/slices/issueSlice';
@@ -33,7 +33,7 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
         setCreator(!!props.active);
     }, [props])
     return (
-        <div>
+        <div hidden={!creator && isEmpty(childIssues)}>
             <div className='d-flex flex-nowrap'>
                 <div className='h6'>
                     Child issue

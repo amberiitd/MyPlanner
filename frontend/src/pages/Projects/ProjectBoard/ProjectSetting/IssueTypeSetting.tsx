@@ -38,6 +38,8 @@ import IssueFieldGroup from "./IssueField/IssueFieldGroup";
 import { indexOf, sortBy, uniqueId } from "lodash";
 import FieldTemplate, { fieldTemplates } from "./IssueField/FieldTemplate";
 import { generateUID } from "../../../../util/method";
+import { Modal } from "react-bootstrap";
+import Button from "../../../../components/Button/Button";
 
 export const IssueTypeSettingContext = createContext<{
 	dragStart: DragStart | undefined;
@@ -47,12 +49,14 @@ export const IssueTypeSettingContext = createContext<{
 	issueTypeSetting?: IssueTypeSetting;
 	setIssueTypeSetting: React.Dispatch<React.SetStateAction<IssueTypeSetting>>;
 	issueFieldGroupMap: { [key: string]: IssueField[] };
+	handleFieldDragend: (res: DropResult) => void;
 }>({
 	dragStart: undefined,
 	activeField: undefined,
 	setActiveField: () => {},
 	setIssueTypeSetting: () => {},
 	issueFieldGroupMap: {},
+	handleFieldDragend: () => {},
 });
 
 interface IssueTypeSettingProps {}
@@ -83,6 +87,11 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 		projectCommonChildCrud(payload)
 	);
 	const [activeField, setActiveField] = useState<string | undefined>();
+	const [removeModal, setRemoveModal] = useState<{
+		show: boolean;
+		field: IssueField | undefined;
+		onRemove?: () => Promise<any>;
+	}>({ show: false, field: undefined });
 	const issueFieldGroupMap: { [key: string]: IssueField[] } = useMemo(
 		() =>
 			fieldGroups.reduce((pre: any, cur) => {
@@ -141,16 +150,53 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 					draggedId
 				);
 			} else {
-				orderMap[res.source.droppableId].splice(
-					res.destination.index,
-					1
-				);
 			}
 
 			const newOrder = Object.values(orderMap).flat();
+			const processFields = async (
+				action: string,
+				newIndex: number,
+				newFieldList: any[],
+				updateData: any
+			) => {
+				const promise = projectCommonChildQuery.trigger({
+					action,
+					data: {
+						projectId: openProject?.id,
+						parentId: issueTypeId,
+						childCurrentIndex: newIndex,
+						...updateData,
+						itemType: "fieldList",
+					},
+					itemType: "issueTypeSetting",
+				} as CrudPayload);
+
+				setIssueTypeSetting({
+					...issueTypeSetting,
+					fieldList: newFieldList,
+					fieldOrder: newOrder,
+				});
+
+				return promise;
+			};
+
+			const processFieldOrder = async () => {
+				return projectCommonQuery
+				.trigger({
+					action: "UPDATE",
+					data: {
+						projectId: openProject?.id,
+						id: issueTypeId,
+						fieldOrder: newOrder,
+					},
+					itemType: "issueTypeSetting",
+				} as CrudPayload)
+				.then(() => {});
+			};
+
 			if (res.destination.droppableId !== res.source.droppableId) {
-				let newFieldList;
-				let newIndex;
+				let newFieldList: any[];
+				let newIndex: number | undefined;
 				let updateData = {};
 				let action = "UPDATE";
 
@@ -163,6 +209,22 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 					newFieldList = issueTypeSetting.fieldList.filter(
 						(f) => f.id !== draggedId
 					);
+					setRemoveModal({
+						show: true,
+						field: issueFieldGroupMap[res.source.droppableId][
+							res.source.index
+						],
+						onRemove: () => {
+							processFieldOrder();
+
+							return processFields(
+								action,
+								newIndex || 0,
+								newFieldList,
+								updateData
+							);
+						},
+					});
 				} else if (alreadyExist) {
 					newIndex =
 						issueFieldGroupMap[res.source.droppableId][
@@ -182,6 +244,13 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 							  }
 							: f
 					);
+					processFields(
+						action,
+						newIndex || 0,
+						newFieldList,
+						updateData
+					);
+					processFieldOrder();
 				} else {
 					newIndex = issueTypeSetting.fieldList.length;
 					updateData = {
@@ -196,42 +265,23 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 						updateData as IssueField,
 					]);
 					setActiveField(draggedId);
+					processFields(
+						action,
+						newIndex || 0,
+						newFieldList,
+						updateData
+					);
+					processFieldOrder();
 				}
-
-				projectCommonChildQuery.trigger({
-					action,
-					data: {
-						projectId: openProject?.id,
-						parentId: issueTypeId,
-						childCurrentIndex: newIndex,
-						...updateData,
-						itemType: "fieldList",
-					},
-					itemType: "issueTypeSetting",
-				} as CrudPayload);
-
-				setIssueTypeSetting({
-					...issueTypeSetting,
-					fieldList: newFieldList,
-					fieldOrder: newOrder,
-				});
 			} else {
 				setIssueTypeSetting({
 					...issueTypeSetting,
 					fieldOrder: newOrder,
 				});
+                processFieldOrder();
 			}
-			projectCommonQuery
-				.trigger({
-					action: "UPDATE",
-					data: {
-						projectId: openProject?.id,
-						id: issueTypeId,
-						fieldOrder: newOrder,
-					},
-					itemType: "issueTypeSetting",
-				} as CrudPayload)
-				.then(() => {});
+			
+
 			// console.log("end", res);
 			// console.log("old order", issueTypeSetting.fieldOrder);
 			// console.log("new order", newOrder);
@@ -274,6 +324,7 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 				setIssueTypeSetting,
 				dragStart,
 				issueFieldGroupMap,
+				handleFieldDragend,
 			}}
 		>
 			<DragDropContext
@@ -367,13 +418,47 @@ const IssueTypeSettingComponent: FC<IssueTypeSettingProps> = (props) => {
 						)}
 					</div>
 					<div
-						className="h-100 border-start bg-light"
+						className="h-100 border-start bg-light position-relative"
 						style={{ minWidth: "375px" }}
 					>
 						<FieldTemplate />
 					</div>
 				</div>
 			</DragDropContext>
+			<Modal show={removeModal.show}>
+				<Modal.Body className="p-2">
+					Do you want to remove issue: {removeModal.field?.label}?
+				</Modal.Body>
+				<Modal.Header className="p-2 d-flex">
+					<div className="ms-auto me-2">
+						<Button
+							label="Cancel"
+							extraClasses="btn-as-light px-2 py-1"
+							handleClick={() => {
+								setRemoveModal({
+									show: false,
+									field: undefined,
+								});
+							}}
+						/>
+					</div>
+					<div className="">
+						<Button
+							label="Remove"
+							extraClasses="btn-as-light px-2 py-1"
+							handleClick={() => {
+								if (removeModal.onRemove)
+									removeModal.onRemove().then(() => {
+										setRemoveModal({
+											show: false,
+											field: undefined,
+										});
+									});
+							}}
+						/>
+					</div>
+				</Modal.Header>
+			</Modal>
 		</IssueTypeSettingContext.Provider>
 	);
 };

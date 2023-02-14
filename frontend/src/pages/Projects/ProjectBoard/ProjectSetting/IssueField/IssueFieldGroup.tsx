@@ -63,7 +63,7 @@ const IssueFieldGroup: FC<IssueFieldGroupProps> = (props) => {
 											{...provided.draggableProps}
 											{...provided.dragHandleProps}
 										>
-											<IssueFieldItem {...f} />
+											<IssueFieldItem {...f} draggableIndex={index} dropContainerId={props.id}/>
 										</div>
 									)}
 								</Draggable>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FC, useContext } from "react";
 import { Draggable, Droppable } from "react-beautiful-dnd";
 import DropdownInfo from "../../../../../components/DropdownInfo/DropdownInfo";
@@ -14,28 +14,20 @@ export const fieldTemplates = [
 		label: "Number",
 		id: "number",
 	},
-	{
-		label: "Number",
-		id: "number",
-	},
-	{
-		label: "Number",
-		id: "number",
-	},
 ];
 const FieldTemplate: FC = (props) => {
-	const { dragStart } = useContext(IssueTypeSettingContext);
+	const { dragStart, handleFieldDragend } = useContext(IssueTypeSettingContext);
+
+	const removeDrop = useMemo(
+		() =>
+			dragStart &&
+			["context", "description"].includes(dragStart.source.droppableId),
+		[dragStart]
+	);
+
 	return (
 		<React.Fragment>
-			<div
-				className="h-100 px-3 "
-				hidden={
-					dragStart &&
-					["context", "description"].includes(
-						dragStart.source.droppableId
-					)
-				}
-			>
+			<div className="h-100 px-3 py-3" hidden={removeDrop}>
 				<div className="d-flex align-items-center">
 					<span className="fw-645">Fields</span>
 					<DropdownInfo text="Fields capture and display the information people need to carry out a project's work" />
@@ -118,6 +110,21 @@ const FieldTemplate: FC = (props) => {
 																	}
 																	{...provided.draggableProps}
 																	{...provided.dragHandleProps}
+                                                                    onClick={() => {handleFieldDragend({
+                                                                        draggableId: `field-tmeplate-${index1}-${index2}`,
+                                                                        type: "DEFAULT",
+                                                                        source: {
+                                                                            index: 3 * index1 + index2,
+                                                                            droppableId: `template-${index1}`
+                                                                        },
+                                                                        reason: "DROP",
+                                                                        mode: "FLUID",
+                                                                        destination: {
+                                                                            droppableId: "context",
+                                                                            index: 0
+                                                                        },
+                                                                        combine: null
+                                                                    })}}
 																>
 																	<FieldTemplateCard
 																		{...t}
@@ -137,22 +144,17 @@ const FieldTemplate: FC = (props) => {
 				</div>
 			</div>
 			<div
-				className="h-100"
-				hidden={
-					!dragStart ||
-					!["context", "description"].includes(
-						dragStart.source.droppableId
-					)
-				}
+				className={`h-100 ${
+					removeDrop
+						? "visible position-relative"
+						: "invisible position-absolute top-0"
+				}`}
 			>
-				<Droppable droppableId="trash">
+				<Droppable droppableId="trash" isDropDisabled={!removeDrop}>
 					{(provided, snapsot) => (
 						<div
 							className={`h-100 px-3 ${
-								dragStart &&
-								["context", "description"].includes(
-									dragStart?.source.droppableId
-								)
+								removeDrop
 									? "drop-accept-container"
 									: "drop-container"
 							}`}

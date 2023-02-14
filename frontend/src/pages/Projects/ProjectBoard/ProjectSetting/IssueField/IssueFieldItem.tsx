@@ -22,6 +22,8 @@ interface IssueFieldItemProps {
 	description?: string;
 	defaultValue?: string | number;
 	index?: number;
+    draggableIndex: number;
+    dropContainerId: string;
 }
 const IssueFieldItem: FC<IssueFieldItemProps> = (props) => {
 	const {
@@ -30,6 +32,7 @@ const IssueFieldItem: FC<IssueFieldItemProps> = (props) => {
 		issueTypeId,
 		setIssueTypeSetting,
 		issueTypeSetting,
+        handleFieldDragend
 	} = useContext(IssueTypeSettingContext);
 	const { openProject } = useContext(ProjectBoardContext);
 	const projectCommonChildQuery = useQuery((payload: CrudPayload) =>
@@ -136,7 +139,21 @@ const IssueFieldItem: FC<IssueFieldItemProps> = (props) => {
 							<Button
 								label="Remove"
 								extraClasses="btn-as-light px-2 py-1"
-								handleClick={() => {}}
+								handleClick={() => {handleFieldDragend({
+                                    draggableId: `${props.dropContainerId}-${props.id}`,
+                                    type: "DEFAULT",
+                                    source: {
+                                        index: props.draggableIndex,
+                                        droppableId: props.dropContainerId
+                                    },
+                                    reason: "DROP",
+                                    mode: "FLUID",
+                                    destination: {
+                                        droppableId: "trash",
+                                        index: 0
+                                    },
+                                    combine: null
+                                })}}
 							/>
 						</div>
 						<div>

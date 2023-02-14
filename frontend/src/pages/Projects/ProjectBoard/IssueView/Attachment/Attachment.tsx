@@ -128,7 +128,7 @@ const Attachment: FC<AttachmentProps> = (props) => {
     }, [openIssue]);
 
     return (
-        <div>
+        <div hidden={!attach && isEmpty(openIssue?.attachments)}>
             <div className='d-flex flex-nowrap'>
                 <div className='h6'>
                     Attachment {(openIssue?.attachments || []).length > 0 ? `(${openIssue?.attachments?.length})`: ''}
