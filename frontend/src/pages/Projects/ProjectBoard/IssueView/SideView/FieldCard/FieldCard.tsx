@@ -62,8 +62,8 @@ const FieldCard: FC<FieldCardProps> = (props) => {
                 open && props.fields.length > 0 &&
                 <div className='p-2  border-top'>
                     {
-                        props.fields.map(field => (
-                            <div key={uniqueId()} className='my-2'>
+                        props.fields.map((field, index) => (
+                            <div key={`field-card-${index}`} className='my-2'>
                                 {
                                     field.component === 'sprint' &&
                                     <SprintField 

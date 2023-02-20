@@ -44,9 +44,9 @@ const BaseSideMenu: FC<{
 			</div>
 			<hr />
 			<div>
-				{bottomLinks.map((link) => (
+				{bottomLinks.map((link, index) => (
 					<a
-						key={uniqueId()}
+						key={`menu-option-${index}`}
 						href={link.navigateTo}
 						className="no-link "
 					>

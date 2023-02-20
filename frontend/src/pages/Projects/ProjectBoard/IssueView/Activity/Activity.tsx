@@ -1,11 +1,15 @@
-import { uniqueId } from 'lodash';
-import { FC, useContext, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { startCase, uniqueId } from 'lodash';
+import moment from 'moment';
+import { FC, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { addIssueComment, deleteIssueComment, updateIssueComment } from '../../../../../app/slices/issueSlice';
+import { RootState } from '../../../../../app/store';
+import ButtonCircle from '../../../../../components/ButtonCircle/ButtonCircle';
 import ButtonSelect from '../../../../../components/input/ButtonSelect/ButtonSelect';
 import TextEditor from '../../../../../components/input/TextEditor/TextEditor';
+import { AuthContext } from '../../../../../components/route/AuthGuardRoute';
 import { useQuery } from '../../../../../hooks/useQuery';
-import { CrudPayload, IssueComment, ItemType, SimpleAction } from '../../../../../model/types';
+import { CrudPayload, IssueComment, IssueFieldUpdateActivity, ItemType, SimpleAction, User } from '../../../../../model/types';
 import { commonChildCrud, projectCommonChildCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
 import { IssueMainViewContext } from '../IssueMainView/IssueMainView';
@@ -51,9 +55,17 @@ const Activity: FC<ActivityProps> = (props) => {
             </div>
             <div>
                 {
-                    (selectedActivity.value === 'comments' || selectedActivity.value)  && 
+                    (selectedActivity.value === 'comments')  && 
                     <div className='mt-3'>
                         <CommentSection />
+                    </div>
+                }
+            </div>
+            <div>
+                {
+                    (selectedActivity.value === 'history' || selectedActivity.value === 'all')  && 
+                    <div className='mt-3'>
+                        <History filter={selectedActivity.value}/>
                     </div>
                 }
             </div>
@@ -62,12 +74,18 @@ const Activity: FC<ActivityProps> = (props) => {
 }
 
 const CommentSection: FC = () => {
+    const {authUser} = useContext(AuthContext);
+    const user = useMemo(()=> ({
+        fullName: (authUser.data.attributes['custom:fullName'] || '') as string,
+        email: (authUser.data.attributes.email || '') as string
+    }), [ authUser]);
+    const users = useSelector((state: RootState) => state.users.values);
     const {openProject} = useContext(ProjectBoardContext);
     const {newCommentEditor, setNewCommentEditor} = useContext(IssueViewContext);
     const {openIssue} = useContext(IssueMainViewContext);
     const projectCommonChildQuery = useQuery((payload: CrudPayload) => projectCommonChildCrud(payload));
     const dispatch = useDispatch();
-    const [newCommentValue, setNewCommentValue] = useState<string | undefined>(undefined);
+    const commentListRef = useRef<HTMLDivElement>(null);
     const handleEdit =(idx: number, value: string) => {
         if (!openIssue) return;
         projectCommonChildQuery.trigger({
@@ -77,6 +95,7 @@ const CommentSection: FC = () => {
                 parentId: openIssue?.id,
                 childCurrentIndex: idx,
                 description: value,
+                edited: true,
                 itemType: 'comments'
             },
             itemType: 'issue'
@@ -87,7 +106,8 @@ const CommentSection: FC = () => {
                 data: {
                     currentIndex: idx,
                     updateData: {
-                        description: value
+                        description: value,
+                        edited: true
                     }
                 }
             }))
@@ -115,20 +135,23 @@ const CommentSection: FC = () => {
             }))
         })
     }
-    
+
     return (
         <div className=''>
             <UserTagged 
+                user={user}
                 element={(
                     <TextEditor 
                         open={newCommentEditor}
-                        value={openIssue?.id ? {id: openIssue.id, state: newCommentValue}: undefined}
                         onToggle={(open: boolean)=> setNewCommentEditor(open)}
                         onSave={(value: string) => {
                             if (!openIssue) return;
                             const newComment: IssueComment= {
                                 id: uniqueId(),
-                                description: value
+                                type: 'comment-new',
+                                description: value,
+                                userId: user.email,
+                                timestamp: moment().unix()
                             }
                             const parentItemType: ItemType = 'issue';
                             projectCommonChildQuery.trigger({
@@ -144,29 +167,32 @@ const CommentSection: FC = () => {
                             } as CrudPayload)
                             .then(()=>{
                                 dispatch(addIssueComment({id: openIssue.id, data: newComment}));
-                                setNewCommentValue(undefined)
+                                setTimeout(()=> commentListRef.current?.scrollIntoView(), 500);
                             })
                         }}
                     />
                 )}
             />
-            {
-                (openIssue?.comments || []).map((comm , idx)=> (
-                    <div key={uniqueId()} className='my-3'>
-                        <UserTagged
-                            element={(
-                                <Comment 
-                                    currentIndex={idx}
-                                    comment={comm}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                />
-                            )}
-                        />
-                    </div>
-                    
-                ))
-            }
+            <div ref={commentListRef} className='mt-3'>
+                {
+                    (openIssue?.comments || []).map((comm , idx)=> (
+                        <div key={`comment-${idx}`} className='pt-2'>
+                            <UserTagged
+                                user={users.find(u => u.email === comm.userId)}
+                                element={(
+                                    <Comment 
+                                        currentIndex={idx}
+                                        comment={comm}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
+                                )}
+                            />
+                        </div>
+                        
+                    ))
+                }
+            </div>
         </div>
     )
 }
@@ -178,12 +204,15 @@ const Comment: FC<{
     onDelete: (id: number)=> void;
 }> = (props) => {
     const {commentOnEdit, setCommentOnEdit} = useContext(IssueViewContext);
+    const users = useSelector((state: RootState) => state.users.values);
     return (
         <div>
             <div>
-
+                <span className='fw-645'>{users.find(u => u.email === props.comment.userId)?.fullName || 'Unknown'}</span>
+                <span className='ms-2 text-muted f-90'>{props.comment.timestamp ? moment.unix(props.comment.timestamp).format('MMM DD YYYY HH:mm'): ''}</span>
+                {props.comment.edited && <span className='ms-2 text-muted f-90'>Edited</span>}
             </div>
-            <div>
+            <div className='mt-1'>
                 <TextEditor 
                     open={commentOnEdit === props.comment.id}
                     bannerClassName='bg-light px-2'
@@ -192,7 +221,7 @@ const Comment: FC<{
                     onSave={(value: string)=> props.onEdit(props.currentIndex, value)}
                 />
             </div>
-            <div className='d-flex px-2 pt-3'>
+            <div className='d-flex mt-1'>
                 <div className='cursor-pointer text-muted hover-underline'
                     onClick={()=>{
                         props.onDelete(props.currentIndex)
@@ -205,13 +234,65 @@ const Comment: FC<{
     )
 }
 
-const UserTagged: FC<{element: JSX.Element}> = (props) => {
+const History: FC<{filter: string}> = ({filter}) =>{
+    const {openIssue} = useContext(IssueMainViewContext);
+    const users = useSelector((state: RootState) => state.users.values);
+    return (
+        <div>
+            {
+                (filter === 'all' ? (openIssue?.fieldUpdates || []).concat(openIssue?.comments || []): (openIssue?.fieldUpdates || [])).map((update, index) =>{
+                    const user = users.find(u => u.email === update.userId);
+                    return (
+                        <div className='mt-4' key={`activity-history-${index}`}>
+                            <UserTagged 
+                                user = {user}
+                                element={
+                                    <FieldUpdateActivity {...update} user={user}/>
+                                }
+                            />
+                        </div>
+                        
+                    )
+                })
+            }
+        </div>
+    )
+}
+
+const FieldUpdateActivity: FC<IssueFieldUpdateActivity & {user?: User}> = (props) =>{
+    return (
+        <div className=''>
+            <div>
+                <span className='fw-645'>{props.user?.fullName || 'Unknown'}</span>
+                <span className='ms-1'>{props.type.split('-')[0] === 'stage' ? 'changed': 'updated'} the</span>
+                <span className='fw-645 ms-1'>{startCase(props.type.split('-')[0])}</span>
+                <span className='ms-2 text-muted f-90 ms-1'>{props.timestamp ? moment.unix(props.timestamp).format('MMM DD YYYY HH:mm'): ''}</span>
+            </div>
+            {
+                props.to &&
+                <div>
+                    <span>{props.from || 'None'}</span>
+                    <i className='bi bi-arrow-right ms-1'></i>
+                    <span className='ms-1'>{props.to}</span>
+                </div>
+            }
+        </div>
+        
+    )
+} 
+
+const UserTagged: FC<{user?: User; element: JSX.Element}> = (props) => {
     return (
         <div className='d-flex flex-nowrap '>
             <div className='px-2'>
-                <button className='p-2 rounded-circle bg-thm-2 text-white' style={{width: '2.5em', height: '2.5em'}}>
-                    NA
-                </button>
+                <ButtonCircle
+                    label={(props.user?.fullName || '').split(' ').map(p => p[0]).join('') || 'P'}
+                    showLabel
+                    bsIcon={'person-fill'}
+                    size='md-1'
+                    disabled
+                    onClick={()=>{}}
+                />
             </div>
             <div className='w-100'>
                 {props.element}

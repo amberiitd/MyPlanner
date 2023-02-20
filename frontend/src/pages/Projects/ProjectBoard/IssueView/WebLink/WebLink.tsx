@@ -74,8 +74,8 @@ const WebLink: FC<WebLinkProps> = (props) => {
             </div>
             <div className='mt-2'>
                 {
-                    (openIssue?.webLinks || []).map(link => (
-                        <div key={uniqueId()} className="my-1">
+                    (openIssue?.webLinks || []).map((link, index) => (
+                        <div key={`web-link-${index}`} className="my-1">
                             <WebLinkRibbon 
                                 link={link}
                                 onRemove={()=>{

@@ -25,6 +25,7 @@ import WebLink from '../WebLink/WebLink';
 import Attachment from '../Attachment/Attachment';
 import TextEditInput from '../../../../../components/TextEditInput/TextEditInput';
 import { Modal } from 'react-bootstrap';
+import { useActivitySync } from '../../../../../hooks/useActivitySync';
 
 interface IssueMainViewProps{
     onRefresh: () => void;
@@ -50,6 +51,7 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
     const linkedIssueCount = useMemo(() =>{
         return Object.values(openIssue?.linkedIssues || {}).reduce((pre, cur) => pre+ cur.length, 0);
     }, [openIssue])
+    const {handleFieldUpdateSync} = useActivitySync(props.issue?.id);
 
     useEffect(()=>{
         const newRecent = [...(defaultUserPrefs?.recentViewedIssues || [])];
@@ -169,6 +171,11 @@ const IssueMainView: FC<IssueMainViewProps> = (props) => {
                                     itemType: 'issue'
                                 } as CrudPayload)
                                 .then(()=>{
+                                    handleFieldUpdateSync({
+                                        type: 'description-update',
+                                        from: '',
+                                        to: ''
+                                    })
                                     dispatch(updateIssue({id: props.issue?.id || '', data: {description: value}}))
                                 })
                             }}

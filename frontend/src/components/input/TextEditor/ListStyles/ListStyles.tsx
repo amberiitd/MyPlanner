@@ -33,8 +33,8 @@ const ListStyles: FC<ListStylesProps> = (props) => {
                 offset > 0 &&
                 <div className='d-flex flex-nowrap me-1'>
                     {
-                        props.styleList.slice(0, offset).map(item => (
-                            <div className='' key={uniqueId()}>
+                        props.styleList.slice(0, offset).map((item, index) => (
+                            <div className='' key={`list-style-${index}`}>
                                 <Button 
                                     label={item.label} 
                                     hideLabel={true}

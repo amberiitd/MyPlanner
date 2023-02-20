@@ -39,7 +39,7 @@ const ScrumBoard: FC<ScrumBoardProps> = (props) => {
                 <div className='d-flex'>
                     {
                         orderedStages.map((stage, index) => (
-                            <div key={uniqueId()} className='h-100 mx-1'>
+                            <div key={`ticket-stage-${index}`} className='h-100 mx-1'>
                                 <TicketStage 
                                     index={stage.index}
                                     issues={

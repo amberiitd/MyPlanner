@@ -48,11 +48,11 @@ const TextColors: FC<TextColorsProps> = (props) => {
             <div className={`dropdown-menu bg-light ${showMenu? 'show': ''} shadow-sm`} style={{left: 0}}>
                 <div className='d-flex px-2'>
                     {
-                        props.textColorList.map(color => (
+                        props.textColorList.map((color, index) => (
                             <div className='rounded-3 border me-1 text-center cursor-pointer ' 
                                 style={{backgroundColor: color.value, color: 'white', width: '30px', height: '30px', paddingTop: '3px'}}
                                 onMouseDown={(e)=>{e.preventDefault(); props.onChange(color)}}
-                                key={uniqueId()}
+                                key={`text-color-${index}`}
                                 title={color.label}
                             >
                                 { props.selectedColor.value === color.value && <i className='bi bi-check'></i>}

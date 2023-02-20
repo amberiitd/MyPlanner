@@ -28,8 +28,8 @@ const PeopleOption: FC<CustomOptionProps> = (props) => {
                     }
                     {
                         props.caption && typeof props.caption !== 'string' &&
-                        props.caption.map(cap => (
-                            <span key={uniqueId()}>
+                        props.caption.map((cap, index) => (
+                            <span key={`people-option-${index}`}>
                                 {cap}<span className='px-1'>.</span>
                             </span>
                         ))

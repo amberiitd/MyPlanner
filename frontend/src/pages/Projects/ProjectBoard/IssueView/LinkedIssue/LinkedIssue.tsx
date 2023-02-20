@@ -84,12 +84,12 @@ const LinkedIssue: FC<LinkedIssueProps> = (props) => {
             </div>
             <div className='mt-2'>
                 {
-                    linkedIssues.map(cat => (
-                        <div key={uniqueId()} className='mb-2'>
+                    linkedIssues.map((cat, index1) => (
+                        <div key={`linked-issue-${index1}`} className='mb-2'>
                             <div className="text-muted f-90 fw-645" >{cat.label}</div>
                             {
-                                cat.issues.map(issue => (
-                                    <div key={uniqueId()} className="my-1">
+                                cat.issues.map((issue, index2) => (
+                                    <div key={`cat-issue-${index2}`} className="my-1">
                                         <LinkedIssueRibbon 
                                             issue={issue}
                                             category={cat.label}

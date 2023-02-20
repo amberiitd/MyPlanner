@@ -50,8 +50,8 @@ const InfoCard: FC<InfoCardProps> = (props) => {
                 <React.Fragment>
                     <div className='py-1 ps-4 f-80' style={{fontWeight: 600}}>Quick links</div>
                     {
-                        (props.links || []).map(link => (
-                            <a key={uniqueId()} href={link.href} className='d-flex info-link f-80 py-1 ps-4 no-link'>
+                        (props.links || []).map((link, index) => (
+                            <a key={`info-card-link-${index}`} href={link.href} className='d-flex info-link f-80 py-1 ps-4 no-link'>
                                 <div>{link.label}</div>
                                 {
                                     link.metric &&

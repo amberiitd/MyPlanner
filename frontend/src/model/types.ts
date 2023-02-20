@@ -64,9 +64,21 @@ export const EMPTY_SPRINT: Sprint = {
     issueOrder: []
 }
 
-export interface IssueComment{
+export interface IssueActivity{
     id: string;
+    type: string;
+    userId: string;
+    timestamp: number;
+}
+
+export interface IssueComment extends IssueActivity{
     description: string;
+    edited?: boolean;
+}
+
+export interface IssueFieldUpdateActivity extends IssueActivity{
+    from: string;
+    to: string;
 }
 
 export interface SimpleAction{

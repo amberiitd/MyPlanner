@@ -37,8 +37,8 @@ const ButtonSelect: FC<ButtonSelectProps> = (props) => {
             <div ref={containerRef} className='d-flex flex-nowrap'>
                 
                 {
-                    props.items.slice(0, offset).map(option => (
-                        <div className='ms-2' key={uniqueId()}>
+                    props.items.slice(0, offset).map((option, index) => (
+                        <div className='ms-2' key={`button-select-${index}`}>
                             <Button 
                                 label={option.label} 
                                 hideLabel={false}

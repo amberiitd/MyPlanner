@@ -19,7 +19,7 @@ const NavBarToolList: FC<NavBarToolListProps> = (props) => {
         <div className='h-100 d-inline-flex align-items-center'>
             {
                 props.items.map((item, index) => (
-                    <div key={uniqueId()} className='mx-1'>
+                    <div key={`navbar-tool-item-${index}`} className='mx-1'>
                         <NavBarTool 
                             item={item}
                         />

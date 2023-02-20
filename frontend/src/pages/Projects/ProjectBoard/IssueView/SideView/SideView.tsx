@@ -23,7 +23,7 @@ const SideView: FC<SideViewProps> = (props) => {
             <div className='d-flex flex-nowrap'>
                 <div>
                     <StageSelector 
-                        selectedStage={stages.find(stage => stage.value === props?.issue?.stage)} 
+                        selectedStage={(openProject?.scrumBoard.stages || []).find(stage => stage.value === props?.issue?.stage)} 
                         issueId={props?.issue?.id || ''} 
                         drop={'left'}
                     />

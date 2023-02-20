@@ -33,8 +33,8 @@ const ButtonMultiSelect: FC<ButtonMultiSelectProps> = (props) => {
     return (
         <div className='d-flex flex-nowrap'>
             {
-                props.items.slice(0, layoutCount).map(item => (
-                    <div key={uniqueId()} className='' style={{marginLeft: overlap}}>
+                props.items.slice(0, layoutCount).map((item, index) => (
+                    <div key={`button-multiselect-${index}`} className='' style={{marginLeft: overlap}}>
                         <ButtonCircle 
                             label={item.label?.split(' ').map(p => p[0]).join('') || 'A'}
                             showLabel={true} 

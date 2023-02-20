@@ -43,13 +43,13 @@ const CustomOption: FC<CustomOptionProps> = (props) => {
                         props.caption && typeof props.caption !== 'string' &&
                         <React.Fragment>
                             {
-                                props.caption.slice(0, props.caption.length -1).map(cap => (
-                                    <span key={uniqueId()}>
+                                props.caption.slice(0, props.caption.length -1).map((cap, index) => (
+                                    <span key={`custom-option-caption-${index}`}>
                                         {cap}<span className='px-1'>.</span>
                                     </span>
                                 ))
                             }
-                            <span key={uniqueId()}>
+                            <span>
                                 {props.caption[props.caption.length-1]}
                             </span>
                         </React.Fragment>

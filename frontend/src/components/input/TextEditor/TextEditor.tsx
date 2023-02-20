@@ -649,10 +649,17 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                     EditorState.createWithContent(convertFromRaw(props.value? JSON.parse(props.value.state): {blocks: [], entityMap: {}}), decorator)
                 )
             );
+        }else if(isEmpty(props.value?.state)){
+            setEditorState(EditorState.createEmpty(decorator));
         }
         setPrevVal(props.value);
     }, [props.value])
     
+    useEffect(()=>{
+        if (active){
+            containerRef.current?.scrollIntoView();
+        }
+    }, [active])
     return (
         <TextEditorContext.Provider value={{containerWidth, linkPopup, setLinkPopup, handleLinkEntity, datePopup, setDatePopup, handleDateEntity, statusPopup, setStatusPopup, editorState}}>
             <div>
@@ -661,8 +668,7 @@ const TextEditor: FC<TextEditorProps> = (props) => {
                     <div className={`${props.bannerClassName?? 'rounded border text-muted p-2 bg-smoke-hover'}`}
                         onClick={()=>{
                             setActive(true);
-                            (props.onToggle||(()=>{}))(true);
-                            // containerRef.current?.focus();
+                            (props.onToggle||(()=>{}))(true);                            
                             // contentRef.current?.focus();
                             setEditorState(EditorState.moveFocusToEnd(editorState));
                         }}

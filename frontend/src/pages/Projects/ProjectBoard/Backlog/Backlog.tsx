@@ -168,8 +168,8 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const backlogBody = (
         <div className='backlog-body pe-2' >
             { 
-                projectSprints.map(sprint => (
-                    <div key={uniqueId()} className='my-3'>
+                projectSprints.map((sprint, index) => (
+                    <div key={`sprint-card-${index}`} className='my-3'>
                         <SprintCard 
                             issueList={
                                 sortBy(

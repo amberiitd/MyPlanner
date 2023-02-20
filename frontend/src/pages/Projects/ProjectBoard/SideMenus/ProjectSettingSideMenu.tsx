@@ -38,9 +38,9 @@ const ProjectSettingSideMenu: FC<{
 			</div>
 			<hr />
 			<div>
-				{bottomLinks.map((link) => (
+				{bottomLinks.map((link, index) => (
 					<a
-						key={uniqueId()}
+						key={`project-setting-side-menu-${index}`}
 						href={link.navigateTo}
 						className="no-link "
 					>

@@ -52,8 +52,8 @@ const ChildIssue: FC<ChildIssueProps> = (props) => {
             </div>
             <div className='mt-2'>
                 {
-                    childIssues.map(issue => (
-                        <div key={uniqueId()}>
+                    childIssues.map((issue, index) => (
+                        <div key={`child-issue-ribbon-${index}`}>
                             <ChildIssueRibbon 
                                 issue={issue}
                             />

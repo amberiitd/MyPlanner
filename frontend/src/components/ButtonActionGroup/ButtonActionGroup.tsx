@@ -35,8 +35,8 @@ const ButtonActionGroup: FC<ButtonActionGroupProps> = (props) => {
             <div ref={containerRef} className='d-flex flex-nowrap'>
                 
                 {
-                    props.items.slice(0, offset).map(option => (
-                        <div className='border-end rounded' key={uniqueId()}>
+                    props.items.slice(0, offset).map((option, index) => (
+                        <div className='border-end rounded' key={`button-action-btn-${index}`}>
                             <Button 
                                 label={option.label} 
                                 hideLabel={false}

@@ -274,8 +274,8 @@ const Attachment: FC<AttachmentProps> = (props) => {
                         </div>
                     }
                     {
-                        (openIssue?.attachments || []).map(attach => (
-                            <div key={uniqueId()} className="mx-1">
+                        (openIssue?.attachments || []).map((attach, index) => (
+                            <div key={`attach-card-${index}`} className="mx-1">
                                 <AttachCard 
                                     {...attach}
                                     onAction={handleAttachAction}

@@ -118,8 +118,8 @@ const Entities: FC<EntitiesProps> = (props) => {
                 offset > 0 &&
                 <div className='me-1 d-flex flex-nowrap'>
                     {
-                        insertList.slice(0, offset).map(insert => (
-                            <div className='' key={uniqueId()}>
+                        insertList.slice(0, offset).map((insert, index) => (
+                            <div className='' key={`entity-button-${index}`}>
                                 <Button 
                                     label={insert.label} 
                                     hideLabel={true}

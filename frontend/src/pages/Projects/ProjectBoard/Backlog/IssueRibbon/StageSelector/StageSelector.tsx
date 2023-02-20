@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { updateIssue } from '../../../../../../app/slices/issueSlice';
 import Button from '../../../../../../components/Button/Button';
 import LinkCard from '../../../../../../components/LinkCard/LinkCard';
+import { useActivitySync } from '../../../../../../hooks/useActivitySync';
 import { useQuery } from '../../../../../../hooks/useQuery';
 import { CrudPayload } from '../../../../../../model/types';
 import { commonCrud, projectCommonCrud } from '../../../../../../services/api';
@@ -22,6 +23,7 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
     const compRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const projectCommonQuery = useQuery((payload: CrudPayload)=> projectCommonCrud(payload));
+    const {handleFieldUpdateSync} = useActivitySync(props.issueId);
     const dispatch = useDispatch();
     const NONE: Stage ={
         label: 'None',
@@ -69,7 +71,13 @@ const StageSelector: FC<StageSelectorProps> = (props) => {
                                 itemType: 'issue'
                             } as CrudPayload)
                             .then(()=>{
+                                handleFieldUpdateSync({
+                                    type: 'stage-update',
+                                    from: props.selectedStage?.label || '',
+                                    to: item.label
+                                })
                                 dispatch(updateIssue({id: props.issueId, data: {stage: item.value}})); 
+                                
                             })
                             setDropdown(false); 
                         }}

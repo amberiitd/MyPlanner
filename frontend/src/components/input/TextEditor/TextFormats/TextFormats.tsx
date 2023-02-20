@@ -37,8 +37,8 @@ const TextFormats: FC<TextFormatsProps> = (props) => {
                 offset > 0 &&
                 <div className='me-1 d-flex flex-nowrap'>
                     {
-                        props.formatList.slice(0, offset).map(format => (
-                            <div className='' key={uniqueId()}>
+                        props.formatList.slice(0, offset).map((format, index) => (
+                            <div className='' key={`text-format-${index}`}>
                                 <Button 
                                     label={format.label} 
                                     hideLabel={true}

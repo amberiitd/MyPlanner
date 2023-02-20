@@ -66,8 +66,8 @@ const WorkPage: FC<WorkPageProps> = () => {
                 <div className='d-flex '>
                     {
                         projects.values.filter(project => (defaultUserPrefs?.recentViewedProjects || []).findIndex(p => p === project.id) >= 0)
-                        .map(project => (
-                            <div key={uniqueId()} className='me-2'>
+                        .map((project, index) => (
+                            <div key={`info-card-${index}`} className='me-2'>
                                 <InfoCard 
                                     title={project.name}
                                     titleHref={`projects/${project.key}/board`}

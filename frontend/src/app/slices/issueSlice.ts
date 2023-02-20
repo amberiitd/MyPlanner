@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { uniq } from "lodash";
-import { IssueComment } from "../../model/types";
+import { IssueComment, IssueFieldUpdateActivity } from "../../model/types";
 import { Issue } from "../../pages/Projects/ProjectBoard/Backlog/IssueRibbon/IssueRibbon";
 import { distinct } from "../../util/method";
 
@@ -50,6 +50,16 @@ const issueSlice = createSlice({
                 }
             }
         },
+        addFieldUpdate: (state, action: PayloadAction<{id: string; data: IssueFieldUpdateActivity}>) => {
+            const issue = state.values.find(iss => iss.id === action.payload.id);
+            if (issue){
+                if (issue.fieldUpdates){
+                    issue.fieldUpdates.push(action.payload.data);
+                }else{
+                    issue.fieldUpdates = [action.payload.data]
+                }
+            }
+        },
         updateComment: (state, action: PayloadAction<{id: string; data: {currentIndex: number; updateData: any}}>) => {
             const issue = state.values.find(iss => iss.id === action.payload.id);
             if (issue && issue.comments){
@@ -72,6 +82,7 @@ export const refreshIssue = issueSlice.actions.resfresh;
 export const updateIssue = issueSlice.actions.update;
 export const updateIssueBulk = issueSlice.actions.updateBulk;
 export const addIssueComment = issueSlice.actions.addComment;
+export const addIssueaddFieldUpdate = issueSlice.actions.addFieldUpdate;
 export const updateIssueComment = issueSlice.actions.updateComment;
 export const deleteIssueComment = issueSlice.actions.deleteComment;
 
