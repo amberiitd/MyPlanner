@@ -47,7 +47,7 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
     const sprints = useSelector((state: RootState) => state.sprints);
     const dispatch = useDispatch();
 
-    const {openIssue, setOpenIssue} = useContext(BacklogContext);
+    const {openIssue, setOpenIssue, setDeleteModal} = useContext(BacklogContext);
     const [hovered, setHovered] = useState(false);
     const{openProject}= useContext(ProjectBoardContext);
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
@@ -75,17 +75,23 @@ const IssueRibbon: FC<IssueRibbonProps> = (props) => {
             case 'actions':
                 switch(event.item.value){
                     case 'delete':
-                        const payload: CrudPayload = {
-                            action: 'DELETE',
-                            data: {
-                                projectId: openProject?.id,
-                                id: props.issue.id
-                            },
-                            itemType: 'issue'
-                        }
-                        projectCommonQuery.trigger(payload)
-                        .then((res) => {dispatch(removeIssue({id: props.issue.id}));})
-                        
+                        setDeleteModal({
+                            show: true,
+                            entityType: 'issue',
+                            entityLabel: `${props.issue.projectKey}-${props.issue.id}`,
+                            onDelete: async ()=>{
+                                const payload: CrudPayload = {
+                                    action: 'DELETE',
+                                    data: {
+                                        projectId: openProject?.id,
+                                        id: props.issue.id
+                                    },
+                                    itemType: 'issue'
+                                }
+                                projectCommonQuery.trigger(payload)
+                                .then((res) => {dispatch(removeIssue({id: props.issue.id}));})
+                            }
+                        })
                         break;
                     default:
                         break;

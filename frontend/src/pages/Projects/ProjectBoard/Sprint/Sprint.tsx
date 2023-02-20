@@ -61,7 +61,8 @@ const Sprint: FC<SprintProps> = (props) => {
     const projectIssues = useMemo(() => issues.values.filter(issue => issue.projectKey === props.project.key), [issues, props]);
     // const projectSprints = useMemo(() => sprints.values.filter(sprint => sprint.projectKey === props.project.key), [sprints, props])
 
-    const onRefresh = () =>{
+    const onRefresh = useCallback(() =>{
+        if (!openProject) return;
         projectCommonQuery.trigger({
             action: 'RETRIEVE',
             data: {projectId: openProject?.id,},
@@ -79,7 +80,8 @@ const Sprint: FC<SprintProps> = (props) => {
         .then((res) => {
             dispatch(refreshIssue(res as Issue[]))
         });
-    }
+    }, [openProject])
+
     useEffect(()=>{
         if (!isEmpty(openProject)){
             onRefresh();

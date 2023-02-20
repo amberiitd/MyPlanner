@@ -55,6 +55,11 @@
     background-color: rgb(227, 227, 227);
 }
 
+.btn-as-danger{
+    background-color: red;
+    color: white;
+}
+
 .btn-label{
     white-space: nowrap;
 }

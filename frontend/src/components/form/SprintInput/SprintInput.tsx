@@ -18,6 +18,7 @@ const SprintInput: FC<SprintInputProps> = (props) => {
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload));
     const [data, setData] = useState<Sprint[]>([]);
     useEffect(()=>{
+        if (!props.projectId) return;
         projectCommonQuery.trigger({
             action: 'RETRIEVE',
             data: {projectId: props.projectId,},

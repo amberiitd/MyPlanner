@@ -9,6 +9,7 @@ import { useQuery } from '../../../../../hooks/useQuery';
 import { CrudPayload, Project, SprintStatus } from '../../../../../model/types';
 import { commonCrud, IssuesCrud, projectCommonCrud } from '../../../../../services/api';
 import { ProjectBoardContext } from '../../ProjectBoard';
+import { BacklogContext } from '../Backlog';
 import IssueCreator from '../IssueCreator/IssueCreator';
 import IssueRibbon, { Issue } from '../IssueRibbon/IssueRibbon';
 import './SprintCard.css';
@@ -27,6 +28,7 @@ interface SprintCardProps{
 const SprintCard: FC<SprintCardProps> = (props) => {
     const [collapse, setCollapse] = useState(false);
     const {openProject} = useContext(ProjectBoardContext);
+    const {setDeleteModal} = useContext(BacklogContext);
     const issueQuery = useQuery((payload: CrudPayload) => IssuesCrud(payload));
     const projectCommonQuery = useQuery((payload: CrudPayload) => projectCommonCrud(payload))
     const [{isOver}, drop] = useDrop(()=> ({
@@ -49,7 +51,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
             value: props.issueList.reduce((pre, cur) => pre + (cur.stage === stage.value? (cur.storyPoint || 0): 0), 0)
        })) , [props.issueList, props.sprintId]);
 
-    const handleDelete = useCallback(()=>{
+    const handleDelete = useCallback(async ()=>{
         const deleteSprint = () => {
             projectCommonQuery.trigger({
                 action: 'DELETE',
@@ -101,7 +103,7 @@ const SprintCard: FC<SprintCardProps> = (props) => {
                     sprintId={props.sprintId}
                     collapse={collapse}
                     handleClick={()=>{setCollapse(!collapse)}}
-                    handleDelete={handleDelete}
+                    handleDelete={() => setDeleteModal({show: true, entityLabel: `${props.project.key}-${props.sprintName}`, entityType: 'sprint', onDelete: handleDelete})}
                 />
             </div>
             <div className='mt-2' hidden={collapse}>

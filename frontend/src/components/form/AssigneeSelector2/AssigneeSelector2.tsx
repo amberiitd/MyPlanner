@@ -58,11 +58,8 @@ const AssigneeSelector: FC<AssigneeSelectorProps> = (props) => {
     }, [])
 
     useEffect(()=>{
-        userQuery.trigger({projectId: props.projectId})
-        .then(res => {
-            dispatch(refreshUser(res as User[]))
-        })
-    }, [props.projectId])
+        props.onSelectionChange(selectedAssignee?.email || '');
+    }, [selectedAssignee])
     // useEffect(()=>{
     //     setTimeout(()=>{
     //         searchQuery.trigger('')

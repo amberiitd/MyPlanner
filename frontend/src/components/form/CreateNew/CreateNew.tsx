@@ -59,7 +59,8 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                 projectKey: data.projectKey,
                 sprintId: data.sprintId || 'backlog',
                 storyPoint: data.storyPoint,
-                stage: 'not-started'
+                stage: 'not-started',
+                assignee: data.assignee
             };
             projectCommonQuery.trigger({
                 action: 'CREATE',
@@ -197,7 +198,9 @@ const CreateNew: FC<CreateNewProps> = (props) => {
                             <div className='create-select mb-3'>
                                 <AssigneeSelector 
                                     projectId={formValues.projectId}
-                                    onSelectionChange={(value)=>{setValue('assignee', value)}}
+                                    onSelectionChange={(value)=>{
+                                        setValue('assignee', value)
+                                    }}
                                 />
                             </div>
                         )}

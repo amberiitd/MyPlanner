@@ -34,15 +34,21 @@ import InvitePeople from '../InvitePeople/InvitePeople';
 import IssueTypeSelector from './IssueCreator/IssueTypeSelector/IssueTypeSelector';
 import TextCopy from '../../../../components/TextCopy/TextCopy';
 import IssueLink from './IssueLink/IssueLink';
+import DeleteModal from './DeleteModal/DeleteModal';
 
 interface BacklogProps{
     project: Project;
 }
 
+type DeleteModalProps = {show: boolean; entityType?: 'sprint' | 'issue'; entityLabel?: string; messageElement?: JSX.Element, onDelete?: () => Promise<any>;};
 export const BacklogContext = createContext<{
+    deleteModal: DeleteModalProps;
+    setDeleteModal: React.Dispatch<React.SetStateAction<DeleteModalProps>>;
     openIssue: Issue | undefined;
     setOpenIssue: (issue: Issue | undefined) => void;
 }>({
+    deleteModal: {show: false},
+    setDeleteModal: () => {},
     openIssue: undefined,
     setOpenIssue: () => {}
 })
@@ -53,6 +59,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
     const issues = useSelector((state: RootState) => state.issues);
     const people = useSelector((state: RootState) => state.users.values);
     const [openIssue, setOpenIssue] = useState<Issue | undefined>();
+    const [deleteModal, setDeleteModal] = useState<DeleteModalProps>({show: false});
     const [filters, setFilters] = useState<{
         searchText: string;
         issueTypes: string[];
@@ -134,7 +141,8 @@ const Backlog: FC<BacklogProps>  = (props) => {
         }
     }, [projectIssues])
 
-    const onRefresh = () =>{
+    const onRefresh = useCallback(() =>{
+        if (!openProject) return;
         projectCommonQuery.trigger({
             action: 'RETRIEVE',
             data: {projectId: openProject?.id,},
@@ -152,7 +160,8 @@ const Backlog: FC<BacklogProps>  = (props) => {
                 dispatch(refreshIssue(res as Issue[]))
             });
         });
-    }
+    }, [openProject])
+
     useEffect(()=>{
         if (!isEmpty(openProject?.id)){
             onRefresh();
@@ -298,7 +307,7 @@ const Backlog: FC<BacklogProps>  = (props) => {
                         </div>
                     </div>
                 </div>
-                <BacklogContext.Provider value={{openIssue, setOpenIssue}}>
+                <BacklogContext.Provider value={{openIssue, setOpenIssue, deleteModal, setDeleteModal}}>
                     {
                         openIssue ? (
                             <Split 
@@ -344,9 +353,10 @@ const Backlog: FC<BacklogProps>  = (props) => {
                         ):
                         backlogBody
                     }
-                    
+                    <DeleteModal />
                 </BacklogContext.Provider>
                 <SprintModal />
+                
             </div>
         </DndProvider>
     )
